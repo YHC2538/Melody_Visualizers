@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melody Visualizers Prototype</title>
+    <style>
+        /* --- 全局樣式 --- */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* 模擬視窗容器 */
+        .app-container {
+            width: 800px;
+            height: 500px;
+            background-color: white;
+            border: 3px solid #333;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* 通用按鈕樣式 */
+        button {
+            cursor: pointer;
+            border: 2px solid #333;
+            background: #fff;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #eee;
+            transform: translateY(-2px);
+            box-shadow: 2px 2px 0 #333;
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* --- 畫面控制 (切換顯示/隱藏) --- */
+        .screen {
+            display: none;
+            /* 預設隱藏所有畫面 */
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+            /* 只顯示 active 的畫面 */
+        }
+
+        /* --- 1. 開始畫面 --- */
+        #start-screen {
+            justify-content: center;
+            align-items: center;
+            background-color: #e8e8e8;
+        }
+
+        .title {
+            font-size: 32px;
+            margin-bottom: 100px;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            /* 手繪風格字體 */
+        }
+
+        .start-btn {
+            font-size: 18px;
+            padding: 15px 40px;
+            border-width: 3px;
+        }
+
+        /* --- 2. 主要生成畫面 --- */
+        #main-screen {
+            flex-direction: row;
+        }
+
+        /* 左側側邊欄 */
+        .sidebar {
+            width: 25%;
+            background-color: #f9f9f9;
+            border-right: 2px solid #333;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+
+        /* 模擬輸入框 */
+        .input-placeholder {
+            width: 100%;
+            height: 30px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+        }
+
+        /* 返回按鈕 (左上角箭頭) */
+        .back-arrow {
+            position: absolute;
+            left: -50px;
+            /* 放在容器外面模擬圖示 */
+            top: 10px;
+            font-size: 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        /* 為了Demo方便，我在Sidebar內做一個返回按鈕 */
+        .back-btn-inner {
+            margin-bottom: 20px;
+            align-self: flex-start;
+            padding: 5px 10px;
+        }
+
+        .generate-btn {
+            margin-top: auto;
+            /* 推到底部 */
+            background-color: #ddd;
+            border: 2px dashed #333;
+        }
+
+        /* 右側主內容 */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            justify-content: flex-end;
+            /* 為了放說明按鈕 */
+            align-items: flex-end;
+            background-color: #fff;
+        }
+
+        .instruction-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        /* --- 3. Loading 畫面 --- */
+        #loading-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .loading-text {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-family: 'Comic Sans MS', sans-serif;
+        }
+
+        .progress-container {
+            width: 60%;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #333;
+            transition: width 0.1s;
+        }
+
+        .loading-details {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* --- 4. 說明畫面 (作為彈出層) --- */
+        #instruction-modal {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* 半透明背景 */
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .modal-content {
+            width: 70%;
+            height: 70%;
+            background-color: #e8e8e8;
+            border: 3px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <div id="start-screen" class="screen active">
+            <h1 class="title">Melody Visualizers</h1>
+            <button class="start-btn" onclick="goToScreen('main-screen')">開始生成</button>
+        </div>
+
+        <div id="main-screen" class="screen">
+            <div class="sidebar">
+                <button class="back-btn-inner" onclick="goToScreen('start-screen')">⬅ Back</button>
+
+                <div class="input-placeholder"></div>
+                <div class="input-placeholder"></div>
+                <div class="input-placeholder"></div>
+                <div class="input-placeholder"></div>
+
+                <button class="generate-btn" onclick="startLoading()">生成</button>
+            </div>
+
+            <div class="main-content">
+                <button class="instruction-btn" onclick="toggleModal(true)">說明</button>
+            </div>
+        </div>
+
+        <div id="loading-screen" class="screen">
+            <div class="loading-text">loading</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="loading-details">
+                進度條運算中...<br>
+                背景動畫渲染中...<br>
+                影片檔案輸出中...
+            </div>
+        </div>
+
+        <div id="instruction-modal">
+            <div class="modal-content">
+                <h2>使用說明</h2>
+                <p>這裡是說明文字區域...</p>
+                <p>1. 選擇參數</p>
+                <p>2. 點擊生成</p>
+                <button class="close-btn" onclick="toggleModal(false)">X</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 切換畫面的函式
+        function goToScreen(screenId) {
+            // 隱藏所有 screen
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            // 顯示目標 screen
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // 開關說明視窗
+        function toggleModal(show) {
+            const modal = document.getElementById('instruction-modal');
+            modal.style.display = show ? 'flex' : 'none';
+        }
+
+        // 模擬 Loading 進度條邏輯
+        function startLoading() {
+            goToScreen('loading-screen');
+            const bar = document.getElementById('progress-bar');
+            let width = 0;
+
+            // 重置進度條
+            bar.style.width = '0%';
+
+            // 模擬進度跑動
+            const interval = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(interval);
+                    alert("生成完成！(模擬結束)");
+                    goToScreen('main-screen'); // 完成後跳回主畫面
+                } else {
+                    width++;
+                    bar.style.width = width + '%';
+                }
+            }, 30); // 速度設定
+        }
+    </script>
+</body>
+
+</html>

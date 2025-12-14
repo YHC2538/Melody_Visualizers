@@ -1,0 +1,25 @@
+{
+  "name": "webdev_final",
+  "version": "1.0.0",
+  "description": "Testing purposes",
+  "homepage": "https://github.com/YHC2538/webdev_final#readme",
+  "bugs": {
+    "url": "https://github.com/YHC2538/webdev_final/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YHC2538/webdev_final.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.1",
+    "cors": "^2.8.5",
+    "express": "^5.2.1"
+  }
+}

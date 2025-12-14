@@ -607,7 +607,19 @@
                     <div class="checkbox-row"><label for="include_chords">包含和弦</label><input type="checkbox"
                             id="include_chords"></div>
                 </div>
-                <button class="generate-btn" onclick="startLoading()">開始生成 MIDI</button>
+                <button class="generate-btn" id="gen-btn" onclick="startGenerationProcess()">開始生成 MIDI</button>
+                <div id="download-area" style="display:none; margin-top:10px; text-align:center;">
+                    <p>生成完成！</p>
+                    <a id="midi-download-link" href="#" target="_blank" style="
+                        display:inline-block; 
+                        padding:10px 20px; 
+                        background:#4CAF50; 
+                        color:white; 
+                        text-decoration:none; 
+                        border-radius:5px;">
+                        下載 MIDI 檔案
+                    </a>
+                </div>
             </div>
             <div class="main-content">
                 <button id="open-sidebar-btn" onclick="toggleSidebar()">▶ 展開設定</button>
@@ -781,6 +793,68 @@
 
             initBackground();
         };
+
+        
+        async function startGenerationProcess() {
+            // 1. 收集參數
+            const params = {
+                scale: document.getElementById('scale').value,
+                key: document.getElementById('key').value,
+                bars: document.getElementById('bars').value,
+                tempo: document.getElementById('tempo').value,
+                note_duration: document.getElementById('note_duration').value,
+                octave: '0', // 若 UI 沒開放調整，設為預設
+                include_arpeggios: document.getElementById('include_arpeggios').checked ? 'on' : null,
+                include_rests: document.getElementById('include_rests').checked ? 'on' : null,
+                include_chords: document.getElementById('include_chords').checked ? 'on' : null
+            };
+
+            // 2. 顯示 Loading
+            goToScreen('loading-screen');
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = '30%'; // 假進度
+
+            try {
+                // 3. 發送請求給 Node.js 後端
+                const response = await fetch('http://localhost:3000/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(params)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    progressBar.style.width = '100%';
+                    
+                    // 延遲一下讓使用者看到 100%
+                    setTimeout(() => {
+                        goToScreen('main-screen');
+                        
+                        // 4. 顯示下載按鈕
+                        const downloadArea = document.getElementById('download-area');
+                        const downloadLink = document.getElementById('midi-download-link');
+                        
+                        downloadLink.href = data.midiUrl;
+                        downloadLink.download = data.filename; // 建議瀏覽器存檔名
+                        downloadArea.style.display = 'block';
+                        
+                        alert(`生成成功！請點擊下方按鈕下載。\n(檔案: ${data.filename})`);
+                    }, 500);
+                } else {
+                    alert('生成失敗: ' + data.error);
+                    goToScreen('main-screen');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('無法連線到伺服器');
+                goToScreen('main-screen');
+            }
+        }
+
 
         async function initAudio() {
             if (!isAudioContextStarted) {
