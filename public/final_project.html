@@ -426,6 +426,7 @@
             margin-top: 20px;
         }
 
+        /**/
         .play-sound-btn {
             background-color: #333;
             color: white;
@@ -443,6 +444,67 @@
 
         .play-sound-btn:active {
             transform: scale(0.95);
+        }
+
+        /* --- 新版播放器樣式 --- */
+        .player-controls-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .play-toggle-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            background: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            padding: 0; /* 修正對齊 */
+        }
+        .play-toggle-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        /* 自訂 Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        /* 滑軌 */
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #ddd;
+            border-radius: 3px;
+        }
+        /* 滑塊 */
+        input[type=range]::-webkit-slider-thumb {
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: #ff9800;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -4px; /* 垂直置中 */
+        }
+        input[type=range]:disabled::-webkit-slider-thumb {
+            background: #ccc;
         }
 
         /* Loading & Modals */
@@ -520,6 +582,122 @@
             margin-bottom: 30px;
             text-align: center;
         }
+        /* --- 新增：局部 Loading 動畫 (取代全螢幕) --- */
+        .loader-container {
+            display: none; /* 預設隱藏 */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #ff9800; /* 配合按鈕顏色 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- 新增：影片容器優化 --- */
+        #visual-container {
+            position: relative; /* 讓內部的 Loading 可以絕對定位覆蓋 */
+            overflow: hidden;
+            background-color: #000; /* 影片背景黑底 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #placeholder-text {
+            color: #ccc;
+            background: #fff;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* --- 新增：Toast 通知 (取代 alert) --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background-color: #333;
+            color: #fff;
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            border-left: 5px solid #4CAF50;
+        }
+        .toast.error { border-left-color: #f44336; }
+        .toast.info { border-left-color: #2196F3; }
+        .toast.show { opacity: 1; transform: translateX(0); }
+
+        /* --- 下載按鈕樣式 --- */
+        .download-btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .dl-btn {
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity 0.2s;
+        }
+        .dl-btn:hover { opacity: 0.8; }
+        .dl-midi { background-color: #4CAF50; }
+        .dl-video { background-color: #E91E63; }
+
+        /* --- 播放器按鈕樣式 --- */
+        .player-btn {
+            flex: 1;
+            padding: 5px 0;
+            font-size: 18px;
+            background: #fff;
+            border: 2px solid #333;
+            border-radius: 5px;
+        }
+        .player-btn:hover {
+            background: #eee;
+        }
+
+
     </style>
 </head>
 
@@ -528,7 +706,6 @@
     <canvas id="bg-canvas"></canvas>
 
     <div class="app-container">
-
         <div id="start-screen" class="screen active">
             <h1 class="title">Melody Visualizers</h1>
             <div class="start-menu">
@@ -609,31 +786,61 @@
                 </div>
 
                 <button class="generate-btn" id="gen-midi-btn" onclick="generateMidi()">1. 生成 MIDI</button>
-            
+
                 <button class="generate-btn" id="render-video-btn" onclick="startRenderProcess()" disabled 
-                        style="margin-top: 10px; background-color: #ddd; color: #888;">
-                    2. 渲染 Piano Effects (製作影片)
+                        style="margin-top: 10px; background-color: #ddd; color: #888; transition: all 0.3s;">
+                    2. 渲染影片
                 </button>
 
-                <div id="download-area" style="display:none; margin-top:10px; text-align:center;">
-                    <p>MIDI 準備就緒！</p>
-                    <a id="midi-download-link" href="#" target="_blank" style="
-                        display:inline-block; 
-                        padding:10px 20px; 
-                        background:#4CAF50; 
-                        color:white; 
-                        text-decoration:none; 
-                        border-radius:5px;">
-                        下載 MIDI 檔案
-                    </a>
+                <div id="download-area" style="display:none; margin-top:20px; border-top: 1px dashed #ccc; padding-top:10px;">
+                    <p style="margin:5px 0; font-size:14px; color:#666;">下載檔案：</p>
+                    <div class="download-btn-group" style="flex-direction: column;">
+                        <a id="midi-download-link" href="#" target="_blank" class="dl-btn dl-midi">🎵 下載 MIDI</a>
+                        <a id="video-download-link" href="#" target="_blank" class="dl-btn dl-video" style="display:none;">🎬 下載影片</a>
+                    </div>
+                </div>
+
+                <div id="midi-player-area" style="display:none; margin-top:15px; border-top: 1px dashed #ccc; padding-top:10px;">
+                    <p style="margin:5px 0; font-size:14px; color:#666;">🎹 線上試聽：</p>
+                    
+                    <label for="instrument-select" style="font-size:12px;">選擇樂器:</label>
+                    <select id="instrument-select" class="sketch-select" style="margin-bottom:8px;">
+                        <option value="acoustic_grand_piano">Grand Piano</option>
+                    </select>
+
+                    <div class="player-controls-container">
+                        <button id="play-toggle-btn" class="play-toggle-btn" title="播放">▶</button>
+                        
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                            <input type="range" id="seek-bar" value="0" step="0.1" min="0" max="100" disabled>
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #666; margin-top: 2px;">
+                                <span id="current-time">0:00</span>
+                                <span id="total-time">0:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="player-status" style="font-size:12px; color:#888; text-align:center; margin-top:5px;">準備就緒</div>
                 </div>
             </div>
             <div class="main-content">
                 <button id="open-sidebar-btn" onclick="toggleSidebar()">▶ 展開設定</button>
                 
-                <div id="visual-container" class="canvas-placeholder" style="flex-direction: column;">
-                    <div id="placeholder-text">生成結果畫布</div>
-                    <video id="result-video" controls style="display:none; max-width: 100%; max-height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.5);"></video>
+                <div id="visual-container" class="canvas-placeholder" style="flex-direction: column; position: relative;">
+                    <div id="placeholder-text">
+                        <div style="text-align: center;">
+                            <p style="font-size: 20px; margin:0;">生成結果畫布</p>
+                            <p style="font-size: 14px; color: #999;">請先生成 MIDI 檔案</p>
+                        </div>
+                    </div>
+
+                    <div id="visual-loader" class="loader-container">
+                        <div class="spinner"></div>
+                        <p style="font-weight: bold; color: #333;">正在渲染影片...</p>
+                        <p style="font-size: 12px; color: #666;">啟動 Piano VFX 引擎中<br>這可能需要 1~2 分鐘</p>
+                    </div>
+
+                    <video id="result-video" controls style="display:none; width: 100%; height: 100%; object-fit: contain;"></video>
                 </div>
 
                 <button class="instruction-btn" onclick="toggleModal(true)">說明</button>
@@ -709,11 +916,32 @@
 
     </div>
 
+    <div id="toast-container"></div>
+
     <script>
         // --- 動態背景邏輯 ---
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
+
+        // 顯示 Toast 通知的輔助函式
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            
+            container.appendChild(toast);
+            
+            // 觸發動畫
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            // 3秒後消失
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3000);
+        }
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -807,11 +1035,11 @@
         };
 
         // --- 新增全域變數 ---
-        let currentMidiFilename = null; // 用來存剛剛生成的 midi 檔名
+        // let currentMidiFilename = null; // 用來存剛剛生成的 midi 檔名
 
         // --- 1. 生成 MIDI 的函式 ---
         async function generateMidi() {
-            // 收集參數
+             // ... 收集參數 (保持不變) ...
             const params = {
                 scale: document.getElementById('scale').value,
                 key: document.getElementById('key').value,
@@ -824,12 +1052,12 @@
                 include_chords: document.getElementById('include_chords').checked ? 'on' : null
             };
 
-            // UI 狀態更新
-            goToScreen('loading-screen');
-            document.querySelector('#loading-screen h2').innerText = "Generating MIDI...";
-            document.querySelector('#loading-screen p').innerText = "正在透過 Python 爬蟲獲取樂譜...";
+            // 使用原本的全螢幕 Loading (生成 MIDI 很快，全螢幕沒關係)
+            goToScreen('loading-screen'); 
+            
+            // 順便手動設定一下 Loading 文字，讓使用者知道現在在幹嘛
             const progressBar = document.getElementById('progress-bar');
-            progressBar.style.width = '30%';
+            if(progressBar) progressBar.style.width = '30%';
 
             try {
                 const response = await fetch('http://localhost:3000/api/generate-midi', {
@@ -842,56 +1070,79 @@
 
                 if (data.success) {
                     progressBar.style.width = '100%';
-                    currentMidiFilename = data.filename; // 存起來！
+                    // 【新增】更新全域變數，讓播放器讀取到
+                    window.currentMidiFilename = data.filename;
+                    
+                    
+                    // 回到主畫面
+                    goToScreen('main-screen');
 
-                    setTimeout(() => {
-                        goToScreen('main-screen');
-                        
-                        // 顯示下載按鈕
-                        const downloadArea = document.getElementById('download-area');
-                        const downloadLink = document.getElementById('midi-download-link');
-                        downloadLink.href = data.midiUrl;
-                        downloadLink.download = data.filename;
-                        downloadArea.style.display = 'block';
+                    // 1. 更新下載區
+                    const downloadArea = document.getElementById('download-area');
+                    const midiLink = document.getElementById('midi-download-link');
+                    const videoLink = document.getElementById('video-download-link');
+                    
+                    midiLink.href = data.midiUrl;
+                    midiLink.download = data.filename;
+                    videoLink.style.display = 'none'; // 隱藏舊的影片連結(如果有)
+                    downloadArea.style.display = 'block';
 
-                        // 啟用渲染按鈕
-                        const renderBtn = document.getElementById('render-video-btn');
-                        renderBtn.disabled = false;
-                        renderBtn.style.backgroundColor = '#ff9800'; // 給個顯眼的顏色
-                        renderBtn.style.color = '#000';
-                        renderBtn.innerText = "2. 渲染 Piano Effects (製作影片)";
+                    // 【新增】顯示播放器區塊
+                    document.getElementById('midi-player-area').style.display = 'block';
+                    document.getElementById('player-status').innerText = "準備播放";
 
-                        // 重置影片區域
-                        document.getElementById('placeholder-text').style.display = 'block';
-                        document.getElementById('placeholder-text').innerText = "MIDI 已生成，請點擊左側「渲染」按鈕以製作影片";
-                        document.getElementById('result-video').style.display = 'none';
+                    // 2. 啟用渲染按鈕
+                    const renderBtn = document.getElementById('render-video-btn');
+                    renderBtn.disabled = false;
+                    renderBtn.style.backgroundColor = '#ff9800'; 
+                    renderBtn.style.color = '#fff'; // 改成白字比較好看
+                    renderBtn.style.cursor = 'pointer';
 
-                        alert(`MIDI 生成成功！\n您可以直接下載，或點擊「渲染」按鈕製作影片。`);
-                    }, 500);
+                    // 3. 更新畫布文字
+                    document.getElementById('placeholder-text').innerHTML = `
+                        <div style="text-align: center;">
+                            <p style="font-size: 20px; color:#333;">🎵 MIDI 已生成</p>
+                            <p style="font-size: 14px; color: #666;">點擊左側「渲染影片」以開始視覺化</p>
+                        </div>
+                    `;
+                    document.getElementById('result-video').style.display = 'none';
+                    document.getElementById('visual-loader').style.display = 'none';
+
+                    showToast("MIDI 生成成功！", "success");
                 } else {
-                    alert('MIDI 生成失敗: ' + data.error);
+                    showToast('生成失敗: ' + data.error, "error");
                     goToScreen('main-screen');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('伺服器連線錯誤');
+                showToast('無法連線到伺服器', "error");
                 goToScreen('main-screen');
             }
         }
 
         // --- 2. 渲染影片的函式 ---
         async function startRenderProcess() {
-            if (!currentMidiFilename) {
-                alert("請先生成 MIDI！");
+            if (!window.currentMidiFilename) {
+                showToast("請先生成 MIDI！", "error");
                 return;
             }
 
-            // UI 狀態更新
-            goToScreen('loading-screen');
-            document.querySelector('#loading-screen h2').innerText = "Rendering Video...";
-            document.querySelector('#loading-screen p').innerText = "正在啟動 Piano VFX 進行渲染 (這可能需要 1-2 分鐘)...";
-            const progressBar = document.getElementById('progress-bar');
-            progressBar.style.width = '50%'; // 渲染比較久，給個中間值
+            const renderBtn = document.getElementById('render-video-btn');
+            const visualLoader = document.getElementById('visual-loader');
+            const placeholderText = document.getElementById('placeholder-text');
+            const videoEl = document.getElementById('result-video');
+
+            // --- UI 狀態：開始渲染 ---
+            // 1. 鎖定按鈕避免重複點擊
+            renderBtn.disabled = true;
+            renderBtn.innerText = "⏳ 渲染中...";
+            renderBtn.style.backgroundColor = '#ccc';
+            
+            // 2. 顯示局部 Loading，隱藏其他元素
+            placeholderText.style.display = 'none';
+            videoEl.style.display = 'none';
+            videoEl.pause(); // 確保舊影片不播放
+            visualLoader.style.display = 'flex'; // 顯示轉圈圈
 
             try {
                 const response = await fetch('http://localhost:3000/api/render-video', {
@@ -903,31 +1154,38 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    progressBar.style.width = '100%';
+                    // --- UI 狀態：渲染成功 ---
+                    visualLoader.style.display = 'none'; // 隱藏 Loading
                     
-                    setTimeout(() => {
-                        goToScreen('main-screen');
+                    // 顯示影片
+                    videoEl.src = data.videoUrl;
+                    videoEl.style.display = 'block';
+                    videoEl.load();
+                    
+                    // 更新下載按鈕
+                    const videoLink = document.getElementById('video-download-link');
+                    videoLink.href = data.videoUrl;
+                    videoLink.download = data.filename;
+                    videoLink.style.display = 'flex'; // 顯示出來
+                    
+                    showToast("影片渲染完成！", "success");
 
-                        // 更新畫布區域顯示影片
-                        const placeholderText = document.getElementById('placeholder-text');
-                        const videoEl = document.getElementById('result-video');
-                        
-                        placeholderText.style.display = 'none';
-                        videoEl.src = data.videoUrl;
-                        videoEl.style.display = 'block';
-                        videoEl.load(); // 確保重新載入
-                        // videoEl.play(); // 部分瀏覽器可能會擋自動播放，可選
-
-                        alert(`影片渲染完成！`);
-                    }, 500);
                 } else {
-                    alert('渲染失敗: ' + data.error);
-                    goToScreen('main-screen');
+                    throw new Error(data.error);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('伺服器連線錯誤');
-                goToScreen('main-screen');
+                showToast('渲染失敗: ' + error.message, "error");
+                
+                // 失敗時恢復 UI
+                visualLoader.style.display = 'none';
+                placeholderText.style.display = 'flex';
+                placeholderText.innerHTML = `<p style="color:red">渲染發生錯誤，請重試</p>`;
+            } finally {
+                // 無論成功失敗，恢復按鈕狀態
+                renderBtn.disabled = false;
+                renderBtn.innerText = "2. 渲染影片";
+                renderBtn.style.backgroundColor = '#ff9800';
             }
         }
 
@@ -1014,6 +1272,14 @@
         function goToScreen(screenId) {
             stopTimer();
             if (transitionInterval) clearInterval(transitionInterval);
+
+            // 1. 處理影片暫停邏輯
+            const videoEl = document.getElementById('result-video');
+            if (videoEl) {
+                videoEl.pause();
+                // 選擇性：是否要重置時間？通常暫停就好
+                // videoEl.currentTime = 0; 
+            }
 
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -1259,6 +1525,211 @@
             }, 1000);
         }
     </script>
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script> -->
+
+    <script type="module">
+        import {
+            loadInstrument,
+            loadAndPlayMIDI,
+            play,
+            pause,
+            stop,
+            seek, // 記得確保 midiplayer.js 有 export seek
+            getCurrentTime, // 記得確保 midiplayer.js 有 export getCurrentTime
+            getDuration,    // 記得確保 midiplayer.js 有 export getDuration
+            listAvailableInstruments
+        } from "./midiplayer.js";
+
+        // --- UI 元素 ---
+        const selectEl = document.getElementById('instrument-select');
+        const playBtn = document.getElementById('play-toggle-btn');
+        const seekBar = document.getElementById('seek-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const statusEl = document.getElementById('player-status');
+
+        // --- 狀態變數 ---
+        let isPlaying = false;
+        let isDragging = false; // 是否正在拖拉進度條
+        let updateInterval = null; // 動畫禎 ID
+
+        // 1. 初始化樂器選單
+        const instruments = listAvailableInstruments();
+        selectEl.innerHTML = "";
+        instruments.forEach(inst => {
+            const option = document.createElement('option');
+            option.value = inst;
+            option.text = inst.replace(/_/g, ' ').toUpperCase(); 
+            if(inst === 'acoustic_grand_piano') option.selected = true;
+            selectEl.appendChild(option);
+        });
+
+        // 預載入預設樂器
+        let isInstrumentLoaded = false;
+        loadInstrument('acoustic_grand_piano').then(() => {
+            isInstrumentLoaded = true;
+            console.log("Default instrument loaded");
+        });
+
+        // 2. 監聽樂器切換
+        selectEl.addEventListener('change', async (e) => {
+            statusEl.innerText = "載入音色中...";
+            selectEl.disabled = true;
+            try {
+                // 如果正在播放，先暫停
+                if (isPlaying) togglePlayState();
+                
+                await loadInstrument(e.target.value);
+                statusEl.innerText = "音色已切換";
+            } catch (err) {
+                console.error(err);
+                statusEl.innerText = "音色載入失敗";
+            } finally {
+                selectEl.disabled = false;
+            }
+        });
+
+        // 3. 播放/暫停 切換邏輯
+        playBtn.addEventListener('click', async () => {
+            if (!window.currentMidiFilename) {
+                alert("請先生成 MIDI 檔案！");
+                return;
+            }
+
+            if (!isPlaying) {
+                // --- 準備播放 ---
+                try {
+                    playBtn.disabled = true;
+                    
+                    // A. 如果尚未載入 MIDI 或音色，先進行初始化
+                    // 這裡我們簡單判斷：如果是停止狀態且進度為0，重新載入確保是最新檔案
+                    // 或者我們可以檢查一個 flag，這裡為了保險，每次從頭播放都重新 fetch
+                    if (Tone.Transport.seconds === 0 || !isInstrumentLoaded) {
+                        statusEl.innerText = "載入中...";
+                        if (!isInstrumentLoaded) {
+                            await loadInstrument(selectEl.value);
+                            isInstrumentLoaded = true;
+                        }
+                        
+                        // 下載 MIDI
+                        const midiUrl = `midi/${window.currentMidiFilename}`;
+                        const res = await fetch(midiUrl);
+                        const buf = await res.arrayBuffer();
+                        await loadAndPlayMIDI(buf);
+                    } else {
+                        // 只是暫停後繼續
+                        play();
+                    }
+
+                    // B. 更新 UI 狀態
+                    isPlaying = true;
+                    playBtn.innerHTML = "⏸"; // 暫停圖示
+                    playBtn.title = "暫停";
+                    statusEl.innerText = "播放中 ♪";
+                    seekBar.disabled = false;
+                    
+                    // C. 開始更新進度條 loop
+                    startUpdateLoop();
+
+                } catch (e) {
+                    console.error(e);
+                    statusEl.innerText = "播放錯誤";
+                } finally {
+                    playBtn.disabled = false;
+                }
+            } else {
+                // --- 暫停 ---
+                togglePlayState();
+            }
+        });
+
+        // 輔助：切換到暫停/停止狀態
+        function togglePlayState(resetToStart = false) {
+            if (resetToStart) {
+                stop();
+                isPlaying = false;
+                playBtn.innerHTML = "▶";
+                statusEl.innerText = "已停止";
+                seekBar.value = 0;
+                currentTimeEl.innerText = "0:00";
+            } else {
+                pause();
+                isPlaying = false;
+                playBtn.innerHTML = "▶"; // 播放圖示
+                playBtn.title = "播放";
+                statusEl.innerText = "已暫停";
+            }
+            stopUpdateLoop();
+        }
+
+        // 4. 進度條拖拉邏輯
+        seekBar.addEventListener('mousedown', () => { isDragging = true; });
+        seekBar.addEventListener('touchstart', () => { isDragging = true; });
+
+        seekBar.addEventListener('change', (e) => {
+            // 放開滑鼠時觸發 seek
+            const percent = e.target.value / 100;
+            seek(percent); // 呼叫 midiplayer.js 的 seek
+            isDragging = false;
+        });
+
+        seekBar.addEventListener('input', (e) => {
+            // 拖拉過程中即時更新時間文字 (但不 seek，避免卡頓)
+            const duration = getDuration();
+            if (duration > 0) {
+                const percent = e.target.value / 100;
+                currentTimeEl.innerText = formatTime(duration * percent);
+            }
+        });
+
+        // 5. 更新 Loop (RequestAnimationFrame)
+        function startUpdateLoop() {
+            if (updateInterval) cancelAnimationFrame(updateInterval);
+            
+            function update() {
+                if (!isPlaying) return;
+
+                const now = getCurrentTime();
+                const total = getDuration();
+
+                // 更新總時間 (因為剛載入時可能為 0)
+                if (total > 0) {
+                    totalTimeEl.innerText = formatTime(total);
+                    
+                    // 如果沒在拖拉，才更新 Slider
+                    if (!isDragging) {
+                        const percent = (now / total) * 100;
+                        seekBar.value = percent;
+                        currentTimeEl.innerText = formatTime(now);
+                    }
+
+                    // 檢查是否播完 (Tone.js 有時會有微小誤差，用 >= total - 0.1 比較保險)
+                    // 或者 midiplayer.js 的 state 變更會更好，這裡用時間判斷
+                    if (now >= total && total > 0) {
+                        togglePlayState(true); // 播完重置
+                        return;
+                    }
+                }
+
+                updateInterval = requestAnimationFrame(update);
+            }
+            update();
+        }
+
+        function stopUpdateLoop() {
+            if (updateInterval) cancelAnimationFrame(updateInterval);
+        }
+
+        // 格式化時間 (秒 -> mm:ss)
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+    </script>
+
 </body>
 
 </html>

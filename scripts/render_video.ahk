@@ -30,7 +30,7 @@ if ErrorLevel
 
 WinActivate, Piano VFX
 WinWaitActive, Piano VFX
-Sleep, 3000 
+Sleep, 4000 
 
 ; --- 2. 匯入 MIDI ---
 Click, 60, 95
@@ -102,12 +102,66 @@ Sleep, 300
 
 ; -- 6. click Render, 真正開始渲染
 Click, 209, 115
-Sleep 700
+Sleep 1000
 
-; --- 6. 監控渲染 ---
-; 等待 15 秒 (你可以根據生成長度調整這裡)
-Sleep, 17500 
+; --- 6. 監控渲染 (deprecated) ---
+; 等待 18.5 秒 (寫死的秒數,希望有其他辦法偵測)
+; Sleep, 18500 
 
-; 關閉程式
+; --- 6. 監控渲染 (智能偵測修復版) ---
+
+; 【修正 1】設定 Pixel 搜尋模式為「相對視窗」，這很重要！
+CoordMode, Pixel, Window
+
+; 【修正 2】使用 A_ScriptDir 確保路徑正確
+TargetImage := A_ScriptDir . "\done_msg.png"
+
+; 【除錯】檢查圖片是否存在 (這行能幫你確認是否路徑錯了)
+if !FileExist(TargetImage)
+{
+    MsgBox, Error: 找不到特徵圖片! `n請確認檔案位於: %TargetImage%
+    ExitApp
+}
+
+; 設定最大等待時間 (秒)
+MaxWaitSeconds := 300
+StartTime := A_TickCount
+
+Loop
+{
+    ; 1. 檢查是否超時
+    ElapsedTime := (A_TickCount - StartTime) / 1000
+    if (ElapsedTime > MaxWaitSeconds)
+    {
+        MsgBox, Error: Rendering timed out (Image not found).
+        break
+    }
+
+    ; 2. 搜尋圖片
+    ; 說明: 0,0 到 視窗寬,視窗高。 *50 是容錯值
+    ImageSearch, FoundX, FoundY, 0, 0, A_ScreenWidth, A_ScreenHeight, *50 %TargetImage%
+
+    ; ErrorLevel = 0 (找到), 1 (沒找到), 2 (圖片檔有問題)
+    if (ErrorLevel = 0)
+    {
+        ; 找到了！
+        Sleep, 2000 
+        Break
+    }
+    else if (ErrorLevel = 2)
+    {
+        MsgBox, Critical Error: ImageSearch 無法讀取圖片檔案 (ErrorLevel 2)
+        ExitApp
+    }
+
+    Sleep, 1000
+}
+
+; --- 7. 結束程序 ---
 WinClose, Piano VFX
+WinWaitClose, Piano VFX, , 2
+if ErrorLevel
+{
+    Process, Close, Piano VFX.exe
+}
 ExitApp
