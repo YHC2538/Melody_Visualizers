@@ -607,9 +607,16 @@
                     <div class="checkbox-row"><label for="include_chords">包含和弦</label><input type="checkbox"
                             id="include_chords"></div>
                 </div>
-                <button class="generate-btn" id="gen-btn" onclick="startGenerationProcess()">開始生成 MIDI</button>
+
+                <button class="generate-btn" id="gen-midi-btn" onclick="generateMidi()">1. 生成 MIDI</button>
+            
+                <button class="generate-btn" id="render-video-btn" onclick="startRenderProcess()" disabled 
+                        style="margin-top: 10px; background-color: #ddd; color: #888;">
+                    2. 渲染 Piano Effects (製作影片)
+                </button>
+
                 <div id="download-area" style="display:none; margin-top:10px; text-align:center;">
-                    <p>生成完成！</p>
+                    <p>MIDI 準備就緒！</p>
                     <a id="midi-download-link" href="#" target="_blank" style="
                         display:inline-block; 
                         padding:10px 20px; 
@@ -623,7 +630,12 @@
             </div>
             <div class="main-content">
                 <button id="open-sidebar-btn" onclick="toggleSidebar()">▶ 展開設定</button>
-                <div class="canvas-placeholder">生成結果畫布</div>
+                
+                <div id="visual-container" class="canvas-placeholder" style="flex-direction: column;">
+                    <div id="placeholder-text">生成結果畫布</div>
+                    <video id="result-video" controls style="display:none; max-width: 100%; max-height: 100%; box-shadow: 0 0 20px rgba(0,0,0,0.5);"></video>
+                </div>
+
                 <button class="instruction-btn" onclick="toggleModal(true)">說明</button>
             </div>
         </div>
@@ -794,7 +806,131 @@
             initBackground();
         };
 
-        
+        // --- 新增全域變數 ---
+        let currentMidiFilename = null; // 用來存剛剛生成的 midi 檔名
+
+        // --- 1. 生成 MIDI 的函式 ---
+        async function generateMidi() {
+            // 收集參數
+            const params = {
+                scale: document.getElementById('scale').value,
+                key: document.getElementById('key').value,
+                bars: document.getElementById('bars').value,
+                tempo: document.getElementById('tempo').value,
+                note_duration: document.getElementById('note_duration').value,
+                octave: '0', 
+                include_arpeggios: document.getElementById('include_arpeggios').checked ? 'on' : null,
+                include_rests: document.getElementById('include_rests').checked ? 'on' : null,
+                include_chords: document.getElementById('include_chords').checked ? 'on' : null
+            };
+
+            // UI 狀態更新
+            goToScreen('loading-screen');
+            document.querySelector('#loading-screen h2').innerText = "Generating MIDI...";
+            document.querySelector('#loading-screen p').innerText = "正在透過 Python 爬蟲獲取樂譜...";
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = '30%';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/generate-midi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    progressBar.style.width = '100%';
+                    currentMidiFilename = data.filename; // 存起來！
+
+                    setTimeout(() => {
+                        goToScreen('main-screen');
+                        
+                        // 顯示下載按鈕
+                        const downloadArea = document.getElementById('download-area');
+                        const downloadLink = document.getElementById('midi-download-link');
+                        downloadLink.href = data.midiUrl;
+                        downloadLink.download = data.filename;
+                        downloadArea.style.display = 'block';
+
+                        // 啟用渲染按鈕
+                        const renderBtn = document.getElementById('render-video-btn');
+                        renderBtn.disabled = false;
+                        renderBtn.style.backgroundColor = '#ff9800'; // 給個顯眼的顏色
+                        renderBtn.style.color = '#000';
+                        renderBtn.innerText = "2. 渲染 Piano Effects (製作影片)";
+
+                        // 重置影片區域
+                        document.getElementById('placeholder-text').style.display = 'block';
+                        document.getElementById('placeholder-text').innerText = "MIDI 已生成，請點擊左側「渲染」按鈕以製作影片";
+                        document.getElementById('result-video').style.display = 'none';
+
+                        alert(`MIDI 生成成功！\n您可以直接下載，或點擊「渲染」按鈕製作影片。`);
+                    }, 500);
+                } else {
+                    alert('MIDI 生成失敗: ' + data.error);
+                    goToScreen('main-screen');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('伺服器連線錯誤');
+                goToScreen('main-screen');
+            }
+        }
+
+        // --- 2. 渲染影片的函式 ---
+        async function startRenderProcess() {
+            if (!currentMidiFilename) {
+                alert("請先生成 MIDI！");
+                return;
+            }
+
+            // UI 狀態更新
+            goToScreen('loading-screen');
+            document.querySelector('#loading-screen h2').innerText = "Rendering Video...";
+            document.querySelector('#loading-screen p').innerText = "正在啟動 Piano VFX 進行渲染 (這可能需要 1-2 分鐘)...";
+            const progressBar = document.getElementById('progress-bar');
+            progressBar.style.width = '50%'; // 渲染比較久，給個中間值
+
+            try {
+                const response = await fetch('http://localhost:3000/api/render-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ midiFilename: currentMidiFilename })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    progressBar.style.width = '100%';
+                    
+                    setTimeout(() => {
+                        goToScreen('main-screen');
+
+                        // 更新畫布區域顯示影片
+                        const placeholderText = document.getElementById('placeholder-text');
+                        const videoEl = document.getElementById('result-video');
+                        
+                        placeholderText.style.display = 'none';
+                        videoEl.src = data.videoUrl;
+                        videoEl.style.display = 'block';
+                        videoEl.load(); // 確保重新載入
+                        // videoEl.play(); // 部分瀏覽器可能會擋自動播放，可選
+
+                        alert(`影片渲染完成！`);
+                    }, 500);
+                } else {
+                    alert('渲染失敗: ' + data.error);
+                    goToScreen('main-screen');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('伺服器連線錯誤');
+                goToScreen('main-screen');
+            }
+        }
+
         async function startGenerationProcess() {
             // 1. 收集參數
             const params = {

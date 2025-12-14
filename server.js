@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -11,104 +11,216 @@ const PORT = 3000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static('public')); // 讓前端可以透過 http://localhost:3000 訪問
-app.use('/midi', express.static('midi')); // 開放 MIDI 資料夾下載
+app.use(express.static('public')); 
+app.use('/midi', express.static('midi')); 
+app.use('/videos', express.static('videos')); // 記得開放 videos
 
-// --- 簡單的佇列系統 (Queue System) ---
-// 這是為了防止多個請求同時開啟 Piano VFX (未來功能)
-// 目前先用來依序處理 Python 請求
+// --- 輔助函式 ---
 
-const jobQueue = [];
-let isProcessing = false;
+function executeCommand(command) {
+    return new Promise((resolve, reject) => {
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.warn(`[Exec Warning] ${stderr}`);
+                if (error.code !== 0) reject(error);
+                else resolve(stdout);
+            } else {
+                resolve(stdout);
+            }
+        });
+    });
+}
 
-const processQueue = async () => {
-    if (isProcessing || jobQueue.length === 0) return;
+function waitForNewFile(directory, startTime, timeout = 120000) {
+    return new Promise((resolve, reject) => {
+        const checkInterval = 2000;
+        let elapsedTime = 0;
+        console.log(`[Watcher] 開始監聽資料夾: ${directory}, 基準時間: ${startTime}`);
 
-    isProcessing = true;
-    const { params, res, timestamp } = jobQueue.shift();
+        const timer = setInterval(() => {
+            elapsedTime += checkInterval;
+            fs.readdir(directory, (err, files) => {
+                if (err) { clearInterval(timer); reject(err); return; }
 
-    console.log(`[Queue] 開始處理任務: ${timestamp}`);
+                const newFiles = files
+                    .filter(file => file.startsWith('Piano-VFX') && file.endsWith('.mp4'))
+                    .map(file => {
+                        const filePath = path.join(directory, file);
+                        const stats = fs.statSync(filePath);
+                        return { file, mtime: stats.mtimeMs, size: stats.size };
+                    })
+                    .filter(fileObj => fileObj.mtime > (startTime - 5000))
+                    .sort((a, b) => b.mtime - a.mtime);
+
+                if (newFiles.length > 0 && newFiles[0].size > 0) {
+                    console.log(`[Watcher] 發現新檔案: ${newFiles[0].file}`);
+                    clearInterval(timer);
+                    resolve(newFiles[0].file);
+                }
+            });
+
+            if (elapsedTime >= timeout) {
+                clearInterval(timer);
+                reject(new Error("Timeout: 沒有發現新生成的影片檔案"));
+            }
+        }, checkInterval);
+    });
+}
+
+// --- 渲染佇列系統 (Render Queue System) ---
+// 只針對需要 "搶佔滑鼠/螢幕" 的任務 (TiMidity + AHK)
+const renderQueue = [];
+let isRendering = false;
+
+const processRenderQueue = async () => {
+    if (isRendering || renderQueue.length === 0) return;
+
+    isRendering = true;
+    const { midiFilename, res } = renderQueue.shift();
+    
+    // 從檔名 (melody_123.mid) 提取 timestamp (123)
+    // 假設格式固定為 melody_TIMESTAMP.mid
+    const timestamp = midiFilename.replace('melody_', '').replace('.mid', '');
+    
+    console.log(`[Render Queue] 開始處理渲染任務: ${midiFilename}`);
+
+    const wavFilename = `melody_${timestamp}.wav`;
+    const videoFilename = `melody_${timestamp}.mp4`; 
+
+    const midiPath = path.join(__dirname, 'midi', midiFilename);
+    const wavPath = path.join(__dirname, 'sounds', wavFilename);
+    const videoDir = path.join(__dirname, 'videos');
+    
+    // 請確認路徑
+    const ahkScriptPath = path.join(__dirname, 'scripts', 'render_video.ahk');
+    const soundFontPath = path.join(__dirname, 'tools', 'FluidR3_GM.sf2'); 
+    const timidityPath = 'tools/TiMidity++-2.15.0/timidity.exe'; 
+    const ahkExePath = path.join(__dirname, 'scripts', 'AutoHotkeyU64.exe');
 
     try {
-        // 1. 定義檔案路徑
-        const filename = `melody_${timestamp}.mid`;
-        const outputPath = path.join(__dirname, 'midi', filename);
-        const scriptPath = path.join(__dirname, 'scripts', 'midigenapp_cli.py');
+        // --- Step 1: 檢查 MIDI 是否存在 ---
+        if (!fs.existsSync(midiPath)) {
+            throw new Error(`找不到 MIDI 檔案: ${midiFilename}`);
+        }
 
-        // 2. 呼叫 Python 爬蟲
-        console.log(`[Python] 執行爬蟲...`);
-        const pythonProcess = spawn('python', [
-            scriptPath,
-            '--params', JSON.stringify(params),
-            '--output', outputPath
-        ]);
+        // --- Step 2: TiMidity 轉檔 (MIDI -> WAV) ---
+        console.log(`[Step 2] TiMidity 轉檔 WAV...`);
+        const safeSoundFontPath = soundFontPath.replace(/\\/g, '/');
+        const safeMidiPath = midiPath.replace(/\\/g, '/');
+        const safeWavPath = wavPath.replace(/\\/g, '/');
+        const safeTimidityPath = timidityPath.replace(/\\/g, '/');
 
-        let outputData = '';
-        let errorData = '';
+        const timidityCommand = `"${safeTimidityPath}" "${safeMidiPath}" -Ow -o "${safeWavPath}" -x "soundfont \\"${safeSoundFontPath}\\""`;
+        await executeCommand(timidityCommand);
 
-        pythonProcess.stdout.on('data', (data) => {
-            outputData += data.toString();
-        });
+        // --- Step 3: AHK 自動化渲染 ---
+        console.log(`[Step 3] 啟動 AutoHotkey 自動化渲染...`);
+        const renderStartTime = Date.now();
+        const ahkCommand = `"${ahkExePath}" "${ahkScriptPath}" "${midiPath}" "${wavPath}" "${videoDir}"`;
+        
+        console.log(`執行 AHK 指令: ${ahkCommand}`);
+        await executeCommand(ahkCommand);
 
-        pythonProcess.stderr.on('data', (data) => {
-            // Python 的 sys.stderr.write 會到這裡，用來顯示進度但不影響結果
-            console.error(`[Python Log]: ${data}`);
-        });
+        // --- Step 4: 等待影片輸出與重命名 ---
+        console.log(`[Step 4] 等待影片輸出...`);
+        const generatedFilename = await waitForNewFile(videoDir, renderStartTime);
+        
+        const originalVideoPath = path.join(videoDir, generatedFilename);
+        const finalVideoPath = path.join(videoDir, videoFilename);
+        
+        await new Promise(r => setTimeout(r, 1000)); // 釋放鎖定
+        
+        // 如果目標檔案已存在，先刪除避免錯誤
+        if (fs.existsSync(finalVideoPath)) fs.unlinkSync(finalVideoPath);
+        
+        fs.renameSync(originalVideoPath, finalVideoPath);
+        console.log(`[Rename] 檔案已重新命名為: ${videoFilename}`);
 
-        pythonProcess.on('close', (code) => {
-            // 處理 Python 輸出的結果 (去除換行符號)
-            const result = outputData.trim();
-
-            if (code === 0 && fs.existsSync(result)) {
-                console.log(`[Success] MIDI 生成於: ${result}`);
-                
-                // TODO: 下一步會在這裡加入 TiMidity 和 AutoHotkey 的呼叫邏輯
-                
-                // 目前先直接回傳 MIDI 下載連結
-                res.json({
-                    success: true,
-                    message: "MIDI 生成成功",
-                    midiUrl: `http://localhost:${PORT}/midi/${filename}`,
-                    filename: filename
-                });
-            } else {
-                console.error(`[Error] Python 腳本失敗: ${result}`);
-                res.status(500).json({ success: false, message: "生成失敗", error: result });
-            }
-            
-            // 任務結束，處理下一個
-            isProcessing = false;
-            processQueue();
+        res.json({
+            success: true,
+            message: "影片生成成功",
+            videoUrl: `http://localhost:${PORT}/videos/${videoFilename}`,
+            filename: videoFilename
         });
 
     } catch (error) {
-        console.error("Server Error:", error);
-        res.status(500).json({ success: false, error: error.message });
-        isProcessing = false;
-        processQueue();
+        console.error("Render Task Error:", error);
+        res.status(500).json({ success: false, message: "渲染失敗", error: error.message });
+    } finally {
+        isRendering = false;
+        processRenderQueue(); // 處理下一個
     }
 };
 
-// --- API Routes ---
-app.post('/api/generate', (req, res) => {
-    const params = req.body;
-    console.log("收到生成請求:", params);
 
-    // 將請求加入佇列
-    jobQueue.push({
-        params,
-        res,
-        timestamp: Date.now()
+// --- API Routes ---
+
+// 1. 生成 MIDI (獨立處理，不卡 Queue)
+app.post('/api/generate-midi', async (req, res) => {
+    const params = req.body;
+    const timestamp = Date.now();
+    const midiFilename = `melody_${timestamp}.mid`;
+    const midiPath = path.join(__dirname, 'midi', midiFilename);
+    const scriptPath = path.join(__dirname, 'scripts', 'midigenapp_cli.py');
+
+    console.log(`[MIDI API] 收到生成請求: ${midiFilename}`);
+
+    try {
+        await new Promise((resolve, reject) => {
+            const pythonProcess = spawn('python', [
+                scriptPath,
+                '--params', JSON.stringify(params),
+                '--output', midiPath
+            ]);
+            
+            // 簡單的 log 處理
+            pythonProcess.stdout.on('data', (d) => console.log(`[Python]: ${d}`));
+            pythonProcess.stderr.on('data', (d) => console.error(`[Python Err]: ${d}`));
+
+            pythonProcess.on('close', (code) => {
+                if (code === 0 && fs.existsSync(midiPath)) resolve();
+                else reject(new Error("Python script execution failed"));
+            });
+        });
+
+        console.log(`[MIDI API] 生成成功: ${midiFilename}`);
+        res.json({
+            success: true,
+            message: "MIDI 生成成功",
+            midiUrl: `http://localhost:${PORT}/midi/${midiFilename}`,
+            filename: midiFilename, // 回傳檔名供下一步使用
+            timestamp: timestamp
+        });
+
+    } catch (error) {
+        console.error("MIDI Gen Error:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 2. 渲染影片 (加入 Queue)
+app.post('/api/render-video', (req, res) => {
+    const { midiFilename } = req.body;
+    
+    if (!midiFilename) {
+        return res.status(400).json({ success: false, error: "缺少 MIDI 檔名" });
+    }
+
+    console.log(`[Render API] 收到渲染請求: ${midiFilename}`);
+
+    // 加入佇列
+    renderQueue.push({
+        midiFilename,
+        res
     });
 
-    console.log(`[Queue] 任務已加入，目前佇列長度: ${jobQueue.length}`);
-    processQueue();
+    console.log(`[Queue] 渲染任務已加入，目前排隊數: ${renderQueue.length}`);
+    processRenderQueue();
 });
 
 // 啟動伺服器
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
-    // 確保資料夾存在
     if (!fs.existsSync('midi')) fs.mkdirSync('midi');
     if (!fs.existsSync('sounds')) fs.mkdirSync('sounds');
     if (!fs.existsSync('videos')) fs.mkdirSync('videos');
