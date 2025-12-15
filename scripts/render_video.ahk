@@ -19,7 +19,7 @@ if (MidiPath = "")
 }
 
 ; --- 1. 啟動程式 ---
-Run, "D:\webdev_final\scripts\piano_vfx\piano_vfx\Piano VFX.exe"
+Run, "scripts\piano_vfx\piano_vfx\Piano VFX.exe"
 
 WinWait, Piano VFX, , 5
 if ErrorLevel
