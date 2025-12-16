@@ -4,31 +4,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Melody Visualizers Final v26</title>
-    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    <title>Melody Visualizers</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
     <style>
-        /* --- 全局樣式 --- */
+        /* --- 全局變數 --- */
+        :root {
+            --primary-color: #D81B60;
+            --primary-hover: #ad144d;
+            --text-main: #333;
+            --text-sub: #666;
+            --bg-color: #fff;
+            --sidebar-width: 340px;
+            --nav-height: 70px;
+        }
+
         *,
         *::before,
         *::after {
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            font-family: "Microsoft JhengHei", "Comic Neue", sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Inter', "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 動態背景 Canvas */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -36,576 +51,542 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            opacity: 0.15;
             pointer-events: none;
         }
 
         .app-container {
-            width: 90vw;
-            height: 85vh;
-            background-color: rgba(255, 255, 255, 0.8);
-            border: 3px solid #333;
-            border-radius: 15px;
+            width: 100%;
+            height: 100%;
             position: relative;
-            box-shadow: 15px 15px 0px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             z-index: 1;
-            backdrop-filter: blur(3px);
         }
 
-        /* --- 導覽列樣式 (修改點) --- */
+        /* --- 導覽列 --- */
         .navbar {
-            height: 60px;
+            height: var(--nav-height);
             width: 100%;
-            background-color: #fff;
-            border-bottom: 3px solid #333;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
-            padding: 0 20px;
-            /* 修改：改為靠右對齊 */
-            justify-content: flex-end;
-            flex-shrink: 0;
+            justify-content: space-between;
+            padding: 0 30px;
             z-index: 100;
+            border-bottom: 1px solid #eee;
+            position: fixed;
+            top: 0;
         }
 
-        /* nav-brand 樣式已移除，因為 HTML 移除了 */
+        .brand-logo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 20px;
+            color: #000;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         .nav-links {
             display: flex;
-            gap: 15px;
+            gap: 20px;
         }
 
         .nav-btn {
             background: transparent;
-            border: 2px solid transparent;
-            font-size: 16px;
-            font-weight: bold;
-            color: #555;
-            padding: 8px 15px;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-sub);
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s;
-            font-family: inherit;
+            transition: color 0.2s;
+            text-transform: uppercase;
             text-decoration: none;
         }
 
-        .nav-btn:hover {
-            background-color: #eee;
-            color: #333;
-        }
-
+        .nav-btn:hover,
         .nav-btn.active {
-            border: 2px solid #333;
-            background-color: #ffe0b2;
-            color: #000;
-            box-shadow: 2px 2px 0 #333;
-            transform: translateY(-2px);
-        }
-
-        /* --- 按鈕與輸入框 --- */
-        button {
-            cursor: pointer;
-            border: 2px solid #333;
-            background: #fff;
-            font-weight: bold;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        button:hover {
-            background-color: #eee;
-            transform: translateY(-2px);
-            box-shadow: 2px 2px 0 #333;
-        }
-
-        button:active {
-            transform: translateY(0);
-            box-shadow: none;
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .sketch-input,
-        .sketch-select {
-            width: 100%;
-            padding: 8px;
-            border: 2px solid #333;
-            border-radius: 5px;
-            background-color: #fff;
-            font-family: inherit;
-            font-size: 14px;
-            box-sizing: border-box;
-            margin-bottom: 5px;
-        }
-
-        .sketch-input:focus,
-        .sketch-select:focus {
-            outline: none;
-            background-color: #fafafa;
-            border-color: #000;
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-            margin-bottom: 2px;
-            font-weight: bold;
-            font-size: 14px;
-            color: #333;
+            color: var(--primary-color);
         }
 
         /* --- 畫面切換 --- */
         .screen {
             display: none;
-            width: 100%;
-            /* 自動填滿導覽列下方的空間 */
             flex: 1;
+            width: 100%;
+            height: 100%;
             flex-direction: column;
             position: relative;
-            overflow: hidden;
-            /* 防止溢出 */
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-top: var(--nav-height);
+            scroll-behavior: smooth;
         }
 
         .screen.active {
             display: flex;
         }
 
-        /* --- 1. 開始畫面 --- */
+        /* --- Home Screen --- */
         #start-screen {
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-section {
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 40px;
-            background-image: url('musical_bg.png');
-            background-size: cover;
-            background-position: center;
-            background-color: rgba(255, 255, 255, 0.3);
-            background-blend-mode: overlay;
-        }
-
-        .title {
-            font-size: 48px;
-            margin-bottom: 20px;
-            font-family: 'Arial', 'sans-serif';
-        }
-
-        .start-menu {
-            display: flex;
-            flex-direction: row;
-            gap: 50px;
-            align-items: flex-start;
-        }
-
-        .mode-block {
-            background: #fff;
+            width: 100%;
             padding: 20px;
-            border: 2px dashed #333;
-            border-radius: 10px;
+        }
+
+        .hero-title {
+            font-size: 56px;
+            font-family: 'Poppins';
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #111;
+            line-height: 1.1;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--text-sub);
+            margin-bottom: 40px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .mode-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .mode-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eee;
+            width: 300px;
+            text-align: left;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .mode-title {
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'Poppins';
+            margin: 0;
+        }
+
+        .btn-start-create {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        .btn-start-test {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        /* --- Features Section --- */
+        #features-section {
+            width: 100%;
+            scroll-margin-top: var(--nav-height);
+            padding: 80px 20px;
+            background: linear-gradient(to bottom, #fcfcfc, #f0f0f0);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
-            min-width: 200px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .action-btn {
+        .features-header h2 {
+            font-size: 42px;
+            font-family: 'Poppins';
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .features-header p {
+            color: #666;
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto 60px auto;
+        }
+
+        .feature-block {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1000px;
             width: 100%;
-            padding: 12px;
-            background-color: #ddd;
+            margin-bottom: 80px;
+            gap: 50px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
         }
 
-        .action-btn.practice {
-            background-color: #d4edda;
+        .feature-block.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        .action-btn.test {
-            background-color: #f8d7da;
+        .feature-block:nth-child(even) {
+            flex-direction: row-reverse;
         }
 
-        /* --- 2. 主要生成畫面 (練功) --- */
-        #main-screen {
-            flex-direction: row;
+        .feature-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .feature-text h3 {
+            font-size: 28px;
+            font-family: 'Poppins';
+            margin-bottom: 15px;
+            color: #222;
+        }
+
+        .feature-text p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 16px;
+            text-align: justify;
+        }
+
+        .feature-visual {
+            flex: 1;
+            height: 300px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 80px;
+            color: var(--primary-color);
+            position: relative;
             overflow: hidden;
-            background-color: transparent;
         }
 
+        .feature-visual::after {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(216, 27, 96, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: 0;
+        }
+
+        .feature-visual i {
+            z-index: 1;
+        }
+
+        /* --- Sidebar --- */
         .sidebar {
-            width: 280px;
-            background-color: rgba(249, 249, 249, 0.95);
-            border-right: 2px solid #333;
-            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: calc(var(--sidebar-width) * -1);
+            width: var(--sidebar-width);
+            height: 100%;
+            background: white;
+            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
+            padding: 30px 25px;
+            z-index: 1001;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            overflow-y: auto;
-            overflow-x: hidden;
+            gap: 15px;
         }
 
-        .sidebar.closed {
-            width: 0px;
-            padding: 0;
-            border: none;
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
             opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .sketch-select,
+        .sketch-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+            font-family: 'Inter';
+            font-size: 14px;
         }
 
         .checkbox-group {
-            margin-top: 10px;
-            border: 2px dashed #ccc;
-            padding: 10px;
-            border-radius: 5px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
         }
 
         .checkbox-row {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
 
-        .checkbox-row label {
-            margin: 0;
-            cursor: pointer;
-            font-weight: normal;
-        }
-
-        input[type="checkbox"] {
-            accent-color: #333;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            margin-top: 5px;
+            display: block;
         }
 
         .generate-btn {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
             margin-top: 20px;
-            background-color: #eee;
-            border: 2px solid #333;
-            padding: 12px;
-            font-size: 16px;
         }
 
         .generate-btn:hover {
-            background-color: #ccc;
+            background: var(--primary-color);
         }
 
-        .main-content {
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* --- Creating Screen --- */
+        .workspace-header {
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .settings-toggle-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .settings-toggle-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .workspace-content {
             flex: 1;
-            padding: 20px;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: transparent;
-        }
-
-        #open-sidebar-btn {
-            display: none;
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 5;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .canvas-placeholder {
-            width: 80%;
-            height: 80%;
-            border: 2px solid #eee;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #ccc;
-            font-size: 24px;
-            background-color: #fff;
-            border: 3px dashed #ccc;
-        }
-
-        .instruction-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-        }
-
-        /* --- 3. 測驗畫面 --- */
-        #test-screen {
-            background-color: transparent;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .test-content {
-            text-align: center;
-            width: 90%;
-            max-width: 800px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: rgba(255, 250, 240, 0.6);
-            padding: 20px;
-            border-radius: 15px;
+            padding: 0 40px 40px 40px;
+            overflow-y: auto;
         }
 
-        #timer-display {
-            font-size: 48px;
-            font-weight: bold;
-            color: #ff6b6b;
-            font-family: 'Comic Sans MS', sans-serif;
-            margin: 5px 0;
-            text-shadow: 2px 2px 0px #333;
-        }
-
-        .question-indicator {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        #live-score {
-            font-size: 24px;
-            font-weight: bold;
-            color: #28a745;
-            font-family: 'Comic Sans MS', sans-serif;
-            margin-bottom: 10px;
-            border: 2px dashed #28a745;
-            padding: 5px 15px;
-            border-radius: 10px;
-            background: #fff;
-        }
-
-        #test-info-display {
-            font-size: 28px;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            font-weight: bold;
-            margin-bottom: 5px;
-            min-height: 40px;
-        }
-
-        #transition-display {
-            font-size: 20px;
-            color: #666;
-            font-weight: bold;
-            height: 30px;
-            margin-bottom: 10px;
-        }
-
-        .feedback-correct {
-            color: #28a745;
-            text-shadow: 1px 1px 0 #000;
-        }
-
-        .feedback-wrong {
-            color: #dc3545;
-            text-shadow: 1px 1px 0 #000;
-        }
-
-        .feedback-neutral {
-            color: #555;
-        }
-
-        /* --- 平面鋼琴鍵盤 CSS --- */
-        .piano-container {
-            position: relative;
+        .canvas-area {
+            width: 100%;
+            max-width: 1000px;
+            height: 50vh;
+            min-height: 300px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             display: flex;
             justify-content: center;
-            margin: 20px 0;
-            background: #333;
-            padding: 10px 10px 0 10px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .key {
+            align-items: center;
+            flex-direction: column;
+            border: 2px dashed #eee;
             position: relative;
-            cursor: pointer;
-            border-radius: 0 0 5px 5px;
-            user-select: none;
-            transition: background-color 0.1s, transform 0.1s;
+            overflow: hidden;
+            transition: all 0.3s;
         }
 
-        .key.white {
-            width: 50px;
-            height: 180px;
-            background: white;
-            border: 1px solid #ccc;
-            border-top: none;
-            z-index: 1;
-            margin: 0 2px;
-        }
-
-        .key.white:active,
-        .key.white.active-visual {
-            background: #eee;
-            transform: translateY(2px);
-        }
-
-        .key.black {
-            width: 34px;
-            height: 110px;
-            background: #333;
-            position: absolute;
-            top: 0;
-            z-index: 2;
-            border-radius: 0 0 5px 5px;
-        }
-
-        .key.black:active,
-        .key.black.active-visual {
+        .canvas-area.has-result {
+            border: none;
             background: #000;
         }
 
-        .key.correct {
-            background-color: #4caf50 !important;
-            box-shadow: 0 0 10px #4caf50;
-        }
-
-        .key.wrong {
-            background-color: #f44336 !important;
-        }
-
-        .piano-container.disabled {
-            pointer-events: none;
-        }
-
-        .test-controls {
-            display: flex;
-            gap: 20px;
+        /* Result Dashboard */
+        #result-dashboard {
+            width: 100%;
+            max-width: 1000px;
             margin-top: 20px;
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.5s forwards;
         }
 
-        .play-sound-btn {
-            background-color: #333;
-            color: white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 10px;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-            transition: transform 0.1s;
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .play-sound-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* --- 新增頁面樣式 --- */
-        #creations-screen,
-        #features-screen {
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background-color: transparent;
-        }
-
-        .info-card {
+        .dashboard-card {
             background: white;
-            padding: 40px;
-            border: 3px solid #333;
-            border-radius: 10px;
-            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.1);
-            max-width: 600px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        /* 播放器樣式 */
-        .player-controls-container {
+        .card-header {
+            font-weight: 700;
+            font-family: 'Poppins';
+            color: #333;
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: #f9f9f9;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
+            gap: 8px;
         }
 
-        .play-toggle-btn {
+        .action-btn {
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-render {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-render:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-render:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-download {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        /* Player & Utils */
+        .player-circle-btn {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            border: 2px solid #333;
-            background: #fff;
-            font-size: 18px;
+            background: #333;
+            color: white;
+            border: none;
             cursor: pointer;
             display: flex;
-            align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-            padding: 0;
+            align-items: center;
+            font-size: 16px;
+            transition: 0.2s;
         }
 
-        .play-toggle-btn:hover {
-            background: #333;
-            color: #fff;
+        .player-circle-btn:hover {
+            transform: scale(1.1);
         }
 
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
-        }
-
-        input[type=range]:focus {
-            outline: none;
-        }
-
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 6px;
-            cursor: pointer;
-            background: #ddd;
-            border-radius: 3px;
-        }
-
-        input[type=range]::-webkit-slider-thumb {
-            height: 14px;
-            width: 14px;
-            border-radius: 50%;
-            background: #ff9800;
-            cursor: pointer;
-            -webkit-appearance: none;
-            margin-top: -4px;
-        }
-
-        input[type=range]:disabled::-webkit-slider-thumb {
-            background: #ccc;
-        }
-
-        /* Loading, Toast & Download */
         .loader-container {
-            display: none;
+            display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 10;
+            justify-content: center;
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #ff9800;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 15px;
         }
 
         @keyframes spin {
@@ -616,28 +597,6 @@
             100% {
                 transform: rotate(360deg);
             }
-        }
-
-        #visual-container {
-            position: relative;
-            overflow: hidden;
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #placeholder-text {
-            color: #ccc;
-            background: #fff;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: absolute;
-            top: 0;
-            left: 0;
         }
 
         #toast-container {
@@ -671,97 +630,118 @@
             transform: translateX(0);
         }
 
-        .download-btn-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .dl-btn {
-            padding: 8px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            color: white;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: opacity 0.2s;
-        }
-
-        .dl-btn:hover {
-            opacity: 0.8;
-        }
-
-        .dl-midi {
-            background-color: #4CAF50;
-        }
-
-        .dl-video {
-            background-color: #E91E63;
-        }
-
-        /* Loading Overlay */
-        #loading-screen {
-            justify-content: center;
-            align-items: center;
+        /* Test Screen & Modal */
+        .test-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 900px;
             text-align: center;
-        }
-
-        .progress-container {
-            width: 50%;
-            height: 30px;
-            border: 3px solid #333;
-            border-radius: 15px;
-            overflow: hidden;
-            background: #fff;
             margin: 20px auto;
         }
 
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background-color: #333;
-            transition: width 0.1s;
+        .piano-container {
+            background: #222;
+            border-radius: 12px;
+            padding: 15px 15px 5px 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            margin: 30px auto;
+            display: inline-flex;
+            position: relative;
         }
 
-        /* Modals */
-        #instruction-modal,
+        .key {
+            position: relative;
+            cursor: pointer;
+            border-radius: 0 0 4px 4px;
+            transition: 0.1s;
+        }
+
+        .key.white {
+            width: 50px;
+            height: 180px;
+            background: white;
+            margin: 0 2px;
+        }
+
+        .key.white:active,
+        .key.white.active-visual {
+            background: #eee;
+            transform: translateY(2px);
+        }
+
+        .key.black {
+            width: 34px;
+            height: 110px;
+            background: #333;
+            position: absolute;
+            top: 0;
+            z-index: 2;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .key.black:active,
+        .key.black.active-visual {
+            background: #000;
+        }
+
+        .key.correct {
+            background: #4caf50 !important;
+        }
+
+        .key.wrong {
+            background: #f44336 !important;
+        }
+
         #result-modal {
             display: none;
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
 
         .modal-content {
-            width: 60%;
-            height: 60%;
-            background-color: #fff;
-            border: 3px solid #333;
-            border-radius: 10px;
-            padding: 30px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background: white;
+            padding: 40px;
+            width: 400px;
+            border-radius: 20px;
+            text-align: center;
         }
 
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #ff6b6b;
-            color: white;
-            border: none;
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 100%;
+            }
+
+            .workspace-header {
+                padding: 15px;
+            }
+
+            .workspace-content {
+                padding: 15px;
+            }
+
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .feature-block,
+            .feature-block:nth-child(even) {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .feature-text {
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -769,193 +749,229 @@
 <body>
 
     <canvas id="bg-canvas"></canvas>
+    <div id="toast-container"></div>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3 style="margin:0; font-family:'Poppins'">Parameters</h3>
+            <button onclick="toggleSidebar(false)"
+                style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+        </div>
+
+        <label>Scale Mode (音階模式)</label>
+        <select id="scale" class="sketch-select">
+            <option value="Major Scale">大調音階 (Major)</option>
+            <option value="Minor Scale">小調音階 (Minor)</option>
+            <option value="Blues">藍調音階 (Blues)</option>
+            <option value="Pentatonic Major">大調五聲音階</option>
+        </select>
+
+        <label>Key (調性)</label>
+        <select id="key" class="sketch-select">
+            <option value="0">C</option>
+            <option value="1">C#</option>
+            <option value="2">D</option>
+            <option value="3">D#</option>
+            <option value="4">E</option>
+            <option value="5">F</option>
+            <option value="6">F#</option>
+            <option value="7">G</option>
+            <option value="8">G#</option>
+            <option value="9">A</option>
+            <option value="9">A#</option>
+            <option value="11">B</option>
+        </select>
+
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label>Bars (1~30)</label><input type="number" id="bars" value="4" min="1" max="30"
+                    class="sketch-input"></div>
+            <div style="flex:1;"><label>BPM (1~300)</label><input type="number" id="tempo" value="120" min="1" max="300"
+                    class="sketch-input"></div>
+        </div>
+
+        <label>Duration (音符長度)</label>
+        <select id="note_duration" class="sketch-select">
+            <option value="0.25">16分音符 (1/16)</option>
+            <option value="0.5" selected>8分音符 (1/8)</option>
+            <option value="1">4分音符 (1/4)</option>
+        </select>
+
+        <label>Octave (八度音高)</label>
+        <select id="octave" class="sketch-select">
+            <option value="-2">極低 (Very Low)</option>
+            <option value="-1">低 (Low)</option>
+            <option value="0" selected>中等 (Medium)</option>
+            <option value="1">高 (High)</option>
+            <option value="2">極高 (Very High)</option>
+        </select>
+
+        <div class="checkbox-group">
+            <div class="checkbox-row"><label style="margin:0;">Arpeggios (包含琶音)</label><input type="checkbox"
+                    id="include_arpeggios"></div>
+            <div class="checkbox-row"><label style="margin:0;">Rests (包含休止符)</label><input type="checkbox"
+                    id="include_rests"></div>
+            <div class="checkbox-row"><label style="margin:0;">Chords (包含和弦)</label><input type="checkbox"
+                    id="include_chords"></div>
+        </div>
+
+        <button class="generate-btn" id="gen-midi-btn" onclick="generateMidi()"><i class="fas fa-magic"></i> 生成
+            MIDI</button>
+        <p style="font-size:12px; color:#999; text-align:center; margin-top:10px;">生成後將顯示更多操作選項。</p>
+    </div>
 
     <div class="app-container">
-
         <nav class="navbar">
+            <div class="brand-logo" onclick="goToScreen('start-screen')">
+                <i class="fas fa-music" style="color: var(--primary-color);"></i> Melody Visualizers
+            </div>
             <div class="nav-links">
-                <button class="nav-btn active" id="nav-home" onclick="goToScreen('start-screen')">HOME</button>
-                <button class="nav-btn" id="nav-creations" onclick="goToScreen('creations-screen')">MY
-                    CREATIONS</button>
-                <button class="nav-btn" id="nav-features" onclick="goToScreen('features-screen')">FEATURES</button>
+                <button class="nav-btn active" id="nav-home" onclick="goToScreen('start-screen')">Home</button>
+                <button class="nav-btn" id="nav-creations" onclick="goToScreen('creations-screen')">Creations</button>
+                <button class="nav-btn" onclick="scrollToFeatures()">Features</button>
             </div>
         </nav>
 
-        <div id="start-screen" class="screen active">
-            <h1 class="title">Melody Visualizers</h1>
-            <div class="start-menu">
-                <div class="mode-block">
-                    <span style="font-size: 20px; font-weight: bold;">自由創作</span>
-                    <p style="margin:0; color:#666;">無限制生成</p>
-                    <button class="action-btn practice" onclick="goToScreen('main-screen')">練功</button>
-                </div>
-                <div class="mode-block">
-                    <span style="font-size: 20px; font-weight: bold;">挑戰模式</span>
-                    <div style="width: 100%;">
-                        <select id="question-count" class="sketch-select">
-                            <option value="1">題數: 1題</option>
-                            <option value="3">題數: 3題</option>
-                            <option value="5">題數: 5題</option>
-                            <option value="10">題數: 10題</option>
-                        </select>
-                        <select id="time-limit" class="sketch-select">
-                            <option value="5">每題: 5秒</option>
-                            <option value="10">每題: 10秒</option>
-                            <option value="15">每題: 15秒</option>
-                            <option value="20">每題: 20秒</option>
-                            <option value="30">每題: 30秒</option>
-                        </select>
+        <button id="floating-back-btn" onclick="goToScreen('start-screen')">回到首頁</button>
+
+        <div id="start-screen" class="screen active animate-enter">
+            <div class="hero-section">
+                <h1 class="hero-title">Experience Music<br>Like Never Before</h1>
+                <p class="hero-subtitle">盡情創作、享受視覺饗宴，並挑戰您的聽覺極限。</p>
+
+                <div class="mode-container">
+                    <div class="mode-card">
+                        <div style="font-size:32px; color:var(--primary-color); margin-bottom:10px;"><i
+                                class="fas fa-magic"></i></div>
+                        <div>
+                            <h3 class="mode-title">Free Creation</h3>
+                            <p style="color:#666; font-size:14px;">自訂參數生成獨一無二的 MIDI 旋律並進行視覺化。</p>
+                        </div>
+                        <button class="btn-start-create" onclick="goToScreen('main-screen')">開始創作</button>
                     </div>
-                    <button class="action-btn test" onclick="startTest()">測驗</button>
+
+                    <div class="mode-card">
+                        <div style="font-size:32px; color:#2196f3; margin-bottom:10px;"><i
+                                class="fas fa-ear-listen"></i></div>
+                        <div>
+                            <h3 class="mode-title">Pitch Challenge</h3>
+                            <p style="color:#666; font-size:14px;">測試您的絕對音感能力。</p>
+                            <div style="display:flex; gap:5px; margin-top:5px;">
+                                <select id="question-count" class="sketch-select" style="padding:5px; font-size:12px;">
+                                    <option value="3">3 題</option>
+                                    <option value="5">5 題</option>
+                                    <option value="10">10 題</option>
+                                </select>
+                                <select id="time-limit" class="sketch-select" style="padding:5px; font-size:12px;">
+                                    <option value="10">10 秒/題</option>
+                                    <option value="20">20 秒/題</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-start-test" onclick="startTest()">開始測驗</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="features-section">
+                <div class="features-header">
+                    <h2>Explore Features</h2>
+                    <p>探索 Melody Visualizers 的強大功能，您的全方位音樂創作工具箱。</p>
+                </div>
+
+                <div class="feature-block reveal">
+                    <div class="feature-text">
+                        <h3>AI-Powered Composition</h3>
+                        <p>透過演算法引擎解鎖無限的音樂可能。只需調整音階、調性與速度，即可在幾秒鐘內生成複雜和諧的旋律。無論是尋找靈感或克服創作瓶頸，這都是絕佳的幫手。</p>
+                    </div>
+                    <div class="feature-visual">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+
+                <div class="feature-block reveal">
+                    <div class="feature-text">
+                        <h3>Cinematic Visualization</h3>
+                        <p>將您的 MIDI 檔案轉化為令人驚嘆的 4K 視覺特效。我們的渲染引擎使用粒子系統對每個音符和力度做出反應，創造出聽覺與視覺的雙重饗宴。</p>
+                    </div>
+                    <div class="feature-visual">
+                        <i class="fas fa-film" style="color: #ff9800;"></i>
+                    </div>
+                </div>
+
+                <div class="feature-block reveal">
+                    <div class="feature-text">
+                        <h3>Absolute Pitch Training</h3>
+                        <p>透過互動式測驗挑戰您的聽力。即時辨識音符、追蹤分數並提升音樂聽感。無論是初學者還是專業人士，這都是磨練聽覺的最佳工具。</p>
+                    </div>
+                    <div class="feature-visual">
+                        <i class="fas fa-ear-listen" style="color: #2196f3;"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div id="main-screen" class="screen">
-            <div class="sidebar" id="sidebar">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <button onclick="goToScreen('start-screen')" style="padding:5px 10px; font-size:12px;">🏠
-                        Back</button>
-                    <button onclick="toggleSidebar()" style="padding:5px 10px; font-size:12px;">◀ 收起</button>
-                </div>
-                <label for="scale">選擇音階 (Scale):</label>
-                <select id="scale" class="sketch-select">
-                    <option value="Major Scale">Major Scale</option>
-                    <option value="Minor Scale">Minor Scale</option>
-                    <option value="Blues">Blues</option>
-                    <option value="Pentatonic Major">Pentatonic Major</option>
-                </select>
-                <label for="key">選擇調性 (Key):</label>
-                <select id="key" class="sketch-select">
-                    <option value="0">C</option>
-                    <option value="1">C#</option>
-                    <option value="2">D</option>
-                    <option value="3">D#</option>
-                    <option value="4">E</option>
-                    <option value="5">F</option>
-                    <option value="6">F#</option>
-                    <option value="7">G</option>
-                    <option value="8">G#</option>
-                    <option value="9">A</option>
-                    <option value="9">A#</option>
-                    <option value="11">B</option>
-                </select>
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex:1;">
-                        <label for="bars">小節數 max(30):</label>
-                        <input type="number" id="bars" value="4" min="1" max="30" class="sketch-input">
-                    </div>
-                    <div style="flex:1;">
-                        <label for="tempo">BPM max(300):</label>
-                        <input type="number" id="tempo" value="120" min="1" max="300" class="sketch-input">
-                    </div>
-                </div>
-                <label for="note_duration">音符長度:</label>
-                <select id="note_duration" class="sketch-select">
-                    <option value="0.25">16分音符 (1/16)</option>
-                    <option selected="selected" value="0.5">8分音符 (1/8)</option>
-                    <option value="1">4分音符 (1/4)</option>
-                </select>
-
-                <label for="octave">八度音程 (Octave):</label>
-                <select id="octave" class="sketch-select">
-                    <option value="-2">非常低 (Very Low)</option>
-                    <option value="-1">低 (Low)</option>
-                    <option selected="selected" value="0">中 (Medium)</option>
-                    <option value="1">高 (High)</option>
-                    <option value="2">非常高 (Very High)</option>
-                </select>
-
-                <div class="checkbox-group">
-                    <div class="checkbox-row"><label for="include_arpeggios">包含琶音</label><input type="checkbox"
-                            id="include_arpeggios"></div>
-                    <div class="checkbox-row"><label for="include_rests">包含休止符</label><input type="checkbox"
-                            id="include_rests"></div>
-                    <div class="checkbox-row"><label for="include_chords">包含和弦</label><input type="checkbox"
-                            id="include_chords"></div>
-                </div>
-
-                <button class="generate-btn" id="gen-midi-btn" onclick="generateMidi()">1. 生成 MIDI</button>
-
-                <button class="generate-btn" id="render-video-btn" onclick="startRenderProcess()" disabled
-                    style="margin-top: 10px; background-color: #ddd; color: #888; transition: all 0.3s;">
-                    2. 渲染影片
+            <div class="workspace-header">
+                <button class="settings-toggle-btn" onclick="toggleSidebar(true)">
+                    <i class="fas fa-sliders-h"></i> 調整參數 (Parameters)
                 </button>
-
-                <div id="download-area"
-                    style="display:none; margin-top:20px; border-top: 1px dashed #ccc; padding-top:10px;">
-                    <p style="margin:5px 0; font-size:14px; color:#666;">下載檔案：</p>
-                    <div class="download-btn-group" style="flex-direction: column;">
-                        <a id="midi-download-link" href="#" target="_blank" class="dl-btn dl-midi">🎵 下載 MIDI</a>
-                        <a id="video-download-link" href="#" target="_blank" class="dl-btn dl-video"
-                            style="display:none;">🎬 下載影片</a>
-                    </div>
-                </div>
-
-                <div id="midi-player-area"
-                    style="display:none; margin-top:15px; border-top: 1px dashed #ccc; padding-top:10px;">
-                    <p style="margin:5px 0; font-size:14px; color:#666;">🎹 線上試聽：</p>
-
-                    <label for="instrument-select" style="font-size:12px;">選擇樂器:</label>
-                    <select id="instrument-select" class="sketch-select" style="margin-bottom:8px;">
-                        <option value="acoustic_grand_piano">Grand Piano</option>
-                    </select>
-
-                    <div class="player-controls-container">
-                        <button id="play-toggle-btn" class="play-toggle-btn" title="播放">▶</button>
-
-                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                            <input type="range" id="seek-bar" value="0" step="0.1" min="0" max="100" disabled>
-                            <div
-                                style="display: flex; justify-content: space-between; font-size: 10px; color: #666; margin-top: 2px;">
-                                <span id="current-time">0:00</span>
-                                <span id="total-time">0:00</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="player-status" style="font-size:12px; color:#888; text-align:center; margin-top:5px;">準備就緒
-                    </div>
-                </div>
+                <span id="status-text" style="color:#888; font-size:14px;">準備生成</span>
             </div>
-            <div class="main-content">
-                <button id="open-sidebar-btn" onclick="toggleSidebar()">▶ 展開設定</button>
-
-                <div id="visual-container" class="canvas-placeholder"
-                    style="flex-direction: column; position: relative;">
-                    <div id="placeholder-text">
-                        <div style="text-align: center;">
-                            <p style="font-size: 20px; margin:0;">生成結果畫布</p>
-                            <p style="font-size: 14px; color: #999;">請先生成 MIDI 檔案</p>
-                        </div>
+            <div class="workspace-content">
+                <div id="visual-container" class="canvas-area">
+                    <div id="placeholder-text" style="text-align:center;">
+                        <i class="fas fa-layer-group" style="font-size:48px; color:#eee; margin-bottom:15px;"></i>
+                        <h3 style="margin:0; color:#333;">Creation Canvas</h3>
+                        <p style="color:#999;">請調整左側參數並點擊生成</p>
                     </div>
-
-                    <div id="visual-loader" class="loader-container">
+                    <div id="visual-loader" class="loader-container" style="display:none;">
                         <div class="spinner"></div>
-                        <p style="font-weight: bold; color: #333;">正在渲染影片...</p>
-                        <p style="font-size: 12px; color: #666;">啟動 Piano VFX 引擎中<br>這可能需要 1~2 分鐘</p>
+                        <p style="font-weight: bold; color: #333; margin-top:10px;">生成中...</p>
                     </div>
-
                     <video id="result-video" controls
-                        style="display:none; width: 100%; height: 100%; object-fit: contain;"></video>
+                        style="display:none; width:100%; height:100%; object-fit:contain;"></video>
                 </div>
 
-                <button class="instruction-btn" onclick="toggleModal(true)">說明</button>
+                <div id="result-dashboard">
+                    <div class="dashboard-card">
+                        <div class="card-header"><i class="fas fa-video" style="color:#ff9800;"></i> Visualize</div>
+                        <button id="render-video-btn" class="action-btn btn-render"
+                            onclick="startRenderProcess()">渲染影片</button>
+                        <div id="render-status" style="font-size:12px; color:#888; display:none; margin-top:5px;">處理中...
+                        </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <div class="card-header"><i class="fas fa-headphones" style="color:#2196f3;"></i> Preview</div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <button id="dashboard-play-btn" class="player-circle-btn">▶</button>
+                            <div><span style="font-weight:bold; display:block;">Grand Piano</span><span
+                                    id="player-time-display" style="font-size:12px; color:#999;">0:00</span></div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <div class="card-header"><i class="fas fa-download" style="color:#4caf50;"></i> Download</div>
+                        <div style="display:flex; gap:10px;">
+                            <a href="#" class="action-btn btn-download" id="midi-download-link" target="_blank"
+                                style="flex:1;">MIDI</a>
+                            <a href="#" class="action-btn btn-download" id="video-download-link" target="_blank"
+                                style="display:none; flex:1;">影片</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="test-screen" class="screen">
             <div class="test-content">
-                <div class="question-indicator" id="question-indicator">Question 1 / ?</div>
-
-                <div id="live-score">Score: 0 / 0</div>
-
-                <div id="timer-display">00</div>
-                <p id="test-info-display" class="feedback-neutral">請聆聽並點擊對應的琴鍵</p>
-                <div id="transition-display"></div>
-
-                <button class="play-sound-btn" onclick="playCurrentNote()" title="再聽一次">🔊</button>
-
+                <div id="question-indicator" style="color:#888; margin-bottom:5px;">第 1 / 5 題</div>
+                <div id="live-score"
+                    style="display:inline-block; padding:5px 15px; border-radius:20px; font-weight:bold; color:#28a745; background:#e8f5e9;">
+                    得分: 0</div>
+                <div id="timer-display" style="font-size: 60px; font-weight: bold; color:var(--primary-color);">00</div>
+                <p id="test-info-display" style="font-size:24px; font-weight:bold; margin: 10px 0;">請聆聽...</p>
+                <button onclick="playCurrentNote()" class="player-circle-btn"
+                    style="width:60px; height:60px; margin:10px auto; font-size:24px;">🔊</button>
                 <div class="piano-container" id="piano">
                     <div class="key white" data-note="C4"></div>
                     <div class="key white" data-note="D4"></div>
@@ -964,611 +980,233 @@
                     <div class="key white" data-note="G4"></div>
                     <div class="key white" data-note="A4"></div>
                     <div class="key white" data-note="B4"></div>
-                    <div class="key white" data-note="C5"></div>
-                    <div class="key white" data-note="D5"></div>
-                    <div class="key white" data-note="E5"></div>
-
                     <div class="key black" data-note="C#4" style="left: 38px;"></div>
                     <div class="key black" data-note="D#4" style="left: 92px;"></div>
                     <div class="key black" data-note="F#4" style="left: 200px;"></div>
-                    <div class="key black" data-note="G#4" style="left: 254px;"></div>
-                    <div class="key black" data-note="A#4" style="left: 308px;"></div>
-                    <div class="key black" data-note="C#5" style="left: 416px;"></div>
-                    <div class="key black" data-note="D#5" style="left: 470px;"></div>
                 </div>
-
-                <div class="test-controls">
+                <div style="margin-top:20px;">
                     <button id="next-q-btn" onclick="nextQuestion()"
-                        style="background-color: #d4edda; border: 2px solid #28a745; display:none;">下一題</button>
+                        style="background-color: #28a745; color:white; border:none; padding:10px 20px; border-radius:5px; display:none; cursor:pointer;">下一題</button>
                     <button onclick="endTest()"
-                        style="background-color: #ff6b6b; color: white; border: none;">結束測驗</button>
+                        style="background:transparent; border:1px solid #ddd; padding:8px 15px; border-radius:5px; cursor:pointer;">結束測驗</button>
                 </div>
             </div>
         </div>
 
         <div id="creations-screen" class="screen">
-            <div class="info-card">
-                <h2>My Creations (我的作品)</h2>
-                <p>這裡未來將會顯示您生成過的 MIDI 與影片紀錄。</p>
-                <div style="margin-top: 20px; font-size: 50px;">📂</div>
-                <p style="color: #888; font-size: 14px;">(目前尚未實作資料庫儲存功能)</p>
-            </div>
-        </div>
-
-        <div id="features-screen" class="screen">
-            <div class="info-card">
-                <h2>Features (功能介紹)</h2>
-                <ul style="text-align: left; margin: 20px 0; line-height: 1.8;">
-                    <li>🎹 <strong>自由創作 (Practice)</strong>：自訂調性、速度、樂器，即時生成 MIDI 音樂。</li>
-                    <li>🎬 <strong>視覺化渲染</strong>：將您的音樂轉換為炫酷的 Piano VFX 影片。</li>
-                    <li>👂 <strong>聽音測驗 (Challenge)</strong>：挑戰您的絕對音感，辨識隨機播放的音高。</li>
-                    <li>📱 <strong>響應式設計</strong>：支援電腦與手機瀏覽。</li>
-                </ul>
-            </div>
-        </div>
-
-        <div id="loading-screen" class="screen">
-            <h2 style="font-family: 'Comic Sans MS'">Processing...</h2>
-            <div class="progress-container">
-                <div class="progress-bar" id="progress-bar"></div>
-            </div>
-            <p>正在處理中...</p>
-        </div>
-
-        <div id="instruction-modal">
-            <div class="modal-content">
-                <h2>使用說明</h2>
-                <p>聽音測驗：<br>系統會播放一個音，請在虛擬鍵盤上找出正確的音高。</p>
-                <button class="close-btn" onclick="toggleModal(false)">關閉</button>
+            <div class="test-content">
+                <h2>My Creations</h2>
+                <div style="font-size:50px; margin:20px;">📂</div>
+                <p style="color:#666;">尚無創作紀錄。</p>
             </div>
         </div>
 
         <div id="result-modal">
             <div class="modal-content">
-                <h2 style="font-family: 'Comic Sans MS'">測驗結果</h2>
-                <div id="result-score"></div>
-                <div id="result-comment"></div>
-                <button onclick="closeResultModal()" style="background-color: #333; color: white;">回到首頁</button>
+                <h2 style="color: var(--primary-color);">Quiz Finished!</h2>
+                <div id="result-score" style="font-size:24px; font-weight:bold; margin:15px 0;"></div><button
+                    onclick="closeResultModal()"
+                    style="background: #333; color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer;">回到首頁</button>
             </div>
         </div>
-
     </div>
 
-    <div id="toast-container"></div>
-
     <script>
-        // --- 動態背景邏輯 ---
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
+        // --- Utils & Toast ---
+        let synth, currentTargetNote, score = 0, currentQuestion = 1, totalQuestions = 5, timerInterval;
+        const availableNotes = ["C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4"];
 
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container'); const toast = document.createElement('div');
+            toast.className = `toast ${type}`; toast.innerText = message; container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => container.removeChild(toast), 300); }, 3000);
+        }
+
+        // --- 輸入驗證 (復原的功能) ---
         function validateInput(event) {
             const input = event.target;
-            const min = parseInt(input.min);
-            const max = parseInt(input.max);
             let value = parseInt(input.value);
             if (isNaN(value)) return;
-            if (value < min) { value = min; showToast(`${input.id} 最低為 ${min}`, "error"); }
-            else if (value > max) { value = max; showToast(`${input.id} 最高為 ${max}`, "error"); }
+            if (value < parseInt(input.min)) { value = parseInt(input.min); showToast(`${input.id === 'bars' ? '小節數' : 'BPM'} 最低為 ${input.min}`, "error"); }
+            else if (value > parseInt(input.max)) { value = parseInt(input.max); showToast(`${input.id === 'bars' ? '小節數' : 'BPM'} 最高為 ${input.max}`, "error"); }
             setTimeout(() => { input.value = value; }, 200);
         }
 
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerText = message;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => container.removeChild(toast), 300); }, 5000);
+        // --- Navigation ---
+        function toggleSidebar(show) {
+            const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('sidebar-overlay');
+            if (show) { sidebar.classList.add('open'); overlay.classList.add('active'); } else { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
         }
 
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        function goToScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.classList.remove('animate-enter'); });
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            const target = document.getElementById(id);
+            target.classList.add('active'); target.classList.add('animate-enter');
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 20 + 20;
-                this.speedX = Math.random() * 0.5 - 0.25;
-                this.speedY = Math.random() * 0.5 - 0.25;
-                this.symbol = ['♪', '♫', '♩', '♬', '♭', '♯', '𝄞'][Math.floor(Math.random() * 7)];
-                this.rotation = Math.random() * Math.PI * 2;
-                this.rotationSpeed = Math.random() * 0.01 - 0.005;
+            if (id === 'start-screen') document.getElementById('nav-home').classList.add('active');
+            if (id === 'creations-screen') document.getElementById('nav-creations').classList.add('active');
+
+            if (id === 'main-screen') {
+                setTimeout(() => toggleSidebar(true), 100);
+            } else {
+                toggleSidebar(false);
             }
-            update() {
-                this.x += this.speedX; this.y += this.speedY; this.rotation += this.rotationSpeed;
-                if (this.x > canvas.width + this.size) this.x = -this.size;
-                if (this.x < -this.size) this.x = canvas.width + this.size;
-                if (this.y > canvas.height + this.size) this.y = -this.size;
-                if (this.y < -this.size) this.y = canvas.height + this.size;
-            }
-            draw() {
-                ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation);
-                ctx.font = `${this.size}px "Comic Neue", sans-serif`;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; ctx.fillText(this.symbol, -this.size / 2, this.size / 2);
-                ctx.restore();
-            }
+
+            document.getElementById('floating-back-btn').style.display = (id === 'start-screen') ? 'none' : 'block';
+            if (timerInterval) clearInterval(timerInterval);
+            if (window.playerStop && typeof window.playerStop === 'function') window.playerStop();
+
+            if (id === 'start-screen') { target.scrollTop = 0; }
         }
 
-        function initBackground() {
-            resizeCanvas(); window.addEventListener('resize', resizeCanvas);
-            for (let i = 0; i < 45; i++) { particles.push(new Particle()); }
-            animateBackground();
+        function scrollToFeatures() {
+            goToScreen('start-screen');
+            setTimeout(() => {
+                const section = document.getElementById('features-section');
+                if (section) { section.scrollIntoView({ behavior: 'smooth' }); }
+            }, 50);
         }
 
-        function animateBackground() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            for (let p of particles) { p.update(); p.draw(); }
-            requestAnimationFrame(animateBackground);
+        // --- Scroll Reveal Animation ---
+        function setupScrollReveal() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+            }, { threshold: 0.15 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         }
 
-        // --- 核心邏輯變數 ---
-        let synth;
-        let isAudioContextStarted = false;
-        let timerInterval;
-        let transitionInterval;
-        let currentQuestion = 1;
-        let totalQuestions = 1;
-        let secondsPerQuestion = 10;
-        let currentSeconds = 0;
-        let currentTargetNote = "";
-        let hasAnswered = false;
-        let score = 0;
-
-        const availableNotes = ["C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4", "C5", "C#5", "D5", "D#5", "E5"];
-        const noteToSolfege = {
-            "C4": "Do", "C#4": "Do#", "D4": "Re", "D#4": "Re#", "E4": "Mi",
-            "F4": "Fa", "F#4": "Fa#", "G4": "Sol", "G#4": "Sol#", "A4": "La",
-            "A#4": "La#", "B4": "Si",
-            "C5": "Do↑", "C#5": "Do#↑", "D5": "Re↑", "D#5": "Re#↑", "E5": "Mi↑"
-        };
-
-        window.onload = function () {
-            document.querySelectorAll('.key').forEach(key => {
-                key.addEventListener('mousedown', () => {
-                    const note = key.getAttribute('data-note');
-                    handleKeyClick(key, note);
-                });
-            });
-            document.getElementById('bars').addEventListener('change', validateInput);
-            document.getElementById('tempo').addEventListener('change', validateInput);
-            initBackground();
-        };
-
-        // --- 生成 MIDI ---
+        // --- API & MIDI Logic ---
         async function generateMidi() {
-            if (window.playerStop && typeof window.playerStop === 'function') { window.playerStop(); }
+            toggleSidebar(false);
             const params = {
-                scale: document.getElementById('scale').value,
-                key: document.getElementById('key').value,
-                bars: document.getElementById('bars').value,
-                tempo: document.getElementById('tempo').value,
-                note_duration: document.getElementById('note_duration').value,
-                octave: document.getElementById('octave').value,
+                scale: document.getElementById('scale').value, key: document.getElementById('key').value,
+                bars: document.getElementById('bars').value, tempo: document.getElementById('tempo').value,
+                note_duration: document.getElementById('note_duration').value, octave: document.getElementById('octave').value,
                 include_arpeggios: document.getElementById('include_arpeggios').checked ? 'on' : null,
                 include_rests: document.getElementById('include_rests').checked ? 'on' : null,
                 include_chords: document.getElementById('include_chords').checked ? 'on' : null
             };
 
-            goToScreen('loading-screen');
-            const progressBar = document.getElementById('progress-bar');
-            if (progressBar) progressBar.style.width = '97%';
+            const visualLoader = document.getElementById('visual-loader');
+            const placeholder = document.getElementById('placeholder-text');
+            const dashboard = document.getElementById('result-dashboard');
+
+            placeholder.style.display = 'none'; document.getElementById('result-video').style.display = 'none'; dashboard.style.display = 'none';
+            visualLoader.style.display = 'flex'; document.getElementById('status-text').innerText = "生成中...";
 
             try {
-                const response = await fetch('http://localhost:3000/api/generate-midi', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(params)
-                });
+                const response = await fetch('http://localhost:3000/api/generate-midi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
                 const data = await response.json();
-
                 if (data.success) {
-                    progressBar.style.width = '100%';
                     window.currentMidiFilename = data.filename;
-                    goToScreen('main-screen');
-
-                    const downloadArea = document.getElementById('download-area');
-                    const midiLink = document.getElementById('midi-download-link');
-                    const videoLink = document.getElementById('video-download-link');
-                    midiLink.href = data.midiUrl;
-                    midiLink.download = data.filename;
-                    videoLink.style.display = 'none';
-                    downloadArea.style.display = 'block';
-
-                    document.getElementById('midi-player-area').style.display = 'block';
-                    document.getElementById('player-status').innerText = "準備播放";
-
-                    const renderBtn = document.getElementById('render-video-btn');
-                    renderBtn.disabled = false;
-                    renderBtn.style.backgroundColor = '#ff9800'; renderBtn.style.color = '#fff'; renderBtn.style.cursor = 'pointer';
-
-                    document.getElementById('placeholder-text').innerHTML = `
-                        <div style="text-align: center;">
-                            <p style="font-size: 20px; color:#333;">🎵 MIDI 已生成</p>
-                            <p style="font-size: 14px; color: #666;">點擊左側「渲染影片」以開始視覺化</p>
-                        </div>
-                    `;
-                    document.getElementById('result-video').style.display = 'none';
-                    document.getElementById('visual-loader').style.display = 'none';
+                    visualLoader.style.display = 'none'; placeholder.style.display = 'block';
+                    placeholder.innerHTML = `<h3 style="color:#28a745;"><i class="fas fa-check-circle"></i> 生成成功！</h3><p>準備進行視覺化。</p>`;
+                    document.getElementById('status-text').innerText = "MIDI 已就緒";
+                    dashboard.style.display = 'grid';
+                    const midiLink = document.getElementById('midi-download-link'); midiLink.href = data.midiUrl; midiLink.download = data.filename;
+                    const renderBtn = document.getElementById('render-video-btn'); renderBtn.disabled = false; renderBtn.innerText = "渲染影片";
                     showToast("MIDI 生成成功！", "success");
-                } else {
-                    showToast('生成失敗: ' + data.error, "error");
-                    goToScreen('main-screen');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('無法連線到伺服器', "error");
-                goToScreen('main-screen');
-            }
+                } else { throw new Error(data.error); }
+            } catch (error) { console.error(error); visualLoader.style.display = 'none'; placeholder.style.display = 'block'; placeholder.innerHTML = `<p style="color:red">錯誤: ${error.message}</p>`; showToast("生成失敗", "error"); }
         }
 
-        // --- 渲染影片 ---
         async function startRenderProcess() {
-            if (!window.currentMidiFilename) { showToast("請先生成 MIDI！", "error"); return; }
+            if (!window.currentMidiFilename) { showToast("找不到 MIDI 檔案！", "error"); return; }
             const renderBtn = document.getElementById('render-video-btn');
             const visualLoader = document.getElementById('visual-loader');
-            const placeholderText = document.getElementById('placeholder-text');
+            const placeholder = document.getElementById('placeholder-text');
             const videoEl = document.getElementById('result-video');
+            const statusDiv = document.getElementById('render-status');
 
-            renderBtn.disabled = true; renderBtn.innerText = "⏳ 渲染中..."; renderBtn.style.backgroundColor = '#ccc';
-            placeholderText.style.display = 'none'; videoEl.style.display = 'none'; videoEl.pause(); visualLoader.style.display = 'flex';
+            renderBtn.disabled = true; renderBtn.innerText = "渲染中..."; statusDiv.style.display = 'block';
+            placeholder.style.display = 'none'; videoEl.style.display = 'none'; videoEl.pause();
+            visualLoader.style.display = 'flex'; visualLoader.querySelector('p').innerText = "影片渲染中...";
 
             try {
-                const response = await fetch('http://localhost:3000/api/render-video', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ midiFilename: currentMidiFilename })
-                });
+                const response = await fetch('http://localhost:3000/api/render-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ midiFilename: window.currentMidiFilename }) });
                 const data = await response.json();
-
                 if (data.success) {
-                    visualLoader.style.display = 'none';
+                    visualLoader.style.display = 'none'; statusDiv.style.display = 'none';
+                    document.getElementById('visual-container').classList.add('has-result');
                     videoEl.src = data.videoUrl; videoEl.style.display = 'block'; videoEl.load();
-                    const videoLink = document.getElementById('video-download-link');
-                    videoLink.href = data.videoUrl; videoLink.download = data.filename; videoLink.style.display = 'flex';
-                    showToast("影片渲染完成！", "success");
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('渲染失敗: ' + error.message, "error");
-                visualLoader.style.display = 'none';
-                placeholderText.style.display = 'flex';
-                placeholderText.innerHTML = `<p style="color:red">渲染發生錯誤，請重試</p>`;
-            } finally {
-                renderBtn.disabled = false; renderBtn.innerText = "2. 渲染影片"; renderBtn.style.backgroundColor = '#ff9800';
-            }
+                    const videoLink = document.getElementById('video-download-link'); videoLink.href = data.videoUrl; videoLink.download = data.filename; videoLink.style.display = 'flex';
+                    renderBtn.disabled = false; renderBtn.innerText = "再次渲染";
+                    showToast("渲染完成！", "success");
+                } else { throw new Error(data.error); }
+            } catch (error) { console.error(error); showToast("渲染失敗", "error"); visualLoader.style.display = 'none'; placeholder.style.display = 'block'; renderBtn.disabled = false; renderBtn.innerText = "渲染影片"; }
         }
 
-        // --- 導覽列切換 ---
-        function goToScreen(screenId) {
-            stopTimer();
-            if (transitionInterval) clearInterval(transitionInterval);
-
-            // 更新導覽列 Active 狀態
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            if (screenId === 'start-screen') document.getElementById('nav-home').classList.add('active');
-            else if (screenId === 'creations-screen') document.getElementById('nav-creations').classList.add('active');
-            else if (screenId === 'features-screen') document.getElementById('nav-features').classList.add('active');
-
-            const videoEl = document.getElementById('result-video');
-            if (videoEl) videoEl.pause();
-            if (window.playerStop && typeof window.playerStop === 'function') window.playerStop();
-
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        async function initAudio() {
-            if (!isAudioContextStarted) {
-                await Tone.start();
-                synth = new Tone.Synth({
-                    oscillator: { type: "triangle" },
-                    envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }
-                }).toDestination();
-                synth.volume.value = -5;
-                isAudioContextStarted = true;
-            }
-        }
-
-        function playCurrentNote() {
-            if (synth && currentTargetNote) {
-                synth.triggerRelease();
-                synth.triggerAttackRelease(currentTargetNote, "8n", Tone.now() + 0.05, 1);
-            }
-        }
-
-        function toggleModal(show) { document.getElementById('instruction-modal').style.display = show ? 'flex' : 'none'; }
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const openBtn = document.getElementById('open-sidebar-btn');
-            if (sidebar.classList.contains('closed')) {
-                sidebar.classList.remove('closed'); openBtn.style.display = 'none';
-            } else {
-                sidebar.classList.add('closed'); setTimeout(() => openBtn.style.display = 'block', 300);
-            }
-        }
-
-        // --- 測驗邏輯 ---
-        async function startTest() {
-            await initAudio();
-            totalQuestions = parseInt(document.getElementById('question-count').value);
-            secondsPerQuestion = parseInt(document.getElementById('time-limit').value);
-            currentQuestion = 1; score = 0;
-            goToScreen('test-screen'); loadNewQuestion();
-        }
-
+        // --- Test Logic ---
+        async function startTest() { await Tone.start(); totalQuestions = parseInt(document.getElementById('question-count').value); currentQuestion = 1; score = 0; goToScreen('test-screen'); loadNewQuestion(); }
         function loadNewQuestion() {
-            hasAnswered = false;
-            document.getElementById('transition-display').innerText = "";
-            document.getElementById('next-q-btn').style.display = 'none';
-            document.getElementById('piano').classList.remove('disabled');
-            document.querySelectorAll('.key').forEach(k => { k.classList.remove('correct', 'wrong', 'active-visual'); });
-            document.getElementById('question-indicator').innerText = `Question ${currentQuestion} / ${totalQuestions}`;
-            document.getElementById('live-score').innerText = `Score: ${score} / ${totalQuestions}`;
-            const infoDisplay = document.getElementById('test-info-display');
-            infoDisplay.innerText = "請聆聽..."; infoDisplay.className = "feedback-neutral";
             currentTargetNote = availableNotes[Math.floor(Math.random() * availableNotes.length)];
-            setTimeout(() => {
-                playCurrentNote();
-                setTimeout(() => { playCurrentNote(); resetAndStartTimer(); }, 1000);
-            }, 500);
+            document.getElementById('question-indicator').innerText = `第 ${currentQuestion} / ${totalQuestions} 題`;
+            document.querySelectorAll('.key').forEach(k => k.classList.remove('correct', 'wrong'));
+            document.getElementById('test-info-display').innerText = "請聆聽...";
+            setTimeout(() => playCurrentNote(), 500);
         }
-
-        function handleKeyClick(keyElement, note) {
-            if (hasAnswered) return;
-            hasAnswered = true; stopTimer();
-            document.getElementById('piano').classList.add('disabled');
-            keyElement.classList.add('active-visual');
-            if (synth) { synth.triggerRelease(); synth.triggerAttackRelease(note, "8n", Tone.now() + 0.05, 1); }
-            const infoDisplay = document.getElementById('test-info-display');
-            if (note === currentTargetNote) {
-                score++; keyElement.classList.add('correct');
-                infoDisplay.innerText = `Correct! It was ${noteToSolfege[currentTargetNote]}`; infoDisplay.className = "feedback-correct";
-            } else {
-                keyElement.classList.add('wrong');
-                const correctKey = document.querySelector(`.key[data-note="${currentTargetNote}"]`);
-                if (correctKey) correctKey.classList.add('correct');
-                infoDisplay.innerText = `Wrong! Answer was ${noteToSolfege[currentTargetNote]}`; infoDisplay.className = "feedback-wrong";
-            }
-            document.getElementById('live-score').innerText = `Score: ${score} / ${totalQuestions}`;
-            if (currentQuestion < totalQuestions) { document.getElementById('next-q-btn').style.display = 'inline-block'; } else { document.getElementById('next-q-btn').style.display = 'none'; }
-            startTransitionTimer();
-        }
-
-        function nextQuestion() {
-            if (transitionInterval) clearInterval(transitionInterval);
-            if (currentQuestion < totalQuestions) { currentQuestion++; loadNewQuestion(); } else { showResultModal(); }
-        }
-
-        function endTest() {
-            stopTimer();
-            if (transitionInterval) clearInterval(transitionInterval);
-            if (currentQuestion === totalQuestions && hasAnswered) { showResultModal(); } else { if (confirm("確定要放棄測驗回到首頁嗎？")) { goToScreen('start-screen'); } }
-        }
-
-        function showResultModal() {
-            stopTimer(); if (transitionInterval) clearInterval(transitionInterval);
-            const modal = document.getElementById('result-modal');
-            const scoreDiv = document.getElementById('result-score');
-            const commentDiv = document.getElementById('result-comment');
-            scoreDiv.innerText = `Score: ${score} / ${totalQuestions}`;
-            const percentage = (score / totalQuestions) * 100;
-            let comment = "";
-            if (percentage === 100) comment = "絕對音感！太神啦！";
-            else if (percentage >= 80) comment = "非常優秀，差一點點！";
-            else if (percentage >= 60) comment = "還不錯，繼續保持！";
-            else if (percentage >= 40) comment = "再接再厲！";
-            else comment = "多聽多練，加油！";
-            commentDiv.innerText = comment; modal.style.display = 'flex';
-        }
-
+        function playCurrentNote() { const s = new Tone.Synth().toDestination(); s.triggerAttackRelease(currentTargetNote, "8n"); }
+        document.querySelectorAll('.key').forEach(k => {
+            k.addEventListener('mousedown', () => {
+                const note = k.dataset.note; const s = new Tone.Synth().toDestination(); s.triggerAttackRelease(note, "8n");
+                if (note === currentTargetNote) { k.classList.add('correct'); score++; } else { k.classList.add('wrong'); }
+                document.getElementById('live-score').innerText = `得分: ${score}`;
+                if (currentQuestion < totalQuestions) document.getElementById('next-q-btn').style.display = 'inline-block'; else setTimeout(() => { document.getElementById('result-score').innerText = `${score} / ${totalQuestions}`; document.getElementById('result-modal').style.display = 'flex'; }, 1000);
+            });
+        });
+        function nextQuestion() { currentQuestion++; loadNewQuestion(); document.getElementById('next-q-btn').style.display = 'none'; }
+        function endTest() { if (confirm("確定要結束測驗嗎？")) goToScreen('start-screen'); }
         function closeResultModal() { document.getElementById('result-modal').style.display = 'none'; goToScreen('start-screen'); }
-        function stopTimer() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
 
-        function resetAndStartTimer() {
-            stopTimer();
-            currentSeconds = secondsPerQuestion;
-            document.getElementById('timer-display').innerText = currentSeconds;
-            timerInterval = setInterval(() => {
-                currentSeconds--; document.getElementById('timer-display').innerText = currentSeconds;
-                if (currentSeconds <= 0) {
-                    stopTimer();
-                    const infoDisplay = document.getElementById('test-info-display');
-                    infoDisplay.innerText = `Time's Up! It was ${noteToSolfege[currentTargetNote]}`;
-                    infoDisplay.className = "feedback-wrong";
-                    document.getElementById('piano').classList.add('disabled'); hasAnswered = true;
-                    const correctKey = document.querySelector(`.key[data-note="${currentTargetNote}"]`);
-                    if (correctKey) correctKey.classList.add('correct');
-                    if (currentQuestion < totalQuestions) { document.getElementById('next-q-btn').style.display = 'inline-block'; } else { document.getElementById('next-q-btn').style.display = 'none'; }
-                    startTransitionTimer();
-                }
-            }, 1000);
-        }
+        // --- Init ---
+        const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resize(); window.addEventListener('resize', resize);
 
-        function startTransitionTimer() {
-            let transitionSeconds = 5;
-            const display = document.getElementById('transition-display');
-            if (currentQuestion < totalQuestions) { display.innerText = `Next question in ${transitionSeconds}...`; }
-            else { display.innerText = `Showing results in ${transitionSeconds}...`; }
-            if (transitionInterval) clearInterval(transitionInterval);
-            transitionInterval = setInterval(() => {
-                transitionSeconds--;
-                if (currentQuestion < totalQuestions) { display.innerText = `Next question in ${transitionSeconds}...`; }
-                else { display.innerText = `Showing results in ${transitionSeconds}...`; }
-                if (transitionSeconds <= 0) { clearInterval(transitionInterval); nextQuestion(); }
-            }, 1000);
+        window.onload = function () {
+            setupScrollReveal();
+            // 綁定輸入驗證
+            document.getElementById('bars').addEventListener('change', validateInput);
+            document.getElementById('tempo').addEventListener('change', validateInput);
         }
     </script>
 
     <script type="module">
-        import {
-            loadInstrument,
-            loadAndPlayMIDI,
-            play,
-            pause,
-            stop,
-            seek,
-            getCurrentTime,
-            getDuration,
-            listAvailableInstruments
-        } from "./midiplayer.js";
-
+        import { loadInstrument, loadAndPlayMIDI, play, pause, stop, getCurrentTime, getDuration } from "./midiplayer.js";
         window.playerStop = stop;
+        const playBtn = document.getElementById('dashboard-play-btn'); const timeDisplay = document.getElementById('player-time-display');
+        let isPlaying = false; let updateInterval = null; let instrumentLoaded = false;
 
-        const selectEl = document.getElementById('instrument-select');
-        const playBtn = document.getElementById('play-toggle-btn');
-        const seekBar = document.getElementById('seek-bar');
-        const currentTimeEl = document.getElementById('current-time');
-        const totalTimeEl = document.getElementById('total-time');
-        const statusEl = document.getElementById('player-status');
-
-        let isPlaying = false;
-        let isDragging = false;
-        let updateInterval = null;
-
-        const instruments = listAvailableInstruments();
-        selectEl.innerHTML = "";
-        instruments.forEach(inst => {
-            const option = document.createElement('option');
-            option.value = inst;
-            option.text = inst.replace(/_/g, ' ').toUpperCase();
-            if (inst === 'acoustic_grand_piano') option.selected = true;
-            selectEl.appendChild(option);
-        });
-
-        let isInstrumentLoaded = false;
-        loadInstrument('acoustic_grand_piano').then(() => {
-            isInstrumentLoaded = true;
-            console.log("Default instrument loaded");
-        });
-
-        selectEl.addEventListener('change', async (e) => {
-            statusEl.innerText = "載入音色中...";
-            selectEl.disabled = true;
-            try {
-                if (isPlaying) togglePlayState();
-                await loadInstrument(e.target.value);
-                statusEl.innerText = "音色已切換";
-            } catch (err) {
-                console.error(err);
-                statusEl.innerText = "音色載入失敗";
-            } finally {
-                selectEl.disabled = false;
-            }
-        });
+        loadInstrument('acoustic_grand_piano').then(() => { instrumentLoaded = true; });
 
         playBtn.addEventListener('click', async () => {
-            if (!window.currentMidiFilename) {
-                alert("請先生成 MIDI 檔案！");
-                return;
-            }
-
+            if (!window.currentMidiFilename) { alert("請先生成 MIDI！"); return; }
             if (!isPlaying) {
                 try {
-                    playBtn.disabled = true;
-                    if (Tone.Transport.seconds === 0 || !isInstrumentLoaded) {
-                        statusEl.innerText = "載入中...";
-                        if (!isInstrumentLoaded) {
-                            await loadInstrument(selectEl.value);
-                            isInstrumentLoaded = true;
-                        }
-                        const midiUrl = `midi/${window.currentMidiFilename}`;
-                        const res = await fetch(midiUrl);
-                        const buf = await res.arrayBuffer();
-                        await loadAndPlayMIDI(buf);
-                    } else {
-                        play();
-                    }
-                    isPlaying = true;
-                    playBtn.innerHTML = "⏸";
-                    playBtn.title = "暫停";
-                    statusEl.innerText = "播放中 ♪";
-                    seekBar.disabled = false;
-                    startUpdateLoop();
-                } catch (e) {
-                    console.error(e);
-                    statusEl.innerText = "播放錯誤";
-                } finally {
-                    playBtn.disabled = false;
-                }
-            } else {
-                togglePlayState();
-            }
+                    if (Tone.Transport.state !== 'started') {
+                        if (!instrumentLoaded) await loadInstrument('acoustic_grand_piano');
+                        const res = await fetch(`midi/${window.currentMidiFilename}`); const buf = await res.arrayBuffer(); await loadAndPlayMIDI(buf);
+                    } else { play(); }
+                    isPlaying = true; playBtn.innerHTML = "⏸"; startUpdateLoop();
+                } catch (e) { console.error(e); alert("播放失敗"); }
+            } else { pause(); isPlaying = false; playBtn.innerHTML = "▶"; stopUpdateLoop(); }
         });
-
-        function togglePlayState(resetToStart = false) {
-            if (resetToStart) {
-                stop();
-                isPlaying = false;
-                playBtn.innerHTML = "▶";
-                statusEl.innerText = "已停止";
-                seekBar.value = 0;
-                currentTimeEl.innerText = "0:00";
-            } else {
-                pause();
-                isPlaying = false;
-                playBtn.innerHTML = "▶";
-                playBtn.title = "播放";
-                statusEl.innerText = "已暫停";
-            }
-            stopUpdateLoop();
-        }
-
-        seekBar.addEventListener('mousedown', () => { isDragging = true; });
-        seekBar.addEventListener('touchstart', () => { isDragging = true; });
-        seekBar.addEventListener('change', (e) => {
-            const percent = e.target.value / 100;
-            seek(percent);
-            isDragging = false;
-        });
-        seekBar.addEventListener('input', (e) => {
-            const duration = getDuration();
-            if (duration > 0) {
-                const percent = e.target.value / 100;
-                currentTimeEl.innerText = formatTime(duration * percent);
-            }
-        });
-
         function startUpdateLoop() {
             if (updateInterval) cancelAnimationFrame(updateInterval);
             function update() {
                 if (!isPlaying) return;
-                const now = getCurrentTime();
-                const total = getDuration();
+                const now = getCurrentTime(); const total = getDuration();
                 if (total > 0) {
-                    totalTimeEl.innerText = formatTime(total);
-                    if (!isDragging) {
-                        const percent = (now / total) * 100;
-                        seekBar.value = percent;
-                        currentTimeEl.innerText = formatTime(now);
-                    }
-                    if (now >= total && total > 0) {
-                        togglePlayState(true);
-                        return;
-                    }
+                    const m = Math.floor(now / 60); const s = Math.floor(now % 60); timeDisplay.innerText = `${m}:${s.toString().padStart(2, '0')}`;
+                    if (now >= total) { stop(); isPlaying = false; playBtn.innerHTML = "▶"; timeDisplay.innerText = "0:00"; return; }
                 }
                 updateInterval = requestAnimationFrame(update);
-            }
-            update();
+            } update();
         }
-
-        function stopUpdateLoop() {
-            if (updateInterval) cancelAnimationFrame(updateInterval);
-        }
-
-        function formatTime(seconds) {
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return `${m}:${s.toString().padStart(2, '0')}`;
-        }
+        function stopUpdateLoop() { if (updateInterval) cancelAnimationFrame(updateInterval); }
     </script>
-
 </body>
 
 </html>
