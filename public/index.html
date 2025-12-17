@@ -106,7 +106,6 @@
             cursor: pointer;
             transition: color 0.2s;
             text-transform: uppercase;
-            text-decoration: none;
         }
 
         .nav-btn:hover,
@@ -485,7 +484,7 @@
             max-width: 1000px;
             margin-top: 20px;
             display: none;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             opacity: 0;
             transform: translateY(20px);
@@ -508,6 +507,10 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+        }
+
+        .card-preview {
+            grid-column: span 2;
         }
 
         .card-header {
@@ -553,7 +556,6 @@
             color: #333;
         }
 
-        /* Player & Utils */
         .player-circle-btn {
             width: 40px;
             height: 40px;
@@ -567,12 +569,48 @@
             align-items: center;
             font-size: 16px;
             transition: 0.2s;
+            flex-shrink: 0;
         }
 
         .player-circle-btn:hover {
             transform: scale(1.1);
         }
 
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 5px 0;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #eee;
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type=range]:disabled::-webkit-slider-thumb {
+            background: #ccc;
+        }
+
+        /* Loader & Toast */
         .loader-container {
             display: flex;
             flex-direction: column;
@@ -630,71 +668,124 @@
             transform: translateX(0);
         }
 
-        /* Test Screen & Modal */
+        /* --- Test Screen & Piano (Updated for RWD & Animation) --- */
         .test-content {
             background: white;
-            padding: 40px;
+            padding: 30px;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-            width: 100%;
-            max-width: 900px;
+            width: 95%;
+            max-width: 1200px;
             text-align: center;
             margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 鋼琴容器：Flex 佈局，無 Scroll Bar */
+        .piano-wrapper {
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px;
+            background: #222;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            position: relative;
         }
 
         .piano-container {
-            background: #222;
-            border-radius: 12px;
-            padding: 15px 15px 5px 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            margin: 30px auto;
-            display: inline-flex;
             position: relative;
+            width: 100%;
+            height: 220px;
+            display: flex;
         }
 
         .key {
             position: relative;
             cursor: pointer;
             border-radius: 0 0 4px 4px;
-            transition: 0.1s;
+            user-select: none;
         }
 
+        /* 白鍵：Flex: 1 自動平分寬度 */
         .key.white {
-            width: 50px;
-            height: 180px;
+            flex: 1;
+            height: 100%;
             background: white;
-            margin: 0 2px;
+            border: 1px solid #ccc;
+            border-top: none;
+            margin: 0 1px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 8px;
+            color: #999;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 1;
         }
 
-        .key.white:active,
-        .key.white.active-visual {
+        .key.white:active {
             background: #eee;
             transform: translateY(2px);
         }
 
+        /* 黑鍵：絕對定位 (百分比計算) */
         .key.black {
-            width: 34px;
-            height: 110px;
+            width: 2%;
+            /* 相對寬度 */
+            height: 60%;
             background: #333;
             position: absolute;
             top: 0;
             z-index: 2;
-            border-radius: 0 0 5px 5px;
+            border-radius: 0 0 3px 3px;
+            box-shadow: 0 2px 2px rgba(0, 0, 0, 0.4);
         }
 
-        .key.black:active,
-        .key.black.active-visual {
+        .key.black:active {
             background: #000;
+            transform: translateY(2px);
         }
 
+        /* 狀態顏色 */
         .key.correct {
             background: #4caf50 !important;
+            color: white;
+            transition: background 0.2s;
         }
 
-        .key.wrong {
-            background: #f44336 !important;
+        /* 錯誤淡出動畫 */
+        @keyframes fadeOutRedWhite {
+            0% {
+                background-color: #f44336;
+            }
+
+            100% {
+                background-color: white;
+            }
         }
 
+        @keyframes fadeOutRedBlack {
+            0% {
+                background-color: #f44336;
+            }
+
+            100% {
+                background-color: #333;
+            }
+        }
+
+        .key.white.wrong-fade {
+            animation: fadeOutRedWhite 0.5s ease-out forwards;
+        }
+
+        .key.black.wrong-fade {
+            animation: fadeOutRedBlack 0.5s ease-out forwards;
+        }
+
+        /* Result Modal */
         #result-modal {
             display: none;
             position: fixed;
@@ -716,6 +807,22 @@
             text-align: center;
         }
 
+        #floating-back-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 200;
+            display: none;
+        }
+
         @media (max-width: 768px) {
             :root {
                 --sidebar-width: 100%;
@@ -733,6 +840,14 @@
                 font-size: 36px;
             }
 
+            #result-dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .card-preview {
+                grid-column: span 1;
+            }
+
             .feature-block,
             .feature-block:nth-child(even) {
                 flex-direction: column;
@@ -741,6 +856,15 @@
 
             .feature-text {
                 text-align: center;
+            }
+
+            /* 手機版允許滑動，避免鍵盤太擠 */
+            .piano-wrapper {
+                overflow-x: auto;
+            }
+
+            .piano-container {
+                width: 150%;
             }
         }
     </style>
@@ -784,9 +908,9 @@
         </select>
 
         <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label>Bars (1~30)</label><input type="number" id="bars" value="4" min="1" max="30"
+            <div style="flex:1;"><label>Bars (小節數)</label><input type="number" id="bars" value="4" min="1" max="30"
                     class="sketch-input"></div>
-            <div style="flex:1;"><label>BPM (1~300)</label><input type="number" id="tempo" value="120" min="1" max="300"
+            <div style="flex:1;"><label>BPM (速度)</label><input type="number" id="tempo" value="120" min="1" max="300"
                     class="sketch-input"></div>
         </div>
 
@@ -863,8 +987,8 @@
                                     <option value="10">10 題</option>
                                 </select>
                                 <select id="time-limit" class="sketch-select" style="padding:5px; font-size:12px;">
-                                    <option value="10">10 秒/題</option>
-                                    <option value="20">20 秒/題</option>
+                                    <option value="5">5 秒/題</option>
+                                    <option value="10" selected>10 秒/題</option>
                                 </select>
                             </div>
                         </div>
@@ -882,31 +1006,25 @@
                 <div class="feature-block reveal">
                     <div class="feature-text">
                         <h3>AI-Powered Composition</h3>
-                        <p>透過演算法引擎解鎖無限的音樂可能。只需調整音階、調性與速度，即可在幾秒鐘內生成複雜和諧的旋律。無論是尋找靈感或克服創作瓶頸，這都是絕佳的幫手。</p>
+                        <p>透過演算法引擎解鎖無限的音樂可能。只需調整音階、調性與速度，即可在幾秒鐘內生成複雜和諧的旋律。</p>
                     </div>
-                    <div class="feature-visual">
-                        <i class="fas fa-robot"></i>
-                    </div>
+                    <div class="feature-visual"><i class="fas fa-robot"></i></div>
                 </div>
 
                 <div class="feature-block reveal">
                     <div class="feature-text">
                         <h3>Cinematic Visualization</h3>
-                        <p>將您的 MIDI 檔案轉化為令人驚嘆的 4K 視覺特效。我們的渲染引擎使用粒子系統對每個音符和力度做出反應，創造出聽覺與視覺的雙重饗宴。</p>
+                        <p>將您的 MIDI 檔案轉化為令人驚嘆的 4K 視覺特效。我們的渲染引擎使用粒子系統對每個音符和力度做出反應。</p>
                     </div>
-                    <div class="feature-visual">
-                        <i class="fas fa-film" style="color: #ff9800;"></i>
-                    </div>
+                    <div class="feature-visual"><i class="fas fa-film" style="color: #ff9800;"></i></div>
                 </div>
 
                 <div class="feature-block reveal">
                     <div class="feature-text">
                         <h3>Absolute Pitch Training</h3>
-                        <p>透過互動式測驗挑戰您的聽力。即時辨識音符、追蹤分數並提升音樂聽感。無論是初學者還是專業人士，這都是磨練聽覺的最佳工具。</p>
+                        <p>透過互動式測驗挑戰您的聽力。即時辨識音符、追蹤分數並提升音樂聽感。</p>
                     </div>
-                    <div class="feature-visual">
-                        <i class="fas fa-ear-listen" style="color: #2196f3;"></i>
-                    </div>
+                    <div class="feature-visual"><i class="fas fa-ear-listen" style="color: #2196f3;"></i></div>
                 </div>
             </div>
         </div>
@@ -934,6 +1052,32 @@
                 </div>
 
                 <div id="result-dashboard">
+                    <div class="dashboard-card card-preview">
+                        <div class="card-header"><i class="fas fa-headphones" style="color:#2196f3;"></i> Preview (試聽)
+                        </div>
+
+                        <div style="margin-bottom:10px;">
+                            <label for="instrument-select"
+                                style="font-size:12px; margin-bottom:5px; display:block;">選擇樂器 (Instrument):</label>
+                            <select id="instrument-select" class="sketch-select" style="padding:5px; width:100%;">
+                            </select>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap:15px; width:100%;">
+                            <button id="play-toggle-btn" class="player-circle-btn" title="播放">▶</button>
+                            <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+                                <input type="range" id="seek-bar" value="0" min="0" max="100" step="0.1" disabled
+                                    style="width:100%;">
+                                <div
+                                    style="display:flex; justify-content:space-between; font-size:11px; color:#999; margin-top:5px;">
+                                    <span id="current-time">0:00</span>
+                                    <span id="player-status" style="color:var(--primary-color);">準備就緒</span>
+                                    <span id="total-time">0:00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="dashboard-card">
                         <div class="card-header"><i class="fas fa-video" style="color:#ff9800;"></i> Visualize</div>
                         <button id="render-video-btn" class="action-btn btn-render"
@@ -941,17 +1085,10 @@
                         <div id="render-status" style="font-size:12px; color:#888; display:none; margin-top:5px;">處理中...
                         </div>
                     </div>
-                    <div class="dashboard-card">
-                        <div class="card-header"><i class="fas fa-headphones" style="color:#2196f3;"></i> Preview</div>
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            <button id="dashboard-play-btn" class="player-circle-btn">▶</button>
-                            <div><span style="font-weight:bold; display:block;">Grand Piano</span><span
-                                    id="player-time-display" style="font-size:12px; color:#999;">0:00</span></div>
-                        </div>
-                    </div>
+
                     <div class="dashboard-card">
                         <div class="card-header"><i class="fas fa-download" style="color:#4caf50;"></i> Download</div>
-                        <div style="display:flex; gap:10px;">
+                        <div style="display:flex; gap:10px; height:100%; align-items:center;">
                             <a href="#" class="action-btn btn-download" id="midi-download-link" target="_blank"
                                 style="flex:1;">MIDI</a>
                             <a href="#" class="action-btn btn-download" id="video-download-link" target="_blank"
@@ -968,22 +1105,17 @@
                 <div id="live-score"
                     style="display:inline-block; padding:5px 15px; border-radius:20px; font-weight:bold; color:#28a745; background:#e8f5e9;">
                     得分: 0</div>
-                <div id="timer-display" style="font-size: 60px; font-weight: bold; color:var(--primary-color);">00</div>
+                <div id="timer-display"
+                    style="font-size: 60px; font-weight: bold; color:var(--primary-color); margin: 10px 0;">10</div>
                 <p id="test-info-display" style="font-size:24px; font-weight:bold; margin: 10px 0;">請聆聽...</p>
                 <button onclick="playCurrentNote()" class="player-circle-btn"
                     style="width:60px; height:60px; margin:10px auto; font-size:24px;">🔊</button>
-                <div class="piano-container" id="piano">
-                    <div class="key white" data-note="C4"></div>
-                    <div class="key white" data-note="D4"></div>
-                    <div class="key white" data-note="E4"></div>
-                    <div class="key white" data-note="F4"></div>
-                    <div class="key white" data-note="G4"></div>
-                    <div class="key white" data-note="A4"></div>
-                    <div class="key white" data-note="B4"></div>
-                    <div class="key black" data-note="C#4" style="left: 38px;"></div>
-                    <div class="key black" data-note="D#4" style="left: 92px;"></div>
-                    <div class="key black" data-note="F#4" style="left: 200px;"></div>
+
+                <div class="piano-wrapper">
+                    <div class="piano-container" id="piano">
+                    </div>
                 </div>
+
                 <div style="margin-top:20px;">
                     <button id="next-q-btn" onclick="nextQuestion()"
                         style="background-color: #28a745; color:white; border:none; padding:10px 20px; border-radius:5px; display:none; cursor:pointer;">下一題</button>
@@ -1013,9 +1145,6 @@
 
     <script>
         // --- Utils & Toast ---
-        let synth, currentTargetNote, score = 0, currentQuestion = 1, totalQuestions = 5, timerInterval;
-        const availableNotes = ["C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4"];
-
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container'); const toast = document.createElement('div');
             toast.className = `toast ${type}`; toast.innerText = message; container.appendChild(toast);
@@ -1023,7 +1152,7 @@
             setTimeout(() => { toast.classList.remove('show'); setTimeout(() => container.removeChild(toast), 300); }, 3000);
         }
 
-        // --- 輸入驗證 (復原的功能) ---
+        // --- 輸入驗證 ---
         function validateInput(event) {
             const input = event.target;
             let value = parseInt(input.value);
@@ -1048,14 +1177,11 @@
             if (id === 'start-screen') document.getElementById('nav-home').classList.add('active');
             if (id === 'creations-screen') document.getElementById('nav-creations').classList.add('active');
 
-            if (id === 'main-screen') {
-                setTimeout(() => toggleSidebar(true), 100);
-            } else {
-                toggleSidebar(false);
-            }
+            if (id === 'main-screen') setTimeout(() => toggleSidebar(true), 100);
+            else toggleSidebar(false);
 
             document.getElementById('floating-back-btn').style.display = (id === 'start-screen') ? 'none' : 'block';
-            if (timerInterval) clearInterval(timerInterval);
+            if (window.timerInterval) clearInterval(window.timerInterval);
             if (window.playerStop && typeof window.playerStop === 'function') window.playerStop();
 
             if (id === 'start-screen') { target.scrollTop = 0; }
@@ -1069,7 +1195,6 @@
             }, 50);
         }
 
-        // --- Scroll Reveal Animation ---
         function setupScrollReveal() {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
@@ -1079,6 +1204,8 @@
 
         // --- API & MIDI Logic ---
         async function generateMidi() {
+            if (window.playerStop && typeof window.playerStop === 'function') window.playerStop();
+
             toggleSidebar(false);
             const params = {
                 scale: document.getElementById('scale').value, key: document.getElementById('key').value,
@@ -1138,75 +1265,259 @@
             } catch (error) { console.error(error); showToast("渲染失敗", "error"); visualLoader.style.display = 'none'; placeholder.style.display = 'block'; renderBtn.disabled = false; renderBtn.innerText = "渲染影片"; }
         }
 
-        // --- Test Logic ---
-        async function startTest() { await Tone.start(); totalQuestions = parseInt(document.getElementById('question-count').value); currentQuestion = 1; score = 0; goToScreen('test-screen'); loadNewQuestion(); }
-        function loadNewQuestion() {
-            currentTargetNote = availableNotes[Math.floor(Math.random() * availableNotes.length)];
-            document.getElementById('question-indicator').innerText = `第 ${currentQuestion} / ${totalQuestions} 題`;
-            document.querySelectorAll('.key').forEach(k => k.classList.remove('correct', 'wrong'));
-            document.getElementById('test-info-display').innerText = "請聆聽...";
-            setTimeout(() => playCurrentNote(), 500);
+        // --- Test Logic (Updated) ---
+        let currentTargetNote, score = 0, currentQuestion = 1, totalQuestions = 5;
+        let timeLeft = 10;
+        let isQuestionActive = false;
+
+        // 題庫產生 (C3 - C5)
+        const availableNotes = [];
+        const scaleNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        for (let oct = 3; oct <= 5; oct++) {
+            scaleNotes.forEach(n => availableNotes.push(n + oct));
         }
-        function playCurrentNote() { const s = new Tone.Synth().toDestination(); s.triggerAttackRelease(currentTargetNote, "8n"); }
-        document.querySelectorAll('.key').forEach(k => {
-            k.addEventListener('mousedown', () => {
-                const note = k.dataset.note; const s = new Tone.Synth().toDestination(); s.triggerAttackRelease(note, "8n");
-                if (note === currentTargetNote) { k.classList.add('correct'); score++; } else { k.classList.add('wrong'); }
-                document.getElementById('live-score').innerText = `得分: ${score}`;
-                if (currentQuestion < totalQuestions) document.getElementById('next-q-btn').style.display = 'inline-block'; else setTimeout(() => { document.getElementById('result-score').innerText = `${score} / ${totalQuestions}`; document.getElementById('result-modal').style.display = 'flex'; }, 1000);
+
+        // 渲染 RWD 全螢幕鋼琴
+        function renderPiano() {
+            const pianoContainer = document.getElementById('piano');
+            pianoContainer.innerHTML = '';
+
+            const startOctave = 2; // C2
+            const endOctave = 6;   // C6
+            const totalWhiteKeys = (endOctave - startOctave) * 7 + 1; // 29個白鍵
+
+            let whiteKeyIndex = 0;
+
+            for (let oct = startOctave; oct <= endOctave; oct++) {
+                scaleNotes.forEach(note => {
+                    if (oct === endOctave && note !== 'C') return;
+
+                    const fullNote = note + oct;
+                    const isBlack = note.includes('#');
+                    const key = document.createElement('div');
+                    key.dataset.note = fullNote;
+
+                    if (!isBlack) {
+                        // 白鍵: flex 1
+                        key.className = 'key white';
+                        if (note === 'C') key.innerText = fullNote;
+                        setupKeyEvents(key);
+                        pianoContainer.appendChild(key);
+                        whiteKeyIndex++;
+                    } else {
+                        // 黑鍵: 百分比定位
+                        key.className = 'key black';
+                        // 黑鍵在白鍵右側，假設白鍵寬度為 1 unit
+                        // 黑鍵位置 = whiteKeyIndex * (100% / totalWhiteKeys) - (黑鍵寬 / 2)
+                        const blackKeyWidthPercent = 2;
+                        const leftPercent = (whiteKeyIndex / totalWhiteKeys * 100) - (blackKeyWidthPercent / 2);
+                        key.style.left = leftPercent + '%';
+                        setupKeyEvents(key);
+                        pianoContainer.appendChild(key);
+                    }
+                });
+            }
+        }
+
+        function setupKeyEvents(key) {
+            key.addEventListener('mousedown', () => {
+                if (!isQuestionActive) return;
+
+                const note = key.dataset.note;
+                const synth = new Tone.Synth().toDestination();
+                synth.triggerAttackRelease(note, "8n");
+
+                // 清除之前的淡出動畫 class
+                key.classList.remove('wrong-fade');
+                void key.offsetWidth; // Trigger reflow
+
+                if (note === currentTargetNote) {
+                    // 答對：顯示綠色，停止計時
+                    clearInterval(window.timerInterval);
+                    key.classList.add('correct');
+                    score++;
+                    updateScore();
+                    isQuestionActive = false;
+                    document.getElementById('test-info-display').innerText = "Correct! " + note;
+                    document.getElementById('test-info-display').style.color = "#28a745";
+                    showNextButton();
+                } else {
+                    // 答錯：淡出動畫，不顯示答案，計時繼續
+                    key.classList.add('wrong-fade');
+                }
             });
-        });
-        function nextQuestion() { currentQuestion++; loadNewQuestion(); document.getElementById('next-q-btn').style.display = 'none'; }
-        function endTest() { if (confirm("確定要結束測驗嗎？")) goToScreen('start-screen'); }
+        }
+
+        async function startTest() {
+            await Tone.start();
+            totalQuestions = parseInt(document.getElementById('question-count').value);
+            timeLeft = parseInt(document.getElementById('time-limit').value);
+            currentQuestion = 1; score = 0;
+            renderPiano();
+            goToScreen('test-screen');
+            loadNewQuestion();
+        }
+
+        function loadNewQuestion() {
+            isQuestionActive = true;
+            document.querySelectorAll('.key').forEach(k => k.classList.remove('correct', 'wrong-fade'));
+            document.getElementById('next-q-btn').style.display = 'none';
+            document.getElementById('question-indicator').innerText = `第 ${currentQuestion} / ${totalQuestions} 題`;
+            document.getElementById('test-info-display').innerText = "請聆聽...";
+            document.getElementById('test-info-display').style.color = "#333";
+            updateScore();
+
+            currentTargetNote = availableNotes[Math.floor(Math.random() * availableNotes.length)];
+            setTimeout(() => playCurrentNote(), 500);
+            startTimer();
+        }
+
+        function startTimer() {
+            if (window.timerInterval) clearInterval(window.timerInterval);
+            timeLeft = parseInt(document.getElementById('time-limit').value);
+            document.getElementById('timer-display').innerText = timeLeft;
+
+            window.timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-display').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(window.timerInterval);
+                    isQuestionActive = false;
+                    document.getElementById('test-info-display').innerText = "Time's Up! 答案是 " + currentTargetNote;
+                    document.getElementById('test-info-display').style.color = "#d81b60";
+                    // 時間到，顯示正確答案
+                    const correctKey = document.querySelector(`.key[data-note="${currentTargetNote}"]`);
+                    if (correctKey) correctKey.classList.add('correct');
+                    showNextButton();
+                }
+            }, 1000);
+        }
+
+        function playCurrentNote() { const s = new Tone.Synth().toDestination(); s.triggerAttackRelease(currentTargetNote, "8n"); }
+        function updateScore() { document.getElementById('live-score').innerText = `得分: ${score}`; }
+
+        function showNextButton() {
+            const btn = document.getElementById('next-q-btn');
+            if (currentQuestion < totalQuestions) { btn.innerText = "下一題"; btn.onclick = nextQuestion; }
+            else { btn.innerText = "查看結果"; btn.onclick = showResults; }
+            btn.style.display = 'inline-block';
+        }
+
+        function nextQuestion() { currentQuestion++; loadNewQuestion(); }
+        function showResults() {
+            document.getElementById('result-score').innerText = `${score} / ${totalQuestions}`;
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+
+        function endTest() { if (confirm("確定要結束測驗嗎？")) { clearInterval(window.timerInterval); goToScreen('start-screen'); } }
         function closeResultModal() { document.getElementById('result-modal').style.display = 'none'; goToScreen('start-screen'); }
 
         // --- Init ---
         const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
         function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         resize(); window.addEventListener('resize', resize);
-
         window.onload = function () {
             setupScrollReveal();
-            // 綁定輸入驗證
             document.getElementById('bars').addEventListener('change', validateInput);
             document.getElementById('tempo').addEventListener('change', validateInput);
         }
     </script>
 
     <script type="module">
-        import { loadInstrument, loadAndPlayMIDI, play, pause, stop, getCurrentTime, getDuration } from "./midiplayer.js";
+        import { loadInstrument, loadAndPlayMIDI, play, pause, stop, seek, getCurrentTime, getDuration, listAvailableInstruments } from "./midiplayer.js";
         window.playerStop = stop;
-        const playBtn = document.getElementById('dashboard-play-btn'); const timeDisplay = document.getElementById('player-time-display');
-        let isPlaying = false; let updateInterval = null; let instrumentLoaded = false;
+        const selectEl = document.getElementById('instrument-select');
+        const playBtn = document.getElementById('play-toggle-btn');
+        const seekBar = document.getElementById('seek-bar');
+        const currentTimeEl = document.getElementById('current-time');
+        const totalTimeEl = document.getElementById('total-time');
+        const statusEl = document.getElementById('player-status');
 
-        loadInstrument('acoustic_grand_piano').then(() => { instrumentLoaded = true; });
+        let isPlaying = false, isDragging = false, updateInterval = null, isInstrumentLoaded = false;
 
-        playBtn.addEventListener('click', async () => {
-            if (!window.currentMidiFilename) { alert("請先生成 MIDI！"); return; }
-            if (!isPlaying) {
+        const instruments = listAvailableInstruments();
+        if (selectEl) {
+            selectEl.innerHTML = "";
+            instruments.forEach(inst => {
+                const option = document.createElement('option');
+                option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase();
+                if (inst === 'acoustic_grand_piano') option.selected = true;
+                selectEl.appendChild(option);
+            });
+        }
+
+        loadInstrument('acoustic_grand_piano').then(() => { isInstrumentLoaded = true; }).catch(e => console.error("Instrument load failed", e));
+
+        if (selectEl) {
+            selectEl.addEventListener('change', async (e) => {
+                statusEl.innerText = "載入音色中..."; selectEl.disabled = true;
                 try {
-                    if (Tone.Transport.state !== 'started') {
-                        if (!instrumentLoaded) await loadInstrument('acoustic_grand_piano');
-                        const res = await fetch(`midi/${window.currentMidiFilename}`); const buf = await res.arrayBuffer(); await loadAndPlayMIDI(buf);
-                    } else { play(); }
-                    isPlaying = true; playBtn.innerHTML = "⏸"; startUpdateLoop();
-                } catch (e) { console.error(e); alert("播放失敗"); }
-            } else { pause(); isPlaying = false; playBtn.innerHTML = "▶"; stopUpdateLoop(); }
-        });
+                    if (isPlaying) { pause(); isPlaying = false; playBtn.innerText = "▶"; }
+                    await loadInstrument(e.target.value); isInstrumentLoaded = true; statusEl.innerText = "音色已切換";
+                } catch (err) { console.error(err); statusEl.innerText = "音色載入失敗"; } finally { selectEl.disabled = false; }
+            });
+        }
+
+        if (playBtn) {
+            playBtn.addEventListener('click', async () => {
+                if (!window.currentMidiFilename) { alert("請先生成 MIDI 檔案！"); return; }
+                await Tone.start();
+                if (!isPlaying) {
+                    try {
+                        playBtn.disabled = true;
+                        if (Tone.Transport.seconds === 0 || !isInstrumentLoaded) {
+                            statusEl.innerText = "載入 MIDI...";
+                            if (!isInstrumentLoaded) { await loadInstrument(selectEl.value); isInstrumentLoaded = true; }
+                            const midiUrl = `midi/${window.currentMidiFilename}`;
+                            const res = await fetch(midiUrl);
+                            if (!res.ok) throw new Error("找不到檔案");
+                            const buf = await res.arrayBuffer();
+                            await loadAndPlayMIDI(buf);
+                        } else { play(); }
+                        isPlaying = true; playBtn.innerText = "⏸"; statusEl.innerText = "播放中 ♪"; seekBar.disabled = false; startUpdateLoop();
+                    } catch (e) { console.error(e); statusEl.innerText = "播放錯誤"; togglePlayState(true); } finally { playBtn.disabled = false; }
+                } else { togglePlayState(false); }
+            });
+        }
+
+        function togglePlayState(resetToStart = false) {
+            if (resetToStart) { stop(); isPlaying = false; playBtn.innerText = "▶"; statusEl.innerText = "已停止"; seekBar.value = 0; currentTimeEl.innerText = "0:00"; }
+            else { pause(); isPlaying = false; playBtn.innerText = "▶"; statusEl.innerText = "已暫停"; }
+            stopUpdateLoop();
+        }
+
+        if (seekBar) {
+            seekBar.addEventListener('mousedown', () => { isDragging = true; });
+            seekBar.addEventListener('touchstart', () => { isDragging = true; });
+            seekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; });
+            seekBar.addEventListener('input', (e) => {
+                const duration = getDuration();
+                if (duration > 0) currentTimeEl.innerText = formatTime(duration * (e.target.value / 100));
+            });
+        }
+
         function startUpdateLoop() {
             if (updateInterval) cancelAnimationFrame(updateInterval);
             function update() {
                 if (!isPlaying) return;
                 const now = getCurrentTime(); const total = getDuration();
                 if (total > 0) {
-                    const m = Math.floor(now / 60); const s = Math.floor(now % 60); timeDisplay.innerText = `${m}:${s.toString().padStart(2, '0')}`;
-                    if (now >= total) { stop(); isPlaying = false; playBtn.innerHTML = "▶"; timeDisplay.innerText = "0:00"; return; }
+                    totalTimeEl.innerText = formatTime(total);
+                    if (!isDragging && seekBar) { seekBar.value = (now / total) * 100; currentTimeEl.innerText = formatTime(now); }
+                    if (now >= total - 0.1) { togglePlayState(true); return; }
                 }
                 updateInterval = requestAnimationFrame(update);
-            } update();
+            }
+            update();
         }
         function stopUpdateLoop() { if (updateInterval) cancelAnimationFrame(updateInterval); }
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds < 0) return "0:00";
+            const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
     </script>
+
 </body>
 
 </html>
