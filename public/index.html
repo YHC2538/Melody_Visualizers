@@ -71,7 +71,7 @@
             z-index: 1;
         }
 
-        /* --- Liquid Glass Button Styles (核心特效) --- */
+        /* --- Liquid Glass Button Styles --- */
         button,
         .action-btn {
             position: relative;
@@ -126,13 +126,12 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
-        /* 1. 主要 CTA 按鈕 (深色玻璃) - 修正 .btn-render 樣式 */
+        /* 1. 主要 CTA 按鈕 */
         .generate-btn,
         .btn-start-create,
         .btn-render,
         .btn-modal-primary {
             background: linear-gradient(135deg, rgba(216, 27, 96, 0.85), rgba(255, 64, 129, 0.85)) !important;
-            /* 強制背景色 */
             color: white !important;
             border: 1px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(5px);
@@ -153,7 +152,7 @@
             color: white;
         }
 
-        /* 2. 次要/深色 CTA */
+        /* 2. 次要 CTA */
         .btn-start-test {
             background: linear-gradient(135deg, rgba(50, 50, 50, 0.9), rgba(20, 20, 20, 0.95));
             color: white !important;
@@ -169,7 +168,7 @@
             transform: translateY(-3px) scale(1.02);
         }
 
-        /* 3. 功能小按鈕 */
+        /* 3. 功能按鈕 */
         .settings-toggle-btn {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -203,6 +202,26 @@
             color: white;
             box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
             transform: translateY(-2px);
+        }
+
+        /* Action Btn 基礎樣式 */
+        .action-btn {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            color: #333;
+            text-decoration: none;
+            padding: 15px;
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-download {
+            background: #f0f0f0;
+            border: none;
         }
 
         /* --- 導覽列 --- */
@@ -361,7 +380,7 @@
             margin: 0;
         }
 
-        /* --- Features Section --- */
+        /* --- Features --- */
         #features-section {
             width: 100%;
             scroll-margin-top: var(--nav-height);
@@ -458,7 +477,7 @@
             filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
         }
 
-        /* --- Sidebar --- */
+        /* --- Sidebar & Forms --- */
         .sidebar {
             position: fixed;
             top: 0;
@@ -476,6 +495,10 @@
             flex-direction: column;
             gap: 15px;
             border-right: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .sidebar>* {
+            flex-shrink: 0;
         }
 
         .sidebar.open {
@@ -508,31 +531,69 @@
             opacity: 1;
         }
 
+        /* 升級版 Liquid Glass 下拉選單與輸入框 - 膠囊圓角 */
         .sketch-select,
         .sketch-input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.8);
-            font-family: 'Inter';
+            padding: 12px 25px;
+            padding-right: 40px;
+            border: 1px solid var(--glass-border);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%);
+            font-family: 'Inter', sans-serif;
             font-size: 14px;
-            transition: 0.2s;
+            font-weight: 500;
+            color: var(--text-main);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+        }
+
+        /* 自定義箭頭 SVG */
+        .sketch-select {
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23D81B60%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 18px top 50%;
+            background-size: 10px auto;
+        }
+
+        .sketch-select:hover,
+        .sketch-input:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(31, 38, 135, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 1);
         }
 
         .sketch-select:focus,
         .sketch-input:focus {
             outline: none;
-            background: white;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(216, 27, 96, 0.1);
+            background-color: white;
+            box-shadow: 0 10px 30px rgba(216, 27, 96, 0.15), inset 0 0 0 2px rgba(255, 255, 255, 1);
+            transform: translateY(-2px) scale(1.01);
+        }
+
+        .sketch-select option {
+            background-color: #fff;
+            color: #333;
+            padding: 12px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
         }
 
         .checkbox-group {
-            background: rgba(255, 255, 255, 0.5);
+            background: var(--glass-bg);
             padding: 15px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: inset 0 2px 10px rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
         }
 
         .checkbox-row {
@@ -540,6 +601,7 @@
             justify-content: space-between;
             margin-bottom: 8px;
             font-size: 14px;
+            align-items: center;
         }
 
         label {
@@ -637,27 +699,7 @@
             font-size: 18px;
         }
 
-        /* 修正：action-btn 基礎樣式，避免覆蓋 .btn-render */
-        .action-btn {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #eee;
-            color: #333;
-            text-decoration: none;
-            padding: 15px;
-        }
-
-        .action-btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .btn-download {
-            background: #f0f0f0;
-            border: none;
-        }
-
-        /* Audio Player Buttons (Circular) */
+        /* Audio Player */
         .player-circle-btn {
             width: 45px;
             height: 45px;
@@ -779,7 +821,7 @@
             transform: translateX(0);
         }
 
-        /* --- Test Screen & Piano --- */
+        /* --- Test Screen & Piano (Keys with Overlay Effects) --- */
         .test-content {
             width: 95%;
             max-width: 1200px;
@@ -800,7 +842,7 @@
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
             position: relative;
             border: 4px solid #444;
-            /* Piano Frame */
+            overflow-x: auto;
         }
 
         .piano-container {
@@ -815,14 +857,14 @@
             cursor: pointer;
             border-radius: 0 0 6px 6px;
             user-select: none;
-            transition: background 0.1s;
+            transition: transform 0.1s;
         }
 
-        /* 白鍵 - 擬真質感 */
+        /* 白鍵 - 擬真質感 + 光澤 */
         .key.white {
             flex: 1;
             height: 100%;
-            background: linear-gradient(to bottom, #fff 0%, #eee 100%);
+            background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
             border: 1px solid #aaa;
             border-top: none;
             margin: 0 1px;
@@ -834,64 +876,68 @@
             font-size: 10px;
             font-weight: 600;
             z-index: 1;
-            box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.1), inset 0 2px 2px rgba(255, 255, 255, 0.8);
         }
 
         .key.white:active {
-            background: linear-gradient(to bottom, #ddd 0%, #ccc 100%);
+            background: linear-gradient(180deg, #e0e0e0 0%, #ccc 100%);
             transform: translateY(2px);
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        /* 黑鍵 - 擬真質感 */
+        /* 黑鍵 - 擬真質感 + 光澤 */
         .key.black {
             width: 2%;
             height: 60%;
-            background: linear-gradient(to bottom, #333 0%, #000 100%);
+            background: linear-gradient(180deg, #444 0%, #111 100%);
             position: absolute;
             top: 0;
             z-index: 2;
             border-radius: 0 0 5px 5px;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5), inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5), inset 1px 1px 2px rgba(255, 255, 255, 0.3);
         }
 
         .key.black:active {
             background: #000;
             transform: translateY(2px);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
         }
 
+        /* 正確答案綠色光暈 */
         .key.correct {
             background: #4caf50 !important;
             color: white;
-            box-shadow: 0 0 15px #4caf50;
+            box-shadow: 0 0 20px #4caf50, inset 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        @keyframes fadeOutRedWhite {
+        /* 錯誤紅色淡出 (Overlay) */
+        .key::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f44336;
+            opacity: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 0.1s;
+        }
+
+        .key.wrong-fade::after {
+            animation: flashFade 0.5s ease-out forwards;
+        }
+
+        @keyframes flashFade {
             0% {
-                background-color: #f44336;
+                opacity: 0.8;
             }
 
             100% {
-                background-color: white;
+                opacity: 0;
             }
-        }
-
-        @keyframes fadeOutRedBlack {
-            0% {
-                background-color: #f44336;
-            }
-
-            100% {
-                background-color: #333;
-            }
-        }
-
-        .key.white.wrong-fade {
-            animation: fadeOutRedWhite 0.5s ease-out forwards;
-        }
-
-        .key.black.wrong-fade {
-            animation: fadeOutRedBlack 0.5s ease-out forwards;
         }
 
         /* Modals */
@@ -920,7 +966,6 @@
             border: 1px solid white;
         }
 
-        /* 修正：Modal Buttons 等大 */
         .modal-btn-group {
             display: flex;
             gap: 15px;
@@ -931,7 +976,6 @@
 
         .modal-btn-group button {
             flex: 1;
-            /* 讓按鈕等大 */
             justify-content: center;
         }
 
@@ -948,7 +992,7 @@
             font-weight: 600;
             cursor: pointer;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            z-index: 200;
+            z-index: 2000;
             display: none;
             transition: 0.3s;
         }
@@ -991,10 +1035,6 @@
 
             .feature-text {
                 text-align: center;
-            }
-
-            .piano-wrapper {
-                overflow-x: auto;
             }
 
             .piano-container {
@@ -1252,6 +1292,14 @@
                     style="font-size: 60px; font-weight: bold; color:var(--primary-color); margin: 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                     10</div>
                 <p id="test-info-display" style="font-size:24px; font-weight:bold; margin: 10px 0;">請聆聽...</p>
+
+                <div style="margin: 15px auto; width: 250px;">
+                    <label for="test-instrument-select"
+                        style="font-size:12px; margin-bottom:5px; display:block;">選擇測驗樂器:</label>
+                    <select id="test-instrument-select" class="sketch-select" style="padding:8px; width:100%;">
+                    </select>
+                </div>
+
                 <button onclick="playCurrentNote()" class="player-circle-btn"
                     style="width:60px; height:60px; margin:10px auto; font-size:24px;">🔊</button>
 
@@ -1290,7 +1338,8 @@
                 <h2 style="color: #333; margin-top:0;">確定要結束測驗嗎？</h2>
                 <p style="color: #666; margin-bottom: 30px;">目前的進度將不會被保存。</p>
                 <div class="modal-btn-group">
-                    <button class="btn-modal-primary" style="background:#ddd; color:#333; box-shadow:none;"
+                    <button class="btn-modal-primary"
+                        style="background:#ddd !important; color:#333 !important; box-shadow:none;"
                         onclick="closeQuitModal()">繼續測驗</button>
                     <button class="btn-modal-danger" onclick="confirmQuit()">確定結束</button>
                 </div>
@@ -1333,10 +1382,14 @@
             if (id === 'start-screen') document.getElementById('nav-home').classList.add('active');
             if (id === 'creations-screen') document.getElementById('nav-creations').classList.add('active');
 
-            if (id === 'main-screen') setTimeout(() => toggleSidebar(true), 100);
-            else toggleSidebar(false);
+            if (id === 'main-screen') {
+                setTimeout(() => toggleSidebar(true), 100);
+                document.getElementById('floating-back-btn').style.display = 'block'; // 只有在創作模式顯示
+            } else {
+                toggleSidebar(false);
+                document.getElementById('floating-back-btn').style.display = 'none'; // 其他模式隱藏
+            }
 
-            document.getElementById('floating-back-btn').style.display = (id === 'start-screen') ? 'none' : 'block';
             if (window.timerInterval) clearInterval(window.timerInterval);
             if (window.playerStop && typeof window.playerStop === 'function') window.playerStop();
 
@@ -1503,8 +1556,11 @@
                 if (!isQuestionActive) return;
 
                 const note = key.dataset.note;
-                const synth = new Tone.Synth().toDestination();
-                synth.triggerAttackRelease(note, "8n");
+
+                // 播放測驗用音色
+                if (window.playTestNote) {
+                    window.playTestNote(note);
+                }
 
                 // 清除之前的淡出動畫
                 key.classList.remove('wrong-fade');
@@ -1534,11 +1590,13 @@
                         document.getElementById('test-info-display').style.color = "#d81b60";
                         const correctKey = document.querySelector(`.key[data-note="${currentTargetNote}"]`);
                         if (correctKey) correctKey.classList.add('correct');
+                        showToast(`機會用盡！正確答案是 ${currentTargetNote}`, "error");
                         showNextButton();
                     } else {
                         // 還有機會
                         document.getElementById('test-info-display').innerText = "Wrong!";
                         document.getElementById('test-info-display').style.color = "#f44336";
+                        showToast("答錯了！再試一次", "error");
                     }
                 }
             });
@@ -1603,7 +1661,12 @@
             }, 1000);
         }
 
-        function playCurrentNote() { const s = new Tone.Synth().toDestination(); s.triggerAttackRelease(currentTargetNote, "8n"); }
+        function playCurrentNote() {
+            // 使用新版的取樣器播放
+            if (window.playTestNote) {
+                window.playTestNote(currentTargetNote);
+            }
+        }
         function updateScore() { document.getElementById('live-score').innerText = `得分: ${score}`; }
         function updateAttemptDisplay() {
             document.getElementById('attempt-display').innerText = `點擊: ${usedAttempts} / ${maxAttempts}`;
@@ -1650,7 +1713,8 @@
     </script>
 
     <script type="module">
-        import { loadInstrument, loadAndPlayMIDI, play, pause, stop, seek, getCurrentTime, getDuration, listAvailableInstruments } from "./midiplayer.js";
+        import { loadInstrument, loadAndPlayMIDI, play, pause, stop, seek, getCurrentTime, getDuration, listAvailableInstruments, INSTRUMENT_BASE_URLS, NOTE_MAP } from "./midiplayer.js";
+
         window.playerStop = stop;
         const selectEl = document.getElementById('instrument-select');
         const playBtn = document.getElementById('play-toggle-btn');
@@ -1662,6 +1726,8 @@
         let isPlaying = false, isDragging = false, updateInterval = null, isInstrumentLoaded = false;
 
         const instruments = listAvailableInstruments();
+
+        // 填入創作模式的下拉選單
         if (selectEl) {
             selectEl.innerHTML = "";
             instruments.forEach(inst => {
@@ -1672,7 +1738,71 @@
             });
         }
 
+        // 填入測驗模式的下拉選單
+        const testSelectEl = document.getElementById('test-instrument-select');
+        if (testSelectEl) {
+            testSelectEl.innerHTML = "";
+            instruments.forEach(inst => {
+                const option = document.createElement('option');
+                option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase();
+                if (inst === 'acoustic_grand_piano') option.selected = true;
+                testSelectEl.appendChild(option);
+            });
+        }
+
+        // 預載創作模式樂器
         loadInstrument('acoustic_grand_piano').then(() => { isInstrumentLoaded = true; }).catch(e => console.error("Instrument load failed", e));
+
+        // ----------------------------------------------------
+        // 測驗模式專用 Sampler 邏輯
+        // ----------------------------------------------------
+        let testSampler = null;
+        const reverb = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).toDestination();
+
+        // 初始化測驗樂器 (預設鋼琴)
+        async function loadTestInstrument(name) {
+            if (testSampler) {
+                testSampler.disconnect();
+                testSampler.dispose();
+            }
+            await Tone.start();
+            return new Promise((resolve) => {
+                testSampler = new Tone.Sampler({
+                    urls: NOTE_MAP,
+                    baseUrl: INSTRUMENT_BASE_URLS[name],
+                    release: 1,
+                    onload: () => {
+                        console.log(`Test instrument ${name} loaded`);
+                        resolve();
+                    }
+                }).connect(reverb);
+            });
+        }
+        // 預先載入測驗樂器
+        loadTestInstrument('acoustic_grand_piano');
+
+        // 監聽測驗樂器更換
+        if (testSelectEl) {
+            testSelectEl.addEventListener('change', async (e) => {
+                const instName = e.target.value;
+                // 暫時禁用選單避免重複觸發
+                testSelectEl.disabled = true;
+                await loadTestInstrument(instName);
+                testSelectEl.disabled = false;
+            });
+        }
+
+        // 暴露播放函式給全域 (讓 playCurrentNote 使用)
+        window.playTestNote = function (note) {
+            if (testSampler && testSampler.loaded) {
+                testSampler.triggerAttackRelease(note, "8n");
+            } else {
+                // Fallback (如果還沒載入好，用簡單合成器)
+                const synth = new Tone.Synth().toDestination();
+                synth.triggerAttackRelease(note, "8n");
+            }
+        };
+        // ----------------------------------------------------
 
         if (selectEl) {
             selectEl.addEventListener('change', async (e) => {
