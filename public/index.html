@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Melody Visualizers</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@500;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
     <style>
-        /* --- 全局變數 --- */
+        /* --- 1. 全局變數 & 基礎設定 --- */
         :root {
             --primary-color: #D81B60;
             --primary-hover: #ff4081;
@@ -39,6 +40,7 @@
         body {
             margin: 0;
             padding: 0;
+            /* [字體修復] 確保全域主要字體為 Inter */
             font-family: 'Inter', "Microsoft JhengHei", sans-serif;
             background-color: var(--bg-color);
             background-image:
@@ -52,6 +54,18 @@
             flex-direction: column;
         }
 
+        /* [字體修復] 標題專用字體 */
+        h1,
+        h2,
+        h3,
+        h4,
+        .brand-logo,
+        .hero-title,
+        .mode-title,
+        .card-header {
+            font-family: 'Poppins', sans-serif;
+        }
+
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -59,8 +73,8 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            opacity: 0.15;
             pointer-events: none;
+            opacity: 0.6;
         }
 
         .app-container {
@@ -72,12 +86,26 @@
             z-index: 1;
         }
 
-        /* --- Liquid Glass Button Styles --- */
+        /* --- 2. 動畫與轉場 --- */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: none;
+        }
+
+        .reveal-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* --- 3. 按鈕與互動元件 --- */
         button,
         .action-btn {
             position: relative;
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* [字體修復] 按鈕使用 Poppins */
             font-family: 'Poppins', sans-serif;
             letter-spacing: 0.5px;
             cursor: pointer;
@@ -122,7 +150,6 @@
             color: var(--primary-color);
         }
 
-        /* 1. 主要 CTA 按鈕 */
         .generate-btn,
         .btn-start-create,
         .btn-render,
@@ -143,18 +170,16 @@
         .btn-render:hover,
         .btn-modal-primary:hover {
             background: linear-gradient(135deg, rgba(216, 27, 96, 1), rgba(255, 64, 129, 1)) !important;
-            box-shadow: 0 15px 35px rgba(216, 27, 96, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.5);
             transform: translateY(-3px) scale(1.02);
             color: white;
         }
 
-        /* 2. 次要 CTA */
         .btn-start-test {
             background: linear-gradient(135deg, rgba(50, 50, 50, 0.9), rgba(20, 20, 20, 0.95));
             color: white !important;
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 50px;
-            padding: 12px;
+            padding: 15px;
             width: 100%;
             font-weight: 600;
         }
@@ -164,7 +189,6 @@
             transform: translateY(-3px) scale(1.02);
         }
 
-        /* 3. 功能按鈕 */
         .settings-toggle-btn {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -178,17 +202,15 @@
 
         .settings-toggle-btn:hover {
             background: white;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             color: var(--primary-color);
             transform: translateY(-2px);
         }
 
-        /* 4. 危險按鈕 */
         .btn-modal-danger {
             background: rgba(255, 255, 255, 0.9);
             color: #f44336;
             border: 2px solid #f44336;
-            padding: 10px 25px;
+            padding: 15px;
             border-radius: 20px;
             font-weight: 600;
         }
@@ -196,11 +218,9 @@
         .btn-modal-danger:hover {
             background: #f44336;
             color: white;
-            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
             transform: translateY(-2px);
         }
 
-        /* Action Btn 基礎樣式 */
         .action-btn {
             background: white;
             border-radius: 12px;
@@ -208,7 +228,6 @@
             color: #333;
             text-decoration: none;
             padding: 15px;
-            /* [RWD Fix 3] Ensure text wraps nicely */
             white-space: normal;
             text-align: center;
             line-height: 1.2;
@@ -224,7 +243,7 @@
             border: none;
         }
 
-        /* --- 導覽列 --- */
+        /* --- 4. 導覽列 (Navbar) --- */
         .navbar {
             height: var(--nav-height);
             width: 100%;
@@ -285,7 +304,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
 
-        /* --- 畫面與卡片 --- */
+        /* --- 5. 畫面容器 (Screens) --- */
         .screen {
             display: none;
             flex: 1;
@@ -303,7 +322,6 @@
             display: flex;
         }
 
-        /* 當底部播放器顯示時，Creation 頁面要預留底部空間 */
         #creations-screen.has-player {
             padding-bottom: var(--bottom-player-height);
         }
@@ -321,18 +339,6 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
         }
 
-        .mode-card:hover {
-            transform: translateY(-10px) scale(1.01);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
-            border-color: white;
-            background: rgba(255, 255, 255, 0.9);
-        }
-
-        #start-screen {
-            align-items: center;
-            text-align: center;
-        }
-
         .hero-section {
             min-height: 90vh;
             display: flex;
@@ -345,7 +351,6 @@
 
         .hero-title {
             font-size: clamp(36px, 5vw, 56px);
-            /* Responsive Font Size */
             font-family: 'Poppins';
             font-weight: 700;
             margin-bottom: 15px;
@@ -373,17 +378,18 @@
             padding: 30px;
             width: 320px;
             text-align: left;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             flex-direction: column;
             gap: 15px;
-            /* 預設高度佔滿 */
             height: 100%;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* 預設桌機版：按鈕推到底部對齊 */
-        .mode-card>button {
-            margin-top: auto;
+        .mode-card:hover {
+            transform: translateY(-10px) scale(1.01);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+            border-color: white;
         }
 
         .mode-title {
@@ -393,15 +399,18 @@
             margin: 0;
         }
 
-        /* --- Features --- */
-        #features-section {
+        .mode-card>button {
+            margin-top: auto;
+        }
+
+        /* Features & Content */
+        .home-section-container {
             width: 100%;
-            scroll-margin-top: var(--nav-height);
             padding: 80px 20px;
-            background: transparent;
             display: flex;
             flex-direction: column;
             align-items: center;
+            scroll-margin-top: var(--nav-height);
         }
 
         .features-header h2 {
@@ -426,14 +435,6 @@
             width: 100%;
             margin-bottom: 80px;
             gap: 50px;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
-        }
-
-        .feature-block.visible {
-            opacity: 1;
-            transform: translateY(0);
         }
 
         .feature-block:nth-child(even) {
@@ -464,9 +465,7 @@
             height: 300px;
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
             border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -474,23 +473,11 @@
             color: var(--primary-color);
             position: relative;
             overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
-        .feature-visual::after {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(216, 27, 96, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
-            z-index: 0;
-        }
-
-        .feature-visual i {
-            z-index: 1;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-        }
-
-        /* --- Sidebar & Forms --- */
+        /* --- 6. 側邊欄與輸入框 (Sidebar & Inputs) --- */
         .sidebar {
             position: fixed;
             top: 0;
@@ -508,10 +495,6 @@
             flex-direction: column;
             gap: 15px;
             border-right: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .sidebar>* {
-            flex-shrink: 0;
         }
 
         .sidebar.open {
@@ -544,31 +527,36 @@
             opacity: 1;
         }
 
-        /* 升級版 Liquid Glass 下拉選單與輸入框 - 膠囊圓角 */
+        /* [字體修復] 輸入框與選單字體 Inter + 箭頭修復 */
         .sketch-select,
         .sketch-input {
             width: 100%;
             padding: 12px 25px;
             padding-right: 40px;
+            /* 預留箭頭空間 */
             border: 1px solid var(--glass-border);
             border-bottom: 1px solid rgba(255, 255, 255, 0.4);
             border-radius: 30px;
             background: var(--glass-bg);
             backdrop-filter: blur(12px) saturate(120%);
             -webkit-backdrop-filter: blur(12px) saturate(120%);
+
+            /* Font Fix */
             font-family: 'Inter', sans-serif;
             font-size: 14px;
             font-weight: 500;
             color: var(--text-main);
+
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03), inset 0 2px 5px rgba(255, 255, 255, 0.8);
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
             cursor: pointer;
         }
 
-        /* 自定義箭頭 SVG */
+        /* [箭頭修復] 補回遺失的 SVG 箭頭 */
         .sketch-select {
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23D81B60%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat;
@@ -625,13 +613,258 @@
             display: block;
         }
 
-        .generate-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
+        /* --- 7. Showcase (Spotlight & Badges) --- */
+        .creation-showcase-wrapper {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 25px;
+            align-items: stretch;
         }
 
-        /* --- Creating Screen --- */
+        .spotlight-card {
+            height: 100%;
+            min-height: 250px;
+            padding: 30px !important;
+            display: flex !important;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spotlight-bg-icon {
+            position: absolute;
+            right: -20px;
+            bottom: -20px;
+            font-size: 150px;
+            color: var(--primary-color);
+            opacity: 0.05;
+            transform: rotate(-15deg);
+            pointer-events: none;
+        }
+
+        .spotlight-tag {
+            background: linear-gradient(135deg, var(--primary-color), #ff4081);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .recent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .recent-item {
+            display: flex !important;
+            align-items: center;
+            padding: 15px 20px !important;
+            gap: 15px;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+
+        .recent-item:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .btn-favorite {
+            background: transparent;
+            border: 2px solid #ddd;
+            color: #ccc;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-favorite:hover {
+            border-color: #ff4081;
+            color: #ff4081;
+            background: rgba(255, 64, 129, 0.05);
+        }
+
+        .btn-favorite.active {
+            background: linear-gradient(135deg, #ff4081, #f50057);
+            border-color: transparent;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .spotlight-video-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        .spotlight-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .showcase-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            min-height: 160px;
+        }
+
+        .empty-showcase-placeholder {
+            border: 2px dashed rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .badge-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 120px;
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .badge-wrapper:hover {
+            transform: translateY(-10px);
+        }
+
+        .badge-coin {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            color: white;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border: 4px solid rgba(255, 255, 255, 0.4);
+            margin-bottom: 10px;
+        }
+
+        .badge-common {
+            background: linear-gradient(135deg, #cd7f32, #8c5a2b);
+            border-color: #e6a86a;
+        }
+
+        .badge-rare {
+            background: linear-gradient(135deg, #ece9e6, #bdc3c7);
+            border-color: #fff;
+        }
+
+        .badge-epic {
+            background: linear-gradient(135deg, #ffd700, #fdb931);
+            border-color: #ffed4a;
+        }
+
+        .badge-legendary {
+            background: linear-gradient(135deg, #ff00cc, #333399);
+            animation: holo 3s infinite linear;
+            border-color: #ff99cc;
+        }
+
+        @keyframes holo {
+            0% {
+                filter: hue-rotate(0deg);
+            }
+
+            100% {
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        .badge-ribbon {
+            position: absolute;
+            bottom: -12px;
+            background: #d32f2f;
+            color: white;
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 3;
+        }
+
+        .badge-locked {
+            filter: grayscale(100%) brightness(0.6);
+            opacity: 0.6;
+        }
+
+        .manage-card {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 15px;
+            border-radius: 15px;
+            gap: 15px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .manage-card:hover {
+            background: white;
+        }
+
+        .manage-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(216, 27, 96, 0.05);
+        }
+
+        .manage-card.selected::after {
+            content: '✓ Displaying';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 10px;
+            color: var(--primary-color);
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        #achievements-manager-modal .modal-content {
+            width: 800px;
+            max-width: 95%;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        /* --- 8. 工作區與測驗 (Workspace & Test) --- */
         .workspace-header {
             padding: 20px 40px;
             display: flex;
@@ -655,7 +888,6 @@
             min-height: 300px;
             background: rgba(255, 255, 255, 0.6);
             border-radius: 20px;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.02);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -664,6 +896,7 @@
             position: relative;
             overflow: hidden;
             transition: all 0.3s;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.02);
         }
 
         .canvas-area.has-result {
@@ -671,7 +904,6 @@
             background: #000;
         }
 
-        /* Result Dashboard */
         #result-dashboard {
             width: 100%;
             max-width: 1000px;
@@ -712,7 +944,6 @@
             font-size: 18px;
         }
 
-        /* Audio Player */
         .player-circle-btn {
             width: 45px;
             height: 45px;
@@ -771,74 +1002,7 @@
             transform: scale(1.2);
         }
 
-        input[type=range]:disabled::-webkit-slider-thumb {
-            background: #ccc;
-        }
-
-        /* Loader & Toast */
-        .loader-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(216, 27, 96, 0.1);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-
-        .toast {
-            background-color: rgba(30, 30, 30, 0.9);
-            color: #fff;
-            padding: 15px 25px;
-            margin-bottom: 10px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            border-left: 5px solid #4CAF50;
-        }
-
-        .toast.error {
-            border-left-color: #f44336;
-        }
-
-        .toast.info {
-            border-left-color: #2196f3;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        /* --- Test Screen & Piano (Keys with Overlay Effects) --- */
+        /* Test Content */
         .test-content {
             width: 95%;
             max-width: 1200px;
@@ -850,7 +1014,6 @@
             padding: 40px;
         }
 
-        /* [RWD Fix 4] Piano RWD Optimization */
         .piano-wrapper {
             width: 100%;
             margin-top: 20px;
@@ -861,14 +1024,12 @@
             position: relative;
             border: 4px solid #444;
             overflow-x: auto;
-            /* Enable scroll */
             -webkit-overflow-scrolling: touch;
         }
 
         .piano-container {
             position: relative;
             width: 1200px;
-            /* Fixed width to prevent keys from squishing */
             height: 220px;
             display: flex;
         }
@@ -881,7 +1042,6 @@
             transition: transform 0.1s;
         }
 
-        /* 白鍵 - 擬真質感 + 光澤 */
         .key.white {
             flex: 1;
             height: 100%;
@@ -906,7 +1066,6 @@
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        /* 黑鍵 - 擬真質感 + 光澤 */
         .key.black {
             width: 2%;
             height: 60%;
@@ -924,15 +1083,13 @@
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
         }
 
-        /* 正確答案綠色光暈 */
         .key.correct {
             background: #4caf50 !important;
             color: white;
             box-shadow: 0 0 20px #4caf50, inset 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        /* 錯誤紅色淡出 (Overlay) */
-        .key::after {
+        .key.wrong-fade::after {
             content: '';
             position: absolute;
             top: 0;
@@ -944,10 +1101,6 @@
             border-radius: inherit;
             pointer-events: none;
             z-index: 5;
-            transition: opacity 0.1s;
-        }
-
-        .key.wrong-fade::after {
             animation: flashFade 0.5s ease-out forwards;
         }
 
@@ -961,12 +1114,14 @@
             }
         }
 
-        /* Modals */
+        /* --- 9. Modals --- */
         #result-modal,
         #quit-modal,
         #clear-history-modal,
         #delete-single-modal,
-        #video-playback-modal {
+        #video-playback-modal,
+        #achievements-manager-modal,
+        #help-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -985,21 +1140,10 @@
             padding: 40px;
             width: 400px;
             max-width: 90%;
-            /* RWD adjustment */
             border-radius: 30px;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             border: 1px solid white;
-        }
-
-        /* Video Modal Specific */
-        #video-playback-modal .modal-content {
-            width: 90%;
-            max-width: 800px;
-            padding: 0;
-            background: #000;
-            border: none;
-            overflow: hidden;
         }
 
         .modal-btn-group {
@@ -1015,6 +1159,7 @@
             justify-content: center;
         }
 
+        /* --- 10. Floating & Bottom Player --- */
         #floating-back-btn {
             position: fixed;
             bottom: 30px;
@@ -1038,13 +1183,11 @@
             box-shadow: 0 15px 30px rgba(216, 27, 96, 0.4);
         }
 
-        /* --- Floating Mini Player (Right Bottom) --- */
         .floating-player {
             position: fixed;
             bottom: 30px;
             right: 30px;
             width: 250px;
-            /* 稍微加寬以容納新按鈕 */
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.8);
@@ -1058,6 +1201,10 @@
             cursor: default;
         }
 
+        .floating-player:hover {
+            transform: translateY(-2px);
+        }
+
         .fp-close-btn {
             position: absolute;
             top: 5px;
@@ -1068,10 +1215,6 @@
             color: #888;
             cursor: pointer;
             padding: 0;
-        }
-
-        .floating-player:hover {
-            transform: translateY(-2px);
         }
 
         .fp-info {
@@ -1098,11 +1241,9 @@
             color: var(--primary-color);
         }
 
-        /* [CSS Fix: Centering] Updated layout for 5 buttons */
         .fp-controls {
             display: flex;
             justify-content: space-between;
-            /* 平均分佈 */
             align-items: center;
             gap: 5px;
         }
@@ -1114,12 +1255,10 @@
             color: var(--primary-color);
             font-size: 16px;
             width: 30px;
-            /* 固定寬度確保置中 */
             display: flex;
             justify-content: center;
         }
 
-        /* --- 新增：創作卡片樣式與圖示 (Icons) --- */
         .creation-icon-box {
             width: 40px;
             height: 40px;
@@ -1134,7 +1273,6 @@
             flex-shrink: 0;
         }
 
-        /* --- 新增：底部播放器 (Glassmorphism & Light Theme) --- */
         .bottom-player-container {
             position: fixed;
             bottom: 0;
@@ -1159,7 +1297,6 @@
             transform: translateY(0);
         }
 
-        /* 底部播放器左側資訊區 */
         .bp-left-info {
             display: flex;
             align-items: center;
@@ -1190,7 +1327,6 @@
             color: #888;
         }
 
-        /* 底部播放器中間控制區 */
         .bp-center-controls {
             display: flex;
             flex-direction: column;
@@ -1207,7 +1343,6 @@
             margin-bottom: 5px;
         }
 
-        /* 底部播放器右側 (音量與樂器控制) */
         .bp-right-spacer {
             width: 25%;
             display: flex;
@@ -1223,7 +1358,6 @@
             width: 100px;
         }
 
-        /* 底部播放器選單樣式 */
         .bp-select {
             background: rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(0, 0, 0, 0.1);
@@ -1258,7 +1392,6 @@
             transform: scale(1.1);
         }
 
-        /* 啟用狀態的按鈕樣式 (綠色) */
         .bp-btn.active,
         .fp-btn.active {
             color: #4caf50;
@@ -1308,7 +1441,6 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* 底部播放器的 Slider 樣式 */
         .bp-range {
             -webkit-appearance: none;
             width: 100%;
@@ -1334,7 +1466,218 @@
             transform: scale(1.3);
         }
 
-        /* RWD Media Queries */
+        /* --- 11. Toast & Loader --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background-color: rgba(30, 30, 30, 0.9);
+            color: #fff;
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .toast.error {
+            border-left-color: #f44336;
+        }
+
+        .toast.info {
+            border-left-color: #2196f3;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(216, 27, 96, 0.1);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- 12. 新增功能: Help FAB & Mac Window Piano --- */
+        #help-fab-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            color: var(--primary-color);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 2000;
+            transition: all 0.3s;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #help-fab-btn:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 8px 25px rgba(216, 27, 96, 0.3);
+        }
+
+        #piano-trigger-btn {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-right: none;
+            border-radius: 10px 0 0 10px;
+            padding: 15px 10px;
+            font-size: 24px;
+            color: #333;
+            cursor: pointer;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1900;
+            transition: 0.3s;
+            display: none;
+        }
+
+        #piano-trigger-btn:hover {
+            padding-right: 15px;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .mac-window {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: auto;
+            width: 700px;
+            height: 400px;
+            background: rgba(245, 245, 245, 0.98);
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            z-index: 2001;
+            overflow: hidden;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(45%, 0) scale(0.1);
+            transform-origin: 100% 50%;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mac-window.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(0, 0) scale(1);
+        }
+
+        .mac-window-header {
+            height: 30px;
+            background: linear-gradient(to bottom, #e8e8e8, #dcdcdc);
+            border-bottom: 1px solid #c0c0c0;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 0 10px;
+            flex-shrink: 0;
+        }
+
+        .mac-traffic-lights {
+            display: flex;
+            gap: 8px;
+        }
+
+        .traffic-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .traffic-light.close {
+            background: #ff5f56;
+            border: 1px solid #e0443e;
+            cursor: pointer;
+        }
+
+        .traffic-light.minimize {
+            background: #ffbd2e;
+            border: 1px solid #dea123;
+        }
+
+        .traffic-light.maximize {
+            background: #27c93f;
+            border: 1px solid #1aab29;
+        }
+
+        .mac-window-title {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 13px;
+            color: #555;
+            font-weight: 600;
+            pointer-events: none;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .mac-window-body {
+            padding: 20px;
+            background: #f0f0f0;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        #creation-piano-keys {
+            display: flex;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- 13. RWD & Mobile Styles (從 old_index.html 補回) --- */
         @media (max-width: 768px) {
             :root {
                 --sidebar-width: 100%;
@@ -1348,15 +1691,17 @@
                 padding: 15px;
             }
 
-            /* [RWD FIX] 修正首頁卡片重疊問題 - 讓高度自動延展並增加間距 */
             .hero-section {
                 min-height: auto;
                 height: auto;
                 padding-top: 100px;
-                /* 減少頂部間距 */
                 padding-bottom: 60px;
-                /* 增加底部間距避免與Features重疊 */
                 justify-content: flex-start;
+            }
+
+            .hero-title {
+                font-size: 32px;
+                margin-top: 20px;
             }
 
             .mode-container {
@@ -1364,30 +1709,33 @@
                 margin-bottom: 20px;
             }
 
-            .hero-title {
-                font-size: 32px;
-                /* 縮小標題字體 */
-                margin-top: 20px;
-            }
-
-            /* [RWD Fix] 讓卡片更緊湊，不再強制佔滿高度 */
             .mode-card {
                 padding: 20px;
-                /* 縮小內距 */
                 height: auto;
-                /* 不再強制 100% 高度 */
                 gap: 10px;
-                /* 縮小內部元件間距 */
             }
 
             .mode-title {
                 font-size: 18px;
-                /* 縮小卡片標題 */
             }
 
-            /* [RWD Fix] 在手機版讓按鈕緊貼文字，而不是推到底部 */
             .mode-card>button {
                 margin-top: 15px;
+            }
+
+            .creation-showcase-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-block,
+            .feature-block:nth-child(even) {
+                flex-direction: column;
+                text-align: center;
+                gap: 30px;
+            }
+
+            .feature-text {
+                text-align: center;
             }
 
             #result-dashboard {
@@ -1398,17 +1746,6 @@
                 grid-column: span 1;
             }
 
-            .feature-block,
-            .feature-block:nth-child(even) {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .feature-text {
-                text-align: center;
-            }
-
-            /* Navbar Adjustments */
             .navbar {
                 padding: 0 15px;
             }
@@ -1426,7 +1763,6 @@
                 font-size: 12px;
             }
 
-            /* Creation Item RWD */
             .glass-btn-style {
                 padding: 15px !important;
             }
@@ -1452,10 +1788,8 @@
                 min-width: 100px;
             }
 
-            /* Bottom Player RWD */
             .bottom-player-container {
-                padding: 10px 20px;
-                padding-bottom: 30px;
+                padding: 10px 20px 30px 20px;
                 height: auto;
                 min-height: 120px;
                 flex-direction: column;
@@ -1497,7 +1831,6 @@
                 display: none;
             }
 
-            /* Center Floating Player at Bottom */
             .floating-player {
                 bottom: 30px;
                 left: 50%;
@@ -1510,6 +1843,57 @@
             .floating-player:hover {
                 transform: translateX(-50%) translateY(-2px);
             }
+
+            .mac-window {
+                width: 95%;
+                height: auto;
+                transform-origin: center bottom;
+                bottom: 60px;
+                top: auto;
+            }
+
+            #piano-trigger-btn {
+                display: none !important;
+            }
+        }
+
+        /* 新增自動流光動畫 */
+        @keyframes auto-shine {
+            0% {
+                left: -150%;
+            }
+
+            20% {
+                left: 150%;
+            }
+
+            100% {
+                left: 150%;
+            }
+        }
+
+        button::after,
+        .action-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: skewX(-20deg);
+            pointer-events: none;
+            /* 讓它在滑鼠沒碰到時也會自動閃動（例如每10秒閃一次） */
+            animation: auto-shine 8s infinite;
+        }
+
+        /* 滑鼠碰到時強制觸發更快的轉場 */
+        button:hover::after,
+        .action-btn:hover::after {
+            left: 150%;
+            transition: 0.6s ease-in-out;
+            animation: none;
+            /* 碰到的時候停止自動循環 */
         }
     </style>
 </head>
@@ -1548,9 +1932,8 @@
             <option value="Major Scale">大調音階 (Major)</option>
             <option value="Minor Scale">小調音階 (Minor)</option>
             <option value="Blues">藍調音階 (Blues)</option>
-            <option value="Blues">藍調音樂</option>
-            <option value="Pentatonic Major Scale">大調五聲音階</option>
-            <option value="Pentatonic Minor Scale">小調五聲音階</option>
+            <option value="Pentatonic Major">大調五聲音階 (Pentatonic Major)</option>
+            <option value="Pentatonic Minor">小調五聲音階 (Pentatonic Minor)</option>
         </select>
 
         <label>Key (調性)</label>
@@ -1613,8 +1996,12 @@
             </div>
             <div class="nav-links">
                 <button class="nav-btn active" id="nav-home" onclick="goToScreen('start-screen')">Home</button>
-                <button class="nav-btn" id="nav-creations" onclick="goToScreen('creations-screen')">Creations</button>
-                <button class="nav-btn" id="nav-features" onclick="scrollToFeatures()">Features</button>
+                <button class="nav-btn" id="nav-features"
+                    onclick="scrollToSection('features-section')">Features</button>
+                <button class="nav-btn" id="nav-creations"
+                    onclick="scrollToSection('creations-section')">Creations</button>
+                <button class="nav-btn" id="nav-achievements"
+                    onclick="scrollToSection('achievements-section')">Achievements</button>
             </div>
         </nav>
 
@@ -1642,61 +2029,89 @@
                         <div>
                             <h3 class="mode-title">Pitch Challenge</h3>
                             <p style="color:#666; font-size:14px;">測試您的絕對音感能力。</p>
-
                             <div style="margin-top:10px;">
-                                <label for="difficulty-select" style="margin-bottom:5px; display:block;">選擇難度
-                                    (Difficulty):</label>
+                                <label for="difficulty-select" style="margin-bottom:5px; display:block;">選擇難度:</label>
                                 <select id="difficulty-select" class="sketch-select" style="padding:8px;">
-                                    <option value="Easy">Easy (5題 / 20s / 10次機會 / 無黑鍵)</option>
-                                    <option value="Normal" selected>Normal (10題 / 15s / 5次機會 / 含黑鍵)</option>
-                                    <option value="Hard">Hard (20題 / 10s / 3次機會 / 廣音域)</option>
-                                    <option value="Expert">Expert (25題 / 5s / 1次機會 / 全音域)</option>
+                                    <option value="Easy">Easy (5題 / 20s)</option>
+                                    <option value="Normal" selected>Normal (10題 / 15s)</option>
+                                    <option value="Hard">Hard (20題 / 10s)</option>
+                                    <option value="Expert">Expert (25題 / 5s)</option>
                                 </select>
                             </div>
-
                         </div>
                         <button class="btn-start-test" onclick="startTest()">開始測驗</button>
                     </div>
                 </div>
             </div>
 
-            <div id="features-section">
+            <div id="features-section" class="home-section-container reveal-on-scroll">
                 <div class="features-header">
                     <h2>Explore Features</h2>
-                    <p>探索 Melody Visualizers 的強大功能，您的全方位音樂創作工具箱。</p>
+                    <p>探索 Melody Visualizers 的強大功能。</p>
                 </div>
-
-                <div class="feature-block reveal">
+                <div class="feature-block reveal-on-scroll">
                     <div class="feature-text">
                         <h3>AI-Powered Composition</h3>
-                        <p>透過演算法引擎解鎖無限的音樂可能。只需調整音階、調性與速度，即可在幾秒鐘內生成複雜和諧的旋律。</p>
+                        <p>透過演算法引擎解鎖無限的音樂可能。</p>
                     </div>
                     <div class="feature-visual"><i class="fas fa-robot"></i></div>
                 </div>
-
-                <div class="feature-block reveal">
+                <div class="feature-block reveal-on-scroll">
                     <div class="feature-text">
                         <h3>Cinematic Visualization</h3>
-                        <p>將您的 MIDI 檔案轉化為令人驚嘆的 4K 視覺特效。我們的渲染引擎使用粒子系統對每個音符和力度做出反應。</p>
+                        <p>將您的 MIDI 檔案轉化為令人驚嘆的 4K 視覺特效。</p>
                     </div>
                     <div class="feature-visual"><i class="fas fa-film" style="color: #ff9800;"></i></div>
                 </div>
-
-                <div class="feature-block reveal">
+                <div class="feature-block reveal-on-scroll">
                     <div class="feature-text">
                         <h3>Absolute Pitch Training</h3>
-                        <p>透過互動式測驗挑戰您的聽力。即時辨識音符、追蹤分數並提升音樂聽感。</p>
+                        <p>透過互動式測驗挑戰您的聽力。</p>
                     </div>
                     <div class="feature-visual"><i class="fas fa-ear-listen" style="color: #2196f3;"></i></div>
                 </div>
             </div>
+
+            <div id="creations-section" class="home-section-container reveal-on-scroll"
+                style="background: rgba(255,255,255,0.4);">
+                <div class="features-header">
+                    <h2>Studio Spotlight</h2>
+                    <p>您的創作精選展示。</p>
+                </div>
+                <div id="home-showcase-container" style="width: 100%;"></div>
+                <div style="margin-top: 30px;"><button class="glass-btn-style" onclick="goToScreen('creations-screen')"
+                        style="padding: 12px 30px; font-weight:600;">查看所有創作 <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <div id="achievements-section" class="home-section-container reveal-on-scroll">
+                <div class="features-header">
+                    <h2>Achievement Showcase</h2>
+                    <p>收集徽章，證明您的音樂實力！</p>
+                </div>
+
+                <div id="high-score-card" class="glass-btn-style"
+                    style="margin-bottom: 30px; padding: 20px 40px; display: inline-flex; align-items: center; gap: 20px;">
+                    <div style="font-size: 40px; color: #fdb931;"><i class="fas fa-trophy"></i></div>
+                    <div style="text-align: left;">
+                        <h4 style="margin: 0; color: #555;">Pitch Challenge Best</h4>
+                        <div id="display-best-score"
+                            style="font-size: 24px; font-weight: bold; color: var(--primary-color);">尚未挑戰</div>
+                    </div>
+                </div>
+
+                <div id="home-showcase-display" class="showcase-container"></div>
+                <div style="margin-top: 40px;"><button class="glass-btn-style" onclick="openAchievementsManager()"
+                        style="padding: 12px 30px; font-weight:600;"><i class="fas fa-th-large"></i> 管理所有成就</button>
+                </div>
+            </div>
+            <div style="height: 100px;"></div>
         </div>
 
         <div id="main-screen" class="screen">
             <div class="workspace-header">
-                <button class="settings-toggle-btn" onclick="toggleSidebar(true)">
-                    <i class="fas fa-sliders-h"></i> 調整參數 (Parameters)
-                </button>
+                <button class="settings-toggle-btn" onclick="toggleSidebar(true)"><i class="fas fa-sliders-h"></i>
+                    調整參數</button>
                 <span id="status-text" style="color:#888; font-size:14px;">準備生成</span>
             </div>
             <div class="workspace-content">
@@ -1713,34 +2128,26 @@
                     <video id="result-video" controls
                         style="display:none; width:100%; height:100%; object-fit:contain;"></video>
                 </div>
-
                 <div id="result-dashboard">
                     <div class="dashboard-card card-preview">
                         <div class="card-header"><i class="fas fa-headphones" style="color:#2196f3;"></i> Preview (試聽)
                         </div>
-
-                        <div style="margin-bottom:10px;">
-                            <label for="instrument-select"
-                                style="font-size:12px; margin-bottom:5px; display:block;">選擇樂器 (Instrument):</label>
-                            <select id="instrument-select" class="sketch-select" style="padding:5px; width:100%;">
-                            </select>
-                        </div>
-
+                        <div style="margin-bottom:10px;"><label for="instrument-select"
+                                style="font-size:12px;">選擇樂器:</label><select id="instrument-select"
+                                class="sketch-select" style="padding:5px; width:100%;"></select></div>
                         <div style="display:flex; align-items:center; gap:15px; width:100%;">
-                            <button id="play-toggle-btn" class="player-circle-btn" title="播放">▶</button>
+                            <button id="play-toggle-btn" class="player-circle-btn">▶</button>
                             <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
                                 <input type="range" id="seek-bar" value="0" min="0" max="100" step="0.1" disabled
                                     style="width:100%;">
                                 <div
                                     style="display:flex; justify-content:space-between; font-size:11px; color:#999; margin-top:5px;">
-                                    <span id="current-time">0:00</span>
-                                    <span id="player-status" style="color:var(--primary-color);">準備就緒</span>
-                                    <span id="total-time">0:00</span>
+                                    <span id="current-time">0:00</span><span id="player-status"
+                                        style="color:var(--primary-color);">準備就緒</span><span id="total-time">0:00</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                     <div class="dashboard-card">
                         <div class="card-header"><i class="fas fa-video" style="color:#ff9800;"></i> Visualize</div>
                         <button id="render-video-btn" class="action-btn btn-render"
@@ -1748,14 +2155,15 @@
                         <div id="render-status" style="font-size:12px; color:#888; display:none; margin-top:5px;">處理中...
                         </div>
                     </div>
-
                     <div class="dashboard-card">
                         <div class="card-header"><i class="fas fa-download" style="color:#4caf50;"></i> Download</div>
                         <div style="display:flex; gap:10px; height:100%; align-items:center;">
                             <a href="#" class="action-btn btn-download glass-btn-style" id="midi-download-link"
-                                target="_blank" style="flex:1;">MIDI</a>
+                                target="_blank"
+                                style="flex:1; display:flex; justify-content:center; align-items:center;">MIDI</a>
                             <a href="#" class="action-btn btn-download glass-btn-style" id="video-download-link"
-                                target="_blank" style="display:none; flex:1;">影片</a>
+                                target="_blank"
+                                style="display:none; flex:1; justify-content:center; align-items:center;">影片</a>
                         </div>
                     </div>
                 </div>
@@ -1767,38 +2175,28 @@
                 <div id="question-indicator" style="color:#888; margin-bottom:5px;">第 1 / 5 題</div>
                 <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
                     <div id="live-score"
-                        style="display:inline-block; padding:5px 15px; border-radius:20px; font-weight:bold; color:#28a745; background:#e8f5e9;">
-                        得分: 0
-                    </div>
+                        style="padding:5px 15px; border-radius:20px; font-weight:bold; color:#28a745; background:#e8f5e9;">
+                        得分: 0</div>
                     <div id="attempt-display"
-                        style="display:inline-block; padding:5px 15px; border-radius:20px; font-weight:bold; color:#555; background:#eee;">
-                        點擊: 0 / 10
-                    </div>
+                        style="padding:5px 15px; border-radius:20px; font-weight:bold; color:#555; background:#eee;">點擊:
+                        0 / 10</div>
                 </div>
-
                 <div id="timer-display"
-                    style="font-size: 60px; font-weight: bold; color:var(--primary-color); margin: 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                    10</div>
+                    style="font-size: 60px; font-weight: bold; color:var(--primary-color); margin: 10px 0;">10</div>
                 <p id="test-info-display" style="font-size:24px; font-weight:bold; margin: 10px 0;">請聆聽...</p>
-
                 <div style="margin: 15px auto; width: 250px;">
                     <label for="test-instrument-select"
                         style="font-size:12px; margin-bottom:5px; display:block;">選擇測驗樂器:</label>
-                    <select id="test-instrument-select" class="sketch-select" style="padding:8px; width:100%;">
-                    </select>
+                    <select id="test-instrument-select" class="sketch-select" style="padding:8px; width:100%;"></select>
                 </div>
-
                 <button onclick="playCurrentNote()" class="player-circle-btn"
                     style="width:60px; height:60px; margin:10px auto; font-size:24px;">🔊</button>
-
                 <div class="piano-wrapper">
-                    <div class="piano-container" id="piano">
-                    </div>
+                    <div class="piano-container" id="piano"></div>
                 </div>
-
                 <div style="margin-top:30px; display:flex; gap:10px; justify-content:center;">
                     <button id="next-q-btn" class="glass-btn-style" onclick="nextQuestion()"
-                        style="background: #28a745; color:white; border:none; padding:12px 30px; display:none; box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);">下一題</button>
+                        style="background: #28a745; color:white; border:none; padding:12px 30px; display:none;">下一題</button>
                     <button class="glass-btn-style" onclick="endTest()"
                         style="background:white; padding:12px 25px;">結束測驗</button>
                 </div>
@@ -1808,66 +2206,42 @@
         <div id="creations-screen" class="screen">
             <div class="test-content" style="max-width: 1000px; width: 95%;">
                 <div
-                    style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:20px; flex-wrap: wrap; gap: 15px;">
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <h2 style="margin:0;">My Creations History</h2>
-                    </div>
-
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <button onclick="clearHistory()" class="btn-modal-danger"
-                            style="padding: 8px 15px; font-size: 14px; height:fit-content; align-self: flex-end;">
-                            <i class="fas fa-trash"></i> 清除全部
-                        </button>
-                    </div>
+                    style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:20px;">
+                    <h2 style="margin:0;">My Creations History</h2>
+                    <button onclick="clearHistory()" class="btn-modal-danger"
+                        style="padding: 8px 15px; font-size: 14px;"><i class="fas fa-trash"></i> 清除全部</button>
                 </div>
-
                 <div id="history-list"
-                    style="width: 100%; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px;">
-                    <p style="color:#666; text-align:center; padding: 20px;">尚無創作紀錄。</p>
-                </div>
+                    style="width: 100%; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px;"></div>
             </div>
         </div>
 
         <div id="bottom-player" class="bottom-player-container">
             <div class="bp-left-info">
-                <div class="creation-icon-box" style="width: 40px; height: 40px; font-size: 16px;">
-                    <i class="fas fa-music"></i>
-                </div>
+                <div class="creation-icon-box"><i class="fas fa-music"></i></div>
                 <div class="bp-text-group">
                     <div id="bp-track-title" class="bp-track-title">Not Playing</div>
                     <div id="bp-track-subtitle" class="bp-track-subtitle">--</div>
                 </div>
             </div>
-
             <div class="bp-center-controls">
                 <div class="bp-buttons-row">
-                    <button class="bp-btn" id="bp-loop-btn" onclick="toggleLoop()" title="循環播放"><i
-                            class="fas fa-redo"></i></button>
-
-                    <button class="bp-btn" onclick="prevTrack()" title="上一首"><i
-                            class="fas fa-step-backward"></i></button>
-                    <button class="bp-btn bp-play-btn" id="bp-play-btn" onclick="toggleBottomPlay()">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button class="bp-btn" onclick="nextTrack()" title="下一首"><i
-                            class="fas fa-step-forward"></i></button>
-
-                    <button class="bp-btn active" id="bp-auto-btn" onclick="toggleAutoPlay()" title="自動播放下一首"><i
+                    <button class="bp-btn" id="bp-loop-btn" onclick="toggleLoop()"><i class="fas fa-redo"></i></button>
+                    <button class="bp-btn" onclick="prevTrack()"><i class="fas fa-step-backward"></i></button>
+                    <button class="bp-btn bp-play-btn" id="bp-play-btn" onclick="toggleBottomPlay()"><i
+                            class="fas fa-play"></i></button>
+                    <button class="bp-btn" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
+                    <button class="bp-btn active" id="bp-auto-btn" onclick="toggleAutoPlay()"><i
                             class="fas fa-infinity"></i></button>
                 </div>
-
-                <div class="bp-progress-container">
-                    <span id="bp-current-time">0:00</span>
-                    <input type="range" id="bp-seek-bar" class="bp-range" value="0" min="0" max="100" step="0.1">
-                    <span id="bp-total-time">0:00</span>
-                </div>
+                <div class="bp-progress-container"><span id="bp-current-time">0:00</span><input type="range"
+                        id="bp-seek-bar" class="bp-range" value="0" min="0" max="100" step="0.1"><span
+                        id="bp-total-time">0:00</span></div>
             </div>
-
             <div class="bp-right-spacer">
-                <select id="bp-instrument-select" class="bp-select" title="更換播放樂器">
-                </select>
-
-                <div class="bp-volume-control">
+                <select id="bp-instrument-select" class="sketch-select"
+                    style="padding:5px 10px; font-size:12px; width:auto;"></select>
+                <div class="bp-volume-control" style="display:flex; align-items:center; gap:10px; width:100px;">
                     <i class="fas fa-volume-up" style="color:#555; font-size:14px;"></i>
                     <input type="range" id="bp-volume-slider" class="bp-range" value="80" min="0" max="100"
                         oninput="if(window.setGlobalVolume) window.setGlobalVolume(this.value)">
@@ -1886,39 +2260,30 @@
         <div id="quit-modal">
             <div class="modal-content">
                 <h2 style="color: #333; margin-top:0;">確定要結束測驗嗎？</h2>
-                <p style="color: #666; margin-bottom: 30px;">目前的進度將不會被保存。</p>
-                <div class="modal-btn-group">
-                    <button class="btn-modal-primary"
-                        style="background:#ddd !important; color:#333 !important; box-shadow:none;"
-                        onclick="closeQuitModal()">繼續測驗</button>
-                    <button class="btn-modal-danger" onclick="confirmQuit()">確定結束</button>
-                </div>
+                <div class="modal-btn-group"><button class="btn-modal-primary"
+                        style="background:#ddd !important; color:#333 !important;"
+                        onclick="closeQuitModal()">繼續測驗</button><button class="btn-modal-danger"
+                        onclick="confirmQuit()">確定結束</button></div>
             </div>
         </div>
 
         <div id="clear-history-modal">
             <div class="modal-content">
                 <h2 style="color: #333; margin-top:0;">確定要清除全部紀錄嗎？</h2>
-                <p style="color: #666; margin-bottom: 30px;">此動作無法復原，所有創作將會消失。</p>
-                <div class="modal-btn-group">
-                    <button class="btn-modal-primary"
-                        style="background:#ddd !important; color:#333 !important; box-shadow:none;"
-                        onclick="closeClearHistoryModal()">取消</button>
-                    <button class="btn-modal-danger" onclick="confirmClearHistory()">確定清除</button>
-                </div>
+                <div class="modal-btn-group"><button class="btn-modal-primary"
+                        style="background:#ddd !important; color:#333 !important;"
+                        onclick="closeClearHistoryModal()">取消</button><button class="btn-modal-danger"
+                        onclick="confirmClearHistory()">確定清除</button></div>
             </div>
         </div>
 
         <div id="delete-single-modal">
             <div class="modal-content">
                 <h2 style="color: #333; margin-top:0;">確定要刪除這筆創作嗎？</h2>
-                <p style="color: #666; margin-bottom: 30px;">此動作無法復原。</p>
-                <div class="modal-btn-group">
-                    <button class="btn-modal-primary"
-                        style="background:#ddd !important; color:#333 !important; box-shadow:none;"
-                        onclick="closeDeleteSingleModal()">取消</button>
-                    <button class="btn-modal-danger" onclick="confirmDeleteSingle()">確定刪除</button>
-                </div>
+                <div class="modal-btn-group"><button class="btn-modal-primary"
+                        style="background:#ddd !important; color:#333 !important;"
+                        onclick="closeDeleteSingleModal()">取消</button><button class="btn-modal-danger"
+                        onclick="confirmDeleteSingle()">確定刪除</button></div>
             </div>
         </div>
 
@@ -1927,17 +2292,113 @@
                 style="background:#000; width:80%; max-width:800px; padding:0; overflow:hidden; border-radius:15px; position:relative;">
                 <button onclick="closeVideoModal()"
                     style="position:absolute; top:10px; right:10px; z-index:10; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer;">&times;</button>
-                <video id="modal-video-player" controls style="width:100%; display:block;">
-                    <source src="" type="video/mp4">
-                    您的瀏覽器不支援影片標籤。
-                </video>
+                <video id="modal-video-player" controls style="width:100%; display:block;"></video>
+            </div>
+        </div>
+
+        <div id="achievements-manager-modal">
+            <div class="modal-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2 style="margin:0; color:#333;">All Achievements</h2>
+                    <button onclick="closeAchievementsManager()"
+                        style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+                </div>
+                <p style="color:#666; margin-bottom:20px;">點擊已解鎖的成就將其加入首頁展示櫃 (最多 3 個)。<span id="showcase-counter"
+                        style="color:var(--primary-color); font-weight:bold; margin-left:10px;">0 / 3</span></p>
+                <div id="manager-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
+                </div>
+                <div style="margin-top:30px; text-align:center;"><button class="btn-modal-primary"
+                        onclick="closeAchievementsManager()">完成設定</button></div>
+            </div>
+        </div>
+
+        <button id="help-fab-btn" onclick="toggleHelpModal(true)" style="display:none;"><i
+                class="fas fa-question"></i></button>
+        <div id="help-modal">
+            <div class="modal-content" style="text-align: left; max-width: 600px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h2 style="margin:0; color:var(--primary-color);">🎹 User Manual</h2>
+                    <button onclick="toggleHelpModal(false)"
+                        style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+                </div>
+                <div style="overflow-y: auto; max-height: 60vh; padding-right: 10px; color: #555; line-height: 1.6;">
+                    <h4 style="margin-bottom:5px;">1. 設定參數 (Parameters)</h4>
+                    <p>點擊左上角的選單或使用側邊欄，設定音階(Scale)、調性(Key)與速度(BPM)。勾選 Arpeggios 可增加豐富度。</p>
+                    <h4 style="margin-bottom:5px;">2. 生成音樂 (Generate)</h4>
+                    <p>點擊 "生成 MIDI" 按鈕，系統將透過演算法產生獨一無二的旋律。</p>
+                    <h4 style="margin-bottom:5px;">3. 視覺化與導出 (Visualize)</h4>
+                    <p>生成後可預覽音訊，滿意後點擊 "渲染影片" 即可獲得視覺化 MP4 檔案。</p>
+                    <h4 style="margin-bottom:5px;">4. 快捷鍵</h4>
+                    <p><strong>Space:</strong> 播放/暫停<br><strong>M:</strong> 靜音</p>
+                </div>
+                <div style="margin-top:20px; text-align:center;"><button class="btn-modal-primary"
+                        onclick="toggleHelpModal(false)">我瞭解了</button></div>
+            </div>
+        </div>
+
+        <button id="piano-trigger-btn" onclick="toggleCreationPiano()"><i class="fas fa-keyboard"></i></button>
+        <div id="floating-piano-app" class="mac-window">
+            <div class="mac-window-header">
+                <div class="mac-traffic-lights">
+                    <div class="traffic-light close" onclick="toggleCreationPiano()"></div>
+                    <div class="traffic-light minimize"></div>
+                    <div class="traffic-light maximize"></div>
+                </div>
+                <div class="mac-window-title">Virtual Studio Piano</div>
+            </div>
+            <div class="mac-window-body" style="display:flex; flex-direction:column; gap:15px;">
+                <div style="display:flex; align-items:center; gap:10px; justify-content:center;">
+                    <label style="font-size:12px; color:#666; margin:0;">Instrument:</label>
+                    <select id="creation-instrument-select" class="sketch-select"
+                        style="padding: 5px 15px; width:auto; height:35px;"></select>
+                </div>
+                <div class="piano-wrapper"
+                    style="margin:0; border:none; background:#222; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);">
+                    <div class="piano-container" id="creation-piano-keys" style="height: 180px; min-width: 800px;">
+                    </div>
+                </div>
+                <p style="text-align:center; font-size:12px; color:#888; margin:0;"><i class="fas fa-info-circle"></i>
+                    提示: 可使用滑鼠點擊或滑動彈奏</p>
             </div>
         </div>
 
     </div>
 
     <script>
-        // --- Utils & Toast ---
+        // --- 1. Background Animation ---
+        (function () {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let notes = [];
+            const notePath1 = new Path2D("M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z");
+            const notePath2 = new Path2D("M18 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h6V3h-8z");
+            const notePaths = [notePath1, notePath2];
+            class Note {
+                constructor() { this.init(); }
+                init() {
+                    this.x = Math.random() * width; this.y = height + Math.random() * 100;
+                    this.size = Math.random() * 1.5 + 0.5; this.speed = Math.random() * 0.5 + 0.2;
+                    this.rotation = Math.random() * 360; this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                    this.path = notePaths[Math.floor(Math.random() * notePaths.length)]; this.opacity = Math.random() * 0.4 + 0.2;
+                }
+                update() { this.y -= this.speed; this.rotation += this.rotationSpeed; if (this.y < -50) { this.init(); this.y = height + 50; } }
+                draw() {
+                    ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation); ctx.scale(this.size * 2, this.size * 2);
+                    ctx.shadowColor = "rgba(0, 0, 0, 0.1)"; ctx.shadowBlur = 10; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; ctx.fill(this.path);
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity + 0.1})`; ctx.lineWidth = 0.5; ctx.stroke(this.path);
+                    ctx.restore();
+                }
+            }
+            function initCanvas() { resize(); const noteCount = Math.floor(width * 0.02); notes = []; for (let i = 0; i < noteCount; i++) { const note = new Note(); note.y = Math.random() * height; notes.push(note); } animate(); }
+            function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+            function animate() { ctx.clearRect(0, 0, width, height); notes.forEach(note => { note.update(); note.draw(); }); requestAnimationFrame(animate); }
+            window.addEventListener('resize', () => { resize(); }); initCanvas();
+        })();
+
+        // --- 2. Utility Functions (Un-minified) ---
         function showToast(message, type = 'success', duration = 3000) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -1945,11 +2406,8 @@
             toast.innerText = message;
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 10);
-
             if (duration > 0) {
-                setTimeout(() => {
-                    removeToast(toast);
-                }, duration);
+                setTimeout(() => { removeToast(toast); }, duration);
             }
             return toast;
         }
@@ -1962,17 +2420,14 @@
             }, 300);
         }
 
-        // --- Global State ---
+        // --- 3. Global Logic ---
         let isFloatingPlayerClosed = false;
-
-        // --- Close Floating Player (Persist State) ---
         function closeFloatingPlayer() {
             if (window.playerStop) window.playerStop();
             document.getElementById('floating-player').style.display = 'none';
             isFloatingPlayerClosed = true;
         }
 
-        // --- History / Storage Logic ---
         const STORAGE_KEY = 'melody_visualizer_creations';
         const MAX_HISTORY = 10;
         let currentHistoryIndex = -1;
@@ -1984,17 +2439,9 @@
 
         function saveCreationToHistory(midiFilename, params) {
             let history = getHistory();
-            const newRecord = {
-                id: Date.now(),
-                date: new Date().toLocaleString(),
-                midi: midiFilename,
-                video: null,
-                params: params
-            };
+            const newRecord = { id: Date.now(), date: new Date().toLocaleString(), midi: midiFilename, video: null, params: params };
             history.unshift(newRecord);
-            if (history.length > MAX_HISTORY) {
-                history.pop();
-            }
+            if (history.length > MAX_HISTORY) history.pop();
             localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
             renderHistory();
         }
@@ -2009,62 +2456,41 @@
             }
         }
 
-        // 觸發清除 Modal
-        function clearHistory() {
-            document.getElementById('clear-history-modal').style.display = 'flex';
-        }
+        function clearHistory() { document.getElementById('clear-history-modal').style.display = 'flex'; }
 
-        // 確認清除
         function confirmClearHistory() {
             localStorage.removeItem(STORAGE_KEY);
             renderHistory();
             hideBottomPlayer();
-            // 如果正在播放，停止它
             if (window.playerStop) window.playerStop();
             closeClearHistoryModal();
             showToast("紀錄已清除", "success");
+            renderHomeShowcase();
         }
 
-        // 關閉清除 Modal
-        function closeClearHistoryModal() {
-            document.getElementById('clear-history-modal').style.display = 'none';
-        }
+        function closeClearHistoryModal() { document.getElementById('clear-history-modal').style.display = 'none'; }
 
-        // 單筆刪除功能
         let pendingDeleteId = null;
-
-        function deleteCreation(id) {
-            pendingDeleteId = id;
-            document.getElementById('delete-single-modal').style.display = 'flex';
-        }
-
-        function closeDeleteSingleModal() {
-            pendingDeleteId = null;
-            document.getElementById('delete-single-modal').style.display = 'none';
-        }
+        function deleteCreation(id) { pendingDeleteId = id; document.getElementById('delete-single-modal').style.display = 'flex'; }
+        function closeDeleteSingleModal() { pendingDeleteId = null; document.getElementById('delete-single-modal').style.display = 'none'; }
 
         function confirmDeleteSingle() {
             if (!pendingDeleteId) return;
             const id = pendingDeleteId;
-
             let history = getHistory();
-
-            // 檢查是否正在播放被刪除的歌曲
             if (currentHistoryIndex !== -1 && history[currentHistoryIndex] && history[currentHistoryIndex].id === id) {
                 if (window.playerStop) window.playerStop();
                 hideBottomPlayer();
                 currentHistoryIndex = -1;
             }
-
             history = history.filter(item => item.id !== id);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-
             renderHistory();
+            renderHomeShowcase();
             closeDeleteSingleModal();
             showToast("創作已刪除", "success");
         }
 
-        // Video Modal Logic
         function openVideoModal(url) {
             const modal = document.getElementById('video-playback-modal');
             const video = document.getElementById('modal-video-player');
@@ -2081,19 +2507,33 @@
             modal.style.display = 'none';
         }
 
+        function toggleFavorite(id) {
+            let history = getHistory();
+            const index = history.findIndex(item => item.id === id);
+            if (index !== -1) {
+                history[index].isFavorite = !history[index].isFavorite;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+                if (history[index].isFavorite) {
+                    showToast("已加入最愛，將顯示於首頁 Spotlight！", "success");
+                } else {
+                    showToast("已取消最愛", "info");
+                }
+                renderHistory();
+                renderHomeShowcase();
+            }
+        }
+
         function renderHistory() {
             const list = document.getElementById('history-list');
             const history = getHistory();
-
             if (history.length === 0) {
                 list.innerHTML = '<p style="color:#666; text-align:center; padding: 20px;">尚無創作紀錄。</p>';
                 return;
             }
-
             list.innerHTML = '';
             history.forEach((item, index) => {
                 const hasVideo = !!item.video;
-
+                const isFav = !!item.isFavorite;
                 const paramText = `Key: ${document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key}, Scale: ${item.params.scale}, BPM: ${item.params.tempo}`;
 
                 const itemDiv = document.createElement('div');
@@ -2105,80 +2545,58 @@
                 itemDiv.style.gap = '15px';
                 itemDiv.style.cursor = 'pointer';
 
-                itemDiv.onclick = function () { playHistoryIndex(index); };
+                // Prevent click on buttons from triggering play
+                itemDiv.onclick = function (e) {
+                    if (e.target.closest('button') || e.target.closest('a')) return;
+                    playHistoryIndex(index);
+                };
 
-                // HTML 結構
                 itemDiv.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:15px;">
-                        
                         <div style="display:flex; align-items:center; gap:15px; flex:1;">
-                            <div class="creation-icon-box">
-                                <i class="fas fa-music"></i>
-                            </div>
+                            <div class="creation-icon-box"><i class="fas fa-music"></i></div>
                             <div style="display:flex; flex-direction:column; align-items:flex-start; text-align:left;">
-                                <h4 style="margin:0 0 5px 0; color:var(--primary-color);">Creation #${item.id.toString().slice(-4)}</h4>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <h4 style="margin:0 0 5px 0; color:var(--primary-color);">Creation #${item.id.toString().slice(-4)}</h4>
+                                    ${isFav ? '<i class="fas fa-heart" style="font-size:12px; color:#ff4081;"></i>' : ''}
+                                </div>
                                 <div style="font-size:12px; color:#666;">${item.date}</div>
                                 <div style="font-size:11px; color:#888; margin-top:4px;">${paramText}</div>
                             </div>
                         </div>
-
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <button class="player-circle-btn" style="width:40px; height:40px; font-size:14px;" title="Play">
-                                <i class="fas fa-play"></i>
-                            </button>
-                            
+                            <button onclick="toggleFavorite(${item.id})" class="btn-favorite ${isFav ? 'active' : ''}"><i class="${isFav ? 'fas' : 'far'} fa-heart"></i></button>
+                            <div style="width:1px; height:30px; background:#eee; margin:0 5px;"></div>
+                            <button class="player-circle-btn" style="width:40px; height:40px; font-size:14px;" title="Play"><i class="fas fa-play"></i></button>
                             <div style="display:flex; flex-direction:column; gap:5px; align-items: flex-end;">
-                                <a href="midi/${item.midi}" download="${item.midi}" onclick="event.stopPropagation()" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center;">
-                                    <i class="fas fa-download"></i> 下載 MIDI 檔案
-                                </a>
-                                ${hasVideo ? `
-                                <button onclick="event.stopPropagation(); openVideoModal('${item.video}')" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center; color:#2196f3; border-color:#bbdefb;">
-                                    <i class="fas fa-film"></i> 觀看影片
-                                </button>
-                                ` : ''}
+                                <a href="midi/${item.midi}" download="${item.midi}" onclick="event.stopPropagation()" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center;"><i class="fas fa-download"></i> MIDI</a>
+                                ${hasVideo ? `<button onclick="event.stopPropagation(); openVideoModal('${item.video}')" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center; color:#2196f3; border-color:#bbdefb;"><i class="fas fa-film"></i> 影片</button>` : ''}
                             </div>
-                            <button onclick="event.stopPropagation(); deleteCreation(${item.id})" class="action-btn" style="padding:10px; font-size:14px; color:#f44336; border-color:#ffcdd2;" title="刪除此創作">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <button onclick="event.stopPropagation(); deleteCreation(${item.id})" class="action-btn" style="width:40px; height:40px; padding:0; font-size:14px; color:#f44336; border-color:#ffcdd2; display:flex; justify-content:center; align-items:center;" title="刪除"><i class="fas fa-trash"></i></button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 list.appendChild(itemDiv);
             });
         }
 
-        // --- Bottom Player Logic ---
         function showBottomPlayer() {
-            const player = document.getElementById('bottom-player');
-            const screen = document.getElementById('creations-screen');
-            const floating = document.getElementById('floating-player');
-
-            player.classList.add('active');
-            screen.classList.add('has-player');
-            floating.style.display = 'none';
+            document.getElementById('bottom-player').classList.add('active');
+            document.getElementById('creations-screen').classList.add('has-player');
+            document.getElementById('floating-player').style.display = 'none';
         }
 
         function hideBottomPlayer() {
-            const player = document.getElementById('bottom-player');
-            const screen = document.getElementById('creations-screen');
-            const floating = document.getElementById('floating-player');
-
-            player.classList.remove('active');
-            screen.classList.remove('has-player');
-            floating.style.display = 'none';
+            document.getElementById('bottom-player').classList.remove('active');
+            document.getElementById('creations-screen').classList.remove('has-player');
+            document.getElementById('floating-player').style.display = 'none';
         }
 
         function showFloatingPlayer() {
-            if (isFloatingPlayerClosed) return; // Don't show if closed
-            const player = document.getElementById('bottom-player');
-            const floating = document.getElementById('floating-player');
-
-            player.classList.remove('active');
-            floating.style.display = 'flex';
+            if (isFloatingPlayerClosed) return;
+            document.getElementById('bottom-player').classList.remove('active');
+            document.getElementById('floating-player').style.display = 'flex';
         }
 
-
-        // --- 輸入驗證 ---
         function validateInput(event) {
             const input = event.target;
             let value = parseInt(input.value);
@@ -2188,38 +2606,59 @@
             setTimeout(() => { input.value = value; }, 200);
         }
 
-        // --- Navigation ---
-        function toggleSidebar(show) {
-            const sidebar = document.getElementById('sidebar'); const overlay = document.getElementById('sidebar-overlay');
-            if (show) { sidebar.classList.add('open'); overlay.classList.add('active'); } else { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+        // --- 4. Achievements System ---
+        function updateBestScore(newScore) {
+            const currentBest = parseInt(localStorage.getItem('melody_best_score') || 0);
+            if (newScore > currentBest) {
+                localStorage.setItem('melody_best_score', newScore);
+                showToast("🏆 新紀錄！最佳成績已更新！", "success");
+            }
+            renderBestScore();
+        }
+        function renderBestScore() {
+            const best = localStorage.getItem('melody_best_score');
+            const display = document.getElementById('display-best-score');
+            if (display) { display.innerText = best ? `${best} 分` : "尚未挑戰"; }
         }
 
-        // [Fix Logic] Added forceScrollTop parameter to handle CSS overflow scrolling
+        // --- 5. Navigation Logic (Restored goToScreen logic) ---
+        function toggleSidebar(show) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (show) { sidebar.classList.add('open'); overlay.classList.add('active'); }
+            else { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+        }
+
+        function toggleHelpModal(show) {
+            const modal = document.getElementById('help-modal');
+            if (modal) { modal.style.display = show ? 'flex' : 'none'; }
+        }
+
         function goToScreen(id, forceScrollTop = true) {
-            document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.classList.remove('animate-enter'); });
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active'); s.classList.remove('animate-enter');
+            });
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
             const target = document.getElementById(id);
-            target.classList.add('active'); target.classList.add('animate-enter');
+            target.classList.add('active');
+            target.classList.add('animate-enter');
 
             if (id === 'start-screen') {
                 document.getElementById('nav-home').classList.add('active');
-
-                // [Fix] 強制捲動該 DIV 容器到頂部 (因為 body overflow:hidden, window.scrollTo 無效)
-                if (forceScrollTop) {
-                    target.scrollTo({ top: 0, behavior: 'smooth' });
-                }
+                renderHomeShowcase();
+                renderHomeShowcaseBadges();
+                // [Fix from old_index] Force scroll to top
+                if (forceScrollTop) target.scrollTo({ top: 0, behavior: 'smooth' });
             }
-            if (id === 'creations-screen') {
+            else if (id === 'creations-screen') {
                 document.getElementById('nav-creations').classList.add('active');
                 renderHistory();
-
                 if (currentHistoryIndex !== -1) showBottomPlayer();
-            } else {
-                // [RWD Fix 2] 強制先隱藏底部播放器，避免在關閉懸浮視窗的狀態下殘留
+            }
+            else {
                 hideBottomPlayer();
-
                 if (id === 'test-screen') {
-                    // Stop any active history playback
                     if (window.playerStop && currentHistoryIndex !== -1) {
                         window.playerStop();
                         hideBottomPlayer();
@@ -2232,41 +2671,178 @@
                 }
             }
 
+            // [New Feature Logic] Main Screen controls
             if (id === 'main-screen') {
                 setTimeout(() => toggleSidebar(true), 100);
                 document.getElementById('floating-back-btn').style.display = 'block';
+                const helpBtn = document.getElementById('help-fab-btn'); if (helpBtn) helpBtn.style.display = 'flex';
+                const pianoBtn = document.getElementById('piano-trigger-btn'); if (pianoBtn) pianoBtn.style.display = 'flex';
             } else {
                 toggleSidebar(false);
                 document.getElementById('floating-back-btn').style.display = 'none';
+                const helpBtn = document.getElementById('help-fab-btn'); if (helpBtn) helpBtn.style.display = 'none';
+                const pianoBtn = document.getElementById('piano-trigger-btn'); if (pianoBtn) pianoBtn.style.display = 'none';
+                if (window.closeCreationPiano) window.closeCreationPiano();
             }
         }
 
-        // Features 按鈕
-        function scrollToFeatures() {
-            // [Fix] 呼叫 goToScreen 但設為 false，避免先捲到頂再往下跳
-            goToScreen('start-screen', false);
-
-            // 強制切換 active class
-            document.getElementById('nav-home').classList.remove('active');
-            document.getElementById('nav-features').classList.add('active');
+        function scrollToSection(sectionId) {
+            goToScreen('start-screen', false); // Don't scroll to top immediately
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if (sectionId === 'features-section') document.getElementById('nav-features').classList.add('active');
+            if (sectionId === 'creations-section') document.getElementById('nav-creations').classList.add('active');
+            if (sectionId === 'achievements-section') document.getElementById('nav-achievements').classList.add('active');
 
             setTimeout(() => {
-                const section = document.getElementById('features-section');
-                if (section) { section.scrollIntoView({ behavior: 'smooth' }); }
+                const section = document.getElementById(sectionId);
+                if (section) { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
             }, 50);
         }
 
         function setupScrollReveal() {
             const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-            }, { threshold: 0.15 });
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) { entry.target.classList.add('visible'); }
+                    else { entry.target.classList.remove('visible'); }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+            document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
         }
 
-        // --- API & MIDI Logic ---
+        // --- 6. Achievement Logic ---
+        const ACHIEVEMENT_KEY = 'melody_achievements';
+        const SHOWCASE_KEY = 'melody_showcase';
+        const achievementsData = [
+            { id: 'first_melody', title: '初試啼聲', desc: '生成您的第一首 MIDI 旋律', icon: 'fa-music', rarity: 'common' },
+            { id: 'creator_novice', title: '創作新手', desc: '累積生成 5 次旋律', icon: 'fa-pencil-alt', rarity: 'rare' },
+            { id: 'pitch_perfect', title: '絕對音感', desc: '在 Pitch Challenge 獲得滿分', icon: 'fa-star', rarity: 'legendary' },
+            { id: 'film_maker', title: '電影大師', desc: '成功渲染出一部影片', icon: 'fa-video', rarity: 'epic' }
+        ];
+
+        function getUnlockedAchievements() { const data = localStorage.getItem(ACHIEVEMENT_KEY); return data ? JSON.parse(data) : []; }
+        function getShowcaseItems() { const data = localStorage.getItem(SHOWCASE_KEY); return data ? JSON.parse(data) : []; }
+        function saveShowcaseItems(items) { localStorage.setItem(SHOWCASE_KEY, JSON.stringify(items)); renderHomeShowcaseBadges(); }
+
+        function unlockAchievement(id) {
+            let unlocked = getUnlockedAchievements();
+            if (!unlocked.includes(id)) {
+                unlocked.push(id);
+                localStorage.setItem(ACHIEVEMENT_KEY, JSON.stringify(unlocked));
+                const ach = achievementsData.find(a => a.id === id);
+                if (ach) {
+                    showToast(`🏆 成就解鎖: ${ach.title}`, "success", 5000);
+                    let showcase = getShowcaseItems();
+                    if (showcase.length < 3) { showcase.push(id); saveShowcaseItems(showcase); }
+                }
+                renderHomeShowcaseBadges();
+            }
+        }
+
+        function renderHomeShowcaseBadges() {
+            const container = document.getElementById('home-showcase-display');
+            const showcaseIds = getShowcaseItems();
+            if (showcaseIds.length === 0) {
+                container.innerHTML = `<div class="empty-showcase-placeholder"><i class="fas fa-plus-circle" style="margin-right:8px;"></i> 點擊下方按鈕來佈置您的展示櫃</div>`;
+                return;
+            }
+            container.innerHTML = '';
+            showcaseIds.forEach(id => {
+                const ach = achievementsData.find(a => a.id === id);
+                if (ach) {
+                    const badge = document.createElement('div');
+                    badge.className = 'badge-wrapper';
+                    badge.innerHTML = `<div class="badge-coin badge-${ach.rarity}"><i class="fas ${ach.icon}"></i></div><div class="badge-ribbon">${ach.title}</div>`;
+                    container.appendChild(badge);
+                }
+            });
+        }
+
+        function openAchievementsManager() { document.getElementById('achievements-manager-modal').style.display = 'flex'; renderManagerGrid(); }
+        function closeAchievementsManager() { document.getElementById('achievements-manager-modal').style.display = 'none'; }
+
+        function renderManagerGrid() {
+            const grid = document.getElementById('manager-grid');
+            const unlocked = getUnlockedAchievements();
+            const showcase = getShowcaseItems();
+            document.getElementById('showcase-counter').innerText = `${showcase.length} / 3`;
+            grid.innerHTML = '';
+            achievementsData.forEach(ach => {
+                const isUnlocked = unlocked.includes(ach.id);
+                const isSelected = showcase.includes(ach.id);
+                const card = document.createElement('div');
+                card.className = `manage-card ${isSelected ? 'selected' : ''} ${!isUnlocked ? 'locked-item' : ''}`;
+                if (isUnlocked) { card.onclick = () => toggleShowcaseItem(ach.id); }
+                card.innerHTML = `<div style="width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:20px;" class="badge-${ach.rarity} ${!isUnlocked ? 'badge-locked' : ''}"><i class="fas ${ach.icon}"></i></div><div><div style="font-weight:bold; color:#333;">${ach.title} ${!isUnlocked ? '<i class="fas fa-lock" style="font-size:10px; color:#999; margin-left:5px;"></i>' : ''}</div><div style="font-size:12px; color:#666;">${ach.desc}</div></div>`;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleShowcaseItem(id) {
+            let showcase = getShowcaseItems();
+            const index = showcase.indexOf(id);
+            if (index !== -1) { showcase.splice(index, 1); }
+            else {
+                if (showcase.length >= 3) { showToast("展示櫃已滿 (最多 3 個)，請先移除舊的", "info"); return; }
+                showcase.push(id);
+            }
+            saveShowcaseItems(showcase);
+            renderManagerGrid();
+        }
+
+        // --- 7. Home Showcase Render ---
+        function renderHomeShowcase() {
+            const container = document.getElementById('home-showcase-container');
+            const history = getHistory();
+            if (history.length === 0) {
+                container.innerHTML = `<div class="glass-btn-style" style="padding: 40px; border-radius: 20px; color: #888; max-width:600px; margin:0 auto;"><i class="fas fa-music" style="font-size: 40px; margin-bottom: 15px; opacity:0.3;"></i><p>您的創作旅程即將開始...</p><button onclick="goToScreen('main-screen')" class="action-btn" style="margin-top:15px; border-radius:30px;"><i class="fas fa-plus"></i> Create Now</button></div>`;
+                return;
+            }
+            const favorites = history.filter(item => item.isFavorite);
+            const spotlightItem = favorites.length > 0 ? favorites[0] : history[0];
+            const isFeatured = favorites.length > 0;
+            const recents = history.filter(item => item.id !== spotlightItem.id).slice(0, 3);
+            const getParamText = (item) => `Key: ${item.params.key} | ${item.params.scale} | ${item.params.tempo} BPM`;
+
+            let html = `<div class="creation-showcase-wrapper">`;
+            html += `<div class="glass-btn-style spotlight-card" style="cursor: default;">
+                <i class="fas fa-music spotlight-bg-icon"></i>
+                <div style="width:100%;">
+                    <div class="spotlight-tag">${isFeatured ? '<i class="fas fa-heart"></i> FAVORITE PICK' : '<i class="fas fa-star"></i> LATEST DROP'}</div>
+                    <h3 style="font-size: 28px; margin: 10px 0; color: #333;">Creation #${spotlightItem.id.toString().slice(-4)}</h3>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 15px;"><i class="far fa-clock"></i> ${spotlightItem.date.split(' ')[0]}</div>
+                </div>
+                <div style="width:100%; flex:1; display:flex; flex-direction:column; justify-content:flex-end;">
+                    ${spotlightItem.video ?
+                    `<div class="spotlight-video-container"><video src="${spotlightItem.video}" controls controlsList="nodownload"></video></div>` :
+                    `<div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 15px; margin-bottom: 20px;"><div style="font-size: 13px; color: #555; font-weight:600;">Audio Parameters</div><div style="font-size: 12px; color: #777; margin-top:5px;">${getParamText(spotlightItem)}</div></div>
+                         <div onclick="playHistoryIndex(${history.indexOf(spotlightItem)}); goToScreen('creations-screen');" style="display:flex; align-items:center; gap:10px; color: var(--primary-color); font-weight:bold; font-size:14px; cursor:pointer; width:fit-content;"><div style="width:40px; height:40px; border-radius:50%; background:var(--primary-color); color:white; display:flex; align-items:center; justify-content:center;"><i class="fas fa-play"></i></div>Listen Audio</div>`}
+                </div>
+            </div>`;
+
+            if (recents.length > 0) {
+                html += `<div class="recent-list">`;
+                recents.forEach((item) => {
+                    const originalIndex = history.indexOf(item);
+                    html += `<div class="glass-btn-style recent-item" onclick="playHistoryIndex(${originalIndex}); goToScreen('creations-screen');">
+                        <div class="creation-icon-box" style="width: 45px; height: 45px; font-size: 18px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white; box-shadow: 0 4px 10px rgba(245, 87, 108, 0.3);"><i class="fas fa-compact-disc"></i></div>
+                        <div style="flex:1; text-align:left;">
+                            <div style="font-weight:bold; color:#333; font-size:14px;">Creation #${item.id.toString().slice(-4)}</div>
+                            <div style="font-size: 11px; color: #888;">${item.date.split(' ')[0]}</div>
+                        </div>
+                        ${item.isFavorite ? '<i class="fas fa-heart" style="color:#ff4081; font-size:14px; margin-right:5px;"></i>' : ''}
+                        <i class="fas fa-play-circle" style="color:#ddd; font-size:24px; transition:0.3s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='#ddd'"></i>
+                    </div>`;
+                });
+                html += `</div>`;
+            } else {
+                html += `<div class="recent-list" style="justify-content:center;"><div class="glass-btn-style recent-item" onclick="goToScreen('main-screen')" style="height:100%; flex-direction:column; justify-content:center; text-align:center; gap:10px;"><div class="creation-icon-box" style="background:linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);"><i class="fas fa-plus"></i></div><div style="color:#555; font-weight:bold;">Create More</div><div style="font-size:12px; color:#888;">累積更多創作來填滿這個列表！</div></div></div>`;
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
         async function generateMidi() {
             if (window.playerStop && typeof window.playerStop === 'function') window.playerStop();
-
             toggleSidebar(false);
             const params = {
                 scale: document.getElementById('scale').value, key: document.getElementById('key').value,
@@ -2276,32 +2852,47 @@
                 include_rests: document.getElementById('include_rests').checked ? 'on' : null,
                 include_chords: document.getElementById('include_chords').checked ? 'on' : null
             };
-
             const visualLoader = document.getElementById('visual-loader');
             const placeholder = document.getElementById('placeholder-text');
             const dashboard = document.getElementById('result-dashboard');
 
-            placeholder.style.display = 'none'; document.getElementById('result-video').style.display = 'none'; dashboard.style.display = 'none';
-            visualLoader.style.display = 'flex'; document.getElementById('status-text').innerText = "生成中...";
+            placeholder.style.display = 'none';
+            document.getElementById('result-video').style.display = 'none';
+            dashboard.style.display = 'none';
+            visualLoader.style.display = 'flex';
+            document.getElementById('status-text').innerText = "生成中...";
 
             try {
                 const response = await fetch('http://localhost:3000/api/generate-midi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
                 const data = await response.json();
                 if (data.success) {
                     window.currentMidiFilename = data.filename;
-
-                    // --- 儲存到歷史紀錄 ---
                     saveCreationToHistory(data.filename, params);
+                    renderHomeShowcase();
+                    unlockAchievement('first_melody');
+                    if (getHistory().length >= 5) unlockAchievement('creator_novice');
 
-                    visualLoader.style.display = 'none'; placeholder.style.display = 'block';
+                    visualLoader.style.display = 'none';
+                    placeholder.style.display = 'block';
                     placeholder.innerHTML = `<h3 style="color:#28a745;"><i class="fas fa-check-circle"></i> 生成成功！</h3><p>準備進行視覺化。</p>`;
                     document.getElementById('status-text').innerText = "MIDI 已就緒";
                     dashboard.style.display = 'grid';
-                    const midiLink = document.getElementById('midi-download-link'); midiLink.href = data.midiUrl; midiLink.download = data.filename;
-                    const renderBtn = document.getElementById('render-video-btn'); renderBtn.disabled = false; renderBtn.innerText = "渲染影片";
+
+                    const midiLink = document.getElementById('midi-download-link');
+                    midiLink.href = data.midiUrl;
+                    midiLink.download = data.filename;
+                    const renderBtn = document.getElementById('render-video-btn');
+                    renderBtn.disabled = false;
+                    renderBtn.innerText = "渲染影片";
                     showToast("MIDI 生成成功！", "success");
                 } else { throw new Error(data.error); }
-            } catch (error) { console.error(error); visualLoader.style.display = 'none'; placeholder.style.display = 'block'; placeholder.innerHTML = `<p style="color:red">錯誤: ${error.message}</p>`; showToast("生成失敗", "error"); }
+            } catch (error) {
+                console.error(error);
+                visualLoader.style.display = 'none';
+                placeholder.style.display = 'block';
+                placeholder.innerHTML = `<p style="color:red">錯誤: ${error.message}</p>`;
+                showToast("生成失敗", "error");
+            }
         }
 
         async function startRenderProcess() {
@@ -2312,99 +2903,77 @@
             const videoEl = document.getElementById('result-video');
             const statusDiv = document.getElementById('render-status');
 
-            renderBtn.disabled = true; renderBtn.innerText = "渲染中..."; statusDiv.style.display = 'block';
-            placeholder.style.display = 'none'; videoEl.style.display = 'none'; videoEl.pause();
-            visualLoader.style.display = 'flex'; visualLoader.querySelector('p').innerText = "影片渲染中...";
+            renderBtn.disabled = true;
+            renderBtn.innerText = "渲染中...";
+            statusDiv.style.display = 'block';
+            placeholder.style.display = 'none';
+            videoEl.style.display = 'none';
+            videoEl.pause();
+            visualLoader.style.display = 'flex';
+            visualLoader.querySelector('p').innerText = "影片渲染中...";
 
             try {
                 const response = await fetch('http://localhost:3000/api/render-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ midiFilename: window.currentMidiFilename }) });
                 const data = await response.json();
                 if (data.success) {
-                    // --- 更新歷史紀錄影片 ---
                     updateHistoryVideo(window.currentMidiFilename, data.videoUrl);
-
-                    visualLoader.style.display = 'none'; statusDiv.style.display = 'none';
+                    unlockAchievement('film_maker');
+                    visualLoader.style.display = 'none';
+                    statusDiv.style.display = 'none';
                     document.getElementById('visual-container').classList.add('has-result');
-                    videoEl.src = data.videoUrl; videoEl.style.display = 'block'; videoEl.load();
-                    const videoLink = document.getElementById('video-download-link'); videoLink.href = data.videoUrl; videoLink.download = data.filename; videoLink.style.display = 'flex';
-                    renderBtn.disabled = false; renderBtn.innerText = "再次渲染";
+                    videoEl.src = data.videoUrl;
+                    videoEl.style.display = 'block';
+                    videoEl.load();
+                    const videoLink = document.getElementById('video-download-link');
+                    videoLink.href = data.videoUrl;
+                    videoLink.download = data.filename;
+                    videoLink.style.display = 'flex';
+                    renderBtn.disabled = false;
+                    renderBtn.innerText = "再次渲染";
                     showToast("渲染完成！", "success");
                 } else { throw new Error(data.error); }
-            } catch (error) { console.error(error); showToast("渲染失敗", "error"); visualLoader.style.display = 'none'; placeholder.style.display = 'block'; renderBtn.disabled = false; renderBtn.innerText = "渲染影片"; }
+            } catch (error) {
+                console.error(error);
+                showToast("渲染失敗", "error");
+                visualLoader.style.display = 'none';
+                placeholder.style.display = 'block';
+                renderBtn.disabled = false;
+                renderBtn.innerText = "渲染影片";
+            }
         }
 
-        // --- Test Logic (Difficulty System) ---
+        // --- 8. Test Logic ---
         let currentTargetNote, score = 0, currentQuestion = 1, totalQuestions = 5;
-        let timeLeft = 10;
-        let isQuestionActive = false;
-        let availableNotes = [];
-        let maxAttempts = 1;
-        let usedAttempts = 0;
-
-        // 難度設定
+        let timeLeft = 10, isQuestionActive = false, availableNotes = [], maxAttempts = 1, usedAttempts = 0;
         const DIFFICULTY_SETTINGS = {
-            'Easy': { questions: 5, time: 20, attempts: 10, octaves: [4], scale: 'major' }, // C4-B4, 白鍵
-            'Normal': { questions: 10, time: 15, attempts: 5, octaves: [3, 4], scale: 'chromatic' }, // C3-B4, 全鍵
-            'Hard': { questions: 20, time: 10, attempts: 3, octaves: [3, 4, 5], scale: 'chromatic' }, // C3-B5, 全鍵
-            'Expert': { questions: 25, time: 5, attempts: 1, octaves: [2, 3, 4, 5, 6], scale: 'chromatic' } // C2-C6, 全鍵
+            'Easy': { questions: 5, time: 20, attempts: 10, octaves: [4], scale: 'major' },
+            'Normal': { questions: 10, time: 15, attempts: 5, octaves: [3, 4], scale: 'chromatic' },
+            'Hard': { questions: 20, time: 10, attempts: 3, octaves: [3, 4, 5], scale: 'chromatic' },
+            'Expert': { questions: 25, time: 5, attempts: 1, octaves: [2, 3, 4, 5, 6], scale: 'chromatic' }
         };
 
-        // 產生題庫
         function generateAvailableNotes(setting) {
-            const notes = [];
-            const allNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-            const majorNotes = ["C", "D", "E", "F", "G", "A", "B"]; // C Major
-
+            const notes = []; const allNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]; const majorNotes = ["C", "D", "E", "F", "G", "A", "B"];
             setting.octaves.forEach(oct => {
                 const noteSet = (setting.scale === 'major') ? majorNotes : allNotes;
-                noteSet.forEach(n => {
-                    // C6 特例 (鋼琴最右邊的鍵)
-                    if (oct === 6 && n !== 'C') return;
-                    // Expert 模式下，C2~B5 + C6
-                    if (oct === 6 && n === 'C') notes.push(n + oct);
-                    else if (oct < 6) notes.push(n + oct);
-                });
-            });
-            return notes;
+                noteSet.forEach(n => { if (oct === 6 && n !== 'C') return; if (oct === 6 && n === 'C') notes.push(n + oct); else if (oct < 6) notes.push(n + oct); });
+            }); return notes;
         }
 
-        // 渲染 RWD 全螢幕鋼琴
         function renderPiano() {
-            const pianoContainer = document.getElementById('piano');
-            pianoContainer.innerHTML = '';
-
-            const startOctave = 2; // C2
-            const endOctave = 6;   // C6
-            const totalWhiteKeys = (endOctave - startOctave) * 7 + 1; // 29個白鍵
-            const scaleNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-
-            let whiteKeyIndex = 0;
-
+            const pianoContainer = document.getElementById('piano'); pianoContainer.innerHTML = '';
+            const startOctave = 2; const endOctave = 6; const scaleNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+            let whiteKeyIndex = 0; const totalWhiteKeys = (endOctave - startOctave) * 7 + 1;
             for (let oct = startOctave; oct <= endOctave; oct++) {
                 scaleNotes.forEach(note => {
                     if (oct === endOctave && note !== 'C') return;
-
-                    const fullNote = note + oct;
-                    const isBlack = note.includes('#');
-                    const key = document.createElement('div');
-                    key.dataset.note = fullNote;
-
+                    const fullNote = note + oct; const isBlack = note.includes('#'); const key = document.createElement('div'); key.dataset.note = fullNote;
                     if (!isBlack) {
-                        // 白鍵: flex 1
-                        key.className = 'key white';
-                        if (note === 'C') key.innerText = fullNote;
-                        setupKeyEvents(key);
-                        pianoContainer.appendChild(key);
-                        whiteKeyIndex++;
+                        key.className = 'key white'; if (note === 'C') key.innerText = fullNote;
+                        setupKeyEvents(key); pianoContainer.appendChild(key); whiteKeyIndex++;
                     } else {
-                        // 黑鍵: 百分比定位
-                        key.className = 'key black';
-                        // 黑鍵位置 = whiteKeyIndex * (100% / totalWhiteKeys) - (黑鍵寬 / 2)
-                        const blackKeyWidthPercent = 2;
-                        const leftPercent = (whiteKeyIndex / totalWhiteKeys * 100) - (blackKeyWidthPercent / 2);
-                        key.style.left = leftPercent + '%';
-                        setupKeyEvents(key);
-                        pianoContainer.appendChild(key);
+                        key.className = 'key black'; const blackKeyWidthPercent = 2; const leftPercent = (whiteKeyIndex / totalWhiteKeys * 100) - (blackKeyWidthPercent / 2); key.style.left = leftPercent + '%';
+                        setupKeyEvents(key); pianoContainer.appendChild(key);
                     }
                 });
             }
@@ -2413,161 +2982,75 @@
         function setupKeyEvents(key) {
             key.addEventListener('mousedown', () => {
                 if (!isQuestionActive) return;
-
-                const note = key.dataset.note;
-
-                // 播放測驗用音色
-                if (window.playTestNote) {
-                    window.playTestNote(note);
-                }
-
-                // 清除之前的淡出動畫
-                key.classList.remove('wrong-fade');
-                void key.offsetWidth; // Trigger reflow
-
+                const note = key.dataset.note; if (window.playTestNote) { window.playTestNote(note); }
+                key.classList.remove('wrong-fade'); void key.offsetWidth;
                 if (note === currentTargetNote) {
-                    // 答對：顯示綠色，停止計時
-                    clearInterval(window.timerInterval);
-                    key.classList.add('correct');
-                    score++;
-                    updateScore();
-                    isQuestionActive = false;
-                    document.getElementById('test-info-display').innerText = "Correct! " + note;
-                    document.getElementById('test-info-display').style.color = "#28a745";
-                    showNextButton();
+                    clearInterval(window.timerInterval); key.classList.add('correct'); score++; updateScore(); isQuestionActive = false;
+                    document.getElementById('test-info-display').innerText = "Correct! " + note; document.getElementById('test-info-display').style.color = "#28a745"; showNextButton();
                 } else {
-                    // 答錯：計算使用次數
-                    usedAttempts++;
-                    updateAttemptDisplay();
-                    key.classList.add('wrong-fade');
-
+                    usedAttempts++; updateAttemptDisplay(); key.classList.add('wrong-fade');
                     if (usedAttempts >= maxAttempts) {
-                        // 次數用盡：視同時間到
-                        clearInterval(window.timerInterval);
-                        isQuestionActive = false;
-                        document.getElementById('test-info-display').innerText = `機會用盡! 答案是 ${currentTargetNote}`;
-                        document.getElementById('test-info-display').style.color = "#d81b60";
-                        const correctKey = document.querySelector(`.key[data-note="${currentTargetNote}"]`);
-                        if (correctKey) correctKey.classList.add('correct');
-                        showToast(`機會用盡！正確答案是 ${currentTargetNote}`, "error");
-                        showNextButton();
+                        clearInterval(window.timerInterval); isQuestionActive = false;
+                        document.getElementById('test-info-display').innerText = `機會用盡! 答案是 ${currentTargetNote}`; document.getElementById('test-info-display').style.color = "#d81b60";
+                        const correctKey = document.querySelector(`.key[data-note="${currentTargetNote}"]`); if (correctKey) correctKey.classList.add('correct'); showToast(`機會用盡！正確答案是 ${currentTargetNote}`, "error"); showNextButton();
                     } else {
-                        // 還有機會
-                        document.getElementById('test-info-display').innerText = "Wrong!";
-                        document.getElementById('test-info-display').style.color = "#f44336";
-                        showToast("答錯了！再試一次", "error");
+                        document.getElementById('test-info-display').innerText = "Wrong!"; document.getElementById('test-info-display').style.color = "#f44336"; showToast("答錯了！再試一次", "error");
                     }
                 }
             });
         }
 
         async function startTest() {
-            await Tone.start();
-            const difficulty = document.getElementById('difficulty-select').value;
-            const setting = DIFFICULTY_SETTINGS[difficulty];
-
-            totalQuestions = setting.questions;
-            timeLeft = setting.time; // 初始時間
-            maxAttempts = setting.attempts;
-            availableNotes = generateAvailableNotes(setting);
-
-            currentQuestion = 1; score = 0;
-            renderPiano();
-            goToScreen('test-screen');
-            loadNewQuestion();
+            await Tone.start(); const difficulty = document.getElementById('difficulty-select').value; const setting = DIFFICULTY_SETTINGS[difficulty];
+            totalQuestions = setting.questions; timeLeft = setting.time; maxAttempts = setting.attempts; availableNotes = generateAvailableNotes(setting);
+            currentQuestion = 1; score = 0; renderPiano(); goToScreen('test-screen'); loadNewQuestion();
         }
 
         function loadNewQuestion() {
-            // 重置狀態
-            isQuestionActive = true;
-            // 讀取當前難度的設定來重置時間與機會
-            const difficulty = document.getElementById('difficulty-select').value;
-            const setting = DIFFICULTY_SETTINGS[difficulty];
-            timeLeft = setting.time;
-            usedAttempts = 0; // 重置已使用次數
-
-            document.querySelectorAll('.key').forEach(k => k.classList.remove('correct', 'wrong-fade'));
-            document.getElementById('next-q-btn').style.display = 'none';
-            document.getElementById('question-indicator').innerText = `第 ${currentQuestion} / ${totalQuestions} 題`;
-            document.getElementById('test-info-display').innerText = "請聆聽...";
-            document.getElementById('test-info-display').style.color = "#333";
-
-            updateScore();
-            updateAttemptDisplay();
-
-            currentTargetNote = availableNotes[Math.floor(Math.random() * availableNotes.length)];
-            setTimeout(() => playCurrentNote(), 500);
-            startTimer();
+            isQuestionActive = true; const difficulty = document.getElementById('difficulty-select').value; const setting = DIFFICULTY_SETTINGS[difficulty]; timeLeft = setting.time; usedAttempts = 0;
+            document.querySelectorAll('.key').forEach(k => k.classList.remove('correct', 'wrong-fade')); document.getElementById('next-q-btn').style.display = 'none';
+            document.getElementById('question-indicator').innerText = `第 ${currentQuestion} / ${totalQuestions} 題`; document.getElementById('test-info-display').innerText = "請聆聽..."; document.getElementById('test-info-display').style.color = "#333";
+            updateScore(); updateAttemptDisplay();
+            currentTargetNote = availableNotes[Math.floor(Math.random() * availableNotes.length)]; setTimeout(() => playCurrentNote(), 500); startTimer();
         }
 
         function startTimer() {
-            if (window.timerInterval) clearInterval(window.timerInterval);
-            document.getElementById('timer-display').innerText = timeLeft;
-
+            if (window.timerInterval) clearInterval(window.timerInterval); document.getElementById('timer-display').innerText = timeLeft;
             window.timerInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('timer-display').innerText = timeLeft;
+                timeLeft--; document.getElementById('timer-display').innerText = timeLeft;
                 if (timeLeft <= 0) {
-                    clearInterval(window.timerInterval);
-                    isQuestionActive = false;
-                    document.getElementById('test-info-display').innerText = "Time's Up! 答案是 " + currentTargetNote;
-                    document.getElementById('test-info-display').style.color = "#d81b60";
-                    // 時間到，顯示正確答案
-                    const correctKey = document.querySelector(`.key[data-note="${currentTargetNote}"]`);
-                    if (correctKey) correctKey.classList.add('correct');
-                    showNextButton();
+                    clearInterval(window.timerInterval); isQuestionActive = false;
+                    document.getElementById('test-info-display').innerText = "Time's Up! 答案是 " + currentTargetNote; document.getElementById('test-info-display').style.color = "#d81b60";
+                    const correctKey = document.querySelector(`.key[data-note="${currentTargetNote}"]`); if (correctKey) correctKey.classList.add('correct'); showNextButton();
                 }
             }, 1000);
         }
 
-        function playCurrentNote() {
-            // 使用新版的取樣器播放
-            if (window.playTestNote) {
-                window.playTestNote(currentTargetNote);
-            }
-        }
+        function playCurrentNote() { if (window.playTestNote) { window.playTestNote(currentTargetNote); } }
         function updateScore() { document.getElementById('live-score').innerText = `得分: ${score}`; }
-        function updateAttemptDisplay() {
-            document.getElementById('attempt-display').innerText = `點擊: ${usedAttempts} / ${maxAttempts}`;
-        }
-
-        function showNextButton() {
-            const btn = document.getElementById('next-q-btn');
-            if (currentQuestion < totalQuestions) { btn.innerText = "下一題"; btn.onclick = nextQuestion; }
-            else { btn.innerText = "查看結果"; btn.onclick = showResults; }
-            btn.style.display = 'block'; // Ensure block for styling
-        }
-
+        function updateAttemptDisplay() { document.getElementById('attempt-display').innerText = `點擊: ${usedAttempts} / ${maxAttempts}`; }
+        function showNextButton() { const btn = document.getElementById('next-q-btn'); if (currentQuestion < totalQuestions) { btn.innerText = "下一題"; btn.onclick = nextQuestion; } else { btn.innerText = "查看結果"; btn.onclick = showResults; } btn.style.display = 'block'; }
         function nextQuestion() { currentQuestion++; loadNewQuestion(); }
         function showResults() {
-            document.getElementById('result-score').innerText = `${score} / ${totalQuestions}`;
-            document.getElementById('result-modal').style.display = 'flex';
+            document.getElementById('result-score').innerText = `${score} / ${totalQuestions}`; document.getElementById('result-modal').style.display = 'flex';
+            updateBestScore(score);
+            if (score === totalQuestions && totalQuestions > 0) { unlockAchievement('pitch_perfect'); }
         }
-
-        function endTest() {
-            document.getElementById('quit-modal').style.display = 'flex';
-        }
-
-        function confirmQuit() {
-            clearInterval(window.timerInterval);
-            closeQuitModal();
-            goToScreen('start-screen');
-        }
-
-        function closeQuitModal() {
-            document.getElementById('quit-modal').style.display = 'none';
-        }
-
+        function endTest() { document.getElementById('quit-modal').style.display = 'flex'; }
+        function confirmQuit() { clearInterval(window.timerInterval); closeQuitModal(); goToScreen('start-screen'); }
+        function closeQuitModal() { document.getElementById('quit-modal').style.display = 'none'; }
         function closeResultModal() { document.getElementById('result-modal').style.display = 'none'; goToScreen('start-screen'); }
 
-        // --- Init ---
-        const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        const canvasEl = document.getElementById('bg-canvas'); const ctxEl = canvasEl.getContext('2d');
+        function resize() { canvasEl.width = window.innerWidth; canvasEl.height = window.innerHeight; }
         resize(); window.addEventListener('resize', resize);
         window.onload = function () {
             setupScrollReveal();
             document.getElementById('bars').addEventListener('change', validateInput);
             document.getElementById('tempo').addEventListener('change', validateInput);
+            renderHomeShowcase();
+            renderHomeShowcaseBadges();
+            renderBestScore();
         };
     </script>
 
@@ -2582,10 +3065,9 @@
         const totalTimeEl = document.getElementById('total-time');
         const statusEl = document.getElementById('player-status');
 
-        // Bottom Player Elements
         const bpPlayBtn = document.getElementById('bp-play-btn');
         const bpLoopBtn = document.getElementById('bp-loop-btn');
-        const bpAutoBtn = document.getElementById('bp-auto-btn'); // [Add] Auto Play
+        const bpAutoBtn = document.getElementById('bp-auto-btn');
         const bpSeekBar = document.getElementById('bp-seek-bar');
         const bpCurrentTimeEl = document.getElementById('bp-current-time');
         const bpTotalTimeEl = document.getElementById('bp-total-time');
@@ -2593,390 +3075,191 @@
         const bpTrackSubtitle = document.getElementById('bp-track-subtitle');
         const bpInstrumentSelect = document.getElementById('bp-instrument-select');
 
-        // Floating Player Elements
         const fpTitle = document.getElementById('fp-title');
         const fpPlayBtn = document.getElementById('fp-play-btn');
         const fpLoopBtn = document.getElementById('fp-loop-btn');
-        const fpAutoBtn = document.getElementById('fp-auto-btn'); // [Add] Auto Play
+        const fpAutoBtn = document.getElementById('fp-auto-btn');
 
         let isPlaying = false, isDragging = false, isLooping = false, isAutoPlay = true, updateInterval = null, isInstrumentLoaded = false;
-
         const instruments = listAvailableInstruments();
+        const populateSelect = (el) => { if (!el) return; el.innerHTML = ""; instruments.forEach(inst => { const option = document.createElement('option'); option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase(); if (inst === 'acoustic_grand_piano') option.selected = true; el.appendChild(option); }); };
+        populateSelect(selectEl); populateSelect(bpInstrumentSelect); populateSelect(document.getElementById('test-instrument-select'));
 
-        // 填入創作模式的下拉選單
-        if (selectEl) {
-            selectEl.innerHTML = "";
-            instruments.forEach(inst => {
-                const option = document.createElement('option');
-                option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase();
-                if (inst === 'acoustic_grand_piano') option.selected = true;
-                selectEl.appendChild(option);
-            });
-        }
-
-        // 填入底部播放器中的樂器選擇
-        if (bpInstrumentSelect) {
-            bpInstrumentSelect.innerHTML = "";
-            instruments.forEach(inst => {
-                const option = document.createElement('option');
-                option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase();
-                if (inst === 'acoustic_grand_piano') option.selected = true;
-                bpInstrumentSelect.appendChild(option);
-            });
-        }
-
-        // 填入測驗模式的下拉選單
-        const testSelectEl = document.getElementById('test-instrument-select');
-        if (testSelectEl) {
-            testSelectEl.innerHTML = "";
-            instruments.forEach(inst => {
-                const option = document.createElement('option');
-                option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase();
-                if (inst === 'acoustic_grand_piano') option.selected = true;
-                testSelectEl.appendChild(option);
-            });
-        }
-
-        // 預載創作模式樂器
         loadInstrument('acoustic_grand_piano').then(() => { isInstrumentLoaded = true; }).catch(e => console.error("Instrument load failed", e));
 
-        // ----------------------------------------------------
-        // 測驗模式專用 Sampler 邏輯
-        // ----------------------------------------------------
         let testSampler = null;
         const reverb = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).toDestination();
-
         async function loadTestInstrument(name) {
-            if (testSampler) {
-                testSampler.disconnect();
-                testSampler.dispose();
-            }
-            await Tone.start();
+            if (testSampler) { testSampler.disconnect(); testSampler.dispose(); } await Tone.start();
             return new Promise((resolve) => {
-                testSampler = new Tone.Sampler({
-                    urls: NOTE_MAP,
-                    baseUrl: INSTRUMENT_BASE_URLS[name],
-                    release: 1,
-                    onload: () => {
-                        console.log(`Test instrument ${name} loaded`);
-                        resolve();
-                    }
-                }).connect(reverb);
+                testSampler = new Tone.Sampler({ urls: NOTE_MAP, baseUrl: INSTRUMENT_BASE_URLS[name], release: 1, onload: () => { console.log(`Test instrument ${name} loaded`); resolve(); } }).connect(reverb);
             });
         }
         loadTestInstrument('acoustic_grand_piano');
 
-        // 測驗模式樂器切換
+        const testSelectEl = document.getElementById('test-instrument-select');
         if (testSelectEl) {
             testSelectEl.addEventListener('change', async (e) => {
-                const instName = e.target.value;
-                testSelectEl.disabled = true;
-                const loadingToast = showToast("正在切換樂器...", "info", 0);
-                try {
-                    await loadTestInstrument(instName);
-                    removeToast(loadingToast);
-                    showToast("樂器切換完成！", "success");
-                } catch (err) {
-                    removeToast(loadingToast);
-                    showToast("切換失敗", "error");
-                }
+                const instName = e.target.value; testSelectEl.disabled = true; const loadingToast = showToast("正在切換樂器...", "info", 0);
+                try { await loadTestInstrument(instName); removeToast(loadingToast); showToast("樂器切換完成！", "success"); } catch (err) { removeToast(loadingToast); showToast("切換失敗", "error"); }
                 testSelectEl.disabled = false;
             });
         }
 
-        window.playTestNote = function (note) {
-            if (testSampler && testSampler.loaded) {
-                testSampler.triggerAttackRelease(note, "8n");
-            } else {
-                const synth = new Tone.Synth().toDestination();
-                synth.triggerAttackRelease(note, "8n");
-            }
-        };
+        window.playTestNote = function (note) { if (testSampler && testSampler.loaded) { testSampler.triggerAttackRelease(note, "8n"); } else { const synth = new Tone.Synth().toDestination(); synth.triggerAttackRelease(note, "8n"); } };
 
-        // ----------------------------------------------------
-        // 全域音量控制
-        // ----------------------------------------------------
-        window.setGlobalVolume = function (val) {
-            const volumeValue = parseInt(val);
-            if (volumeValue === 0) {
-                Tone.getDestination().volume.rampTo(-Infinity, 0.1);
-            } else {
-                const db = 20 * Math.log10(volumeValue / 100);
-                Tone.getDestination().volume.rampTo(db, 0.1);
-            }
-        };
+        window.setGlobalVolume = function (val) { const volumeValue = parseInt(val); if (volumeValue === 0) { Tone.getDestination().volume.rampTo(-Infinity, 0.1); } else { const db = 20 * Math.log10(volumeValue / 100); Tone.getDestination().volume.rampTo(db, 0.1); } };
         window.setGlobalVolume(80);
 
-        // ----------------------------------------------------
-        // 歷史紀錄播放邏輯
-        // ----------------------------------------------------
         window.playHistoryIndex = async function (index) {
-            const history = getHistory();
-            if (index < 0 || index >= history.length) return;
-
-            currentHistoryIndex = index;
-            const item = history[index];
-
-            const titleText = `Creation #${item.id.toString().slice(-4)}`;
-
+            const history = getHistory(); if (index < 0 || index >= history.length) return;
+            currentHistoryIndex = index; const item = history[index]; const titleText = `Creation #${item.id.toString().slice(-4)}`;
             if (bpTrackTitle) bpTrackTitle.innerText = titleText;
-            if (bpTrackSubtitle) {
-                const keyName = document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key;
-                bpTrackSubtitle.innerText = `${keyName} - ${item.params.scale}`;
-            }
-
+            if (bpTrackSubtitle) { const keyName = document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key; bpTrackSubtitle.innerText = `${keyName} - ${item.params.scale}`; }
             if (fpTitle) fpTitle.innerText = titleText;
-
-            stop();
-            isPlaying = false;
-            updatePlayButtons(false);
-
+            stop(); isPlaying = false; updatePlayButtons(false);
             const isCreationsPage = document.getElementById('creations-screen').classList.contains('active');
-            if (isCreationsPage) {
-                showBottomPlayer();
-            } else {
-                hideBottomPlayer();
-                showFloatingPlayer();
-            }
-
+            if (isCreationsPage) { showBottomPlayer(); } else { hideBottomPlayer(); showFloatingPlayer(); }
             const loadingToast = showToast(`正在載入 ${titleText}...`, "info", 0);
-
             try {
-                await Tone.start();
-                const instrumentName = document.getElementById('bp-instrument-select')?.value || 'acoustic_grand_piano';
-                await loadInstrument(instrumentName);
-
-                const response = await fetch(`midi/${item.midi}`);
-                if (!response.ok) throw new Error("找不到檔案");
-                const arrayBuffer = await response.arrayBuffer();
-
-                await loadAndPlayMIDI(arrayBuffer);
-
-                removeToast(loadingToast);
-                showToast("載入完成，開始播放", "success");
-
-                isPlaying = true;
-                updatePlayButtons(true);
-                startUpdateLoop();
-
-            } catch (error) {
-                removeToast(loadingToast);
-                console.error(error);
-                showToast("播放失敗: " + error.message, "error");
-            }
+                await Tone.start(); const instrumentName = document.getElementById('bp-instrument-select')?.value || 'acoustic_grand_piano'; await loadInstrument(instrumentName);
+                const response = await fetch(`midi/${item.midi}`); if (!response.ok) throw new Error("找不到檔案"); const arrayBuffer = await response.arrayBuffer();
+                await loadAndPlayMIDI(arrayBuffer); removeToast(loadingToast); showToast("載入完成，開始播放", "success");
+                isPlaying = true; updatePlayButtons(true); startUpdateLoop();
+            } catch (error) { removeToast(loadingToast); console.error(error); showToast("播放失敗: " + error.message, "error"); }
         };
 
         if (bpInstrumentSelect) {
             bpInstrumentSelect.addEventListener('change', async (e) => {
                 if (currentHistoryIndex !== -1 && isPlaying) {
-                    const loadingToast = showToast("正在切換樂器...", "info", 0);
-                    bpInstrumentSelect.disabled = true;
-                    try {
-                        const time = getCurrentTime();
-                        await loadInstrument(e.target.value);
-                        removeToast(loadingToast);
-                        showToast("樂器切換完成", "success");
-                    } catch (err) {
-                        removeToast(loadingToast);
-                        console.error(err);
-                        showToast("切換失敗", "error");
-                    } finally {
-                        bpInstrumentSelect.disabled = false;
-                    }
+                    const loadingToast = showToast("正在切換樂器...", "info", 0); bpInstrumentSelect.disabled = true;
+                    try { const time = getCurrentTime(); await loadInstrument(e.target.value); removeToast(loadingToast); showToast("樂器切換完成", "success"); } catch (err) { removeToast(loadingToast); console.error(err); showToast("切換失敗", "error"); } finally { bpInstrumentSelect.disabled = false; }
                 }
             });
         }
 
-        window.toggleBottomPlay = function () {
-            if (isPlaying) {
-                pause();
-                isPlaying = false;
-                updatePlayButtons(false);
-            } else {
-                if (Tone.Transport.seconds > 0) {
-                    play();
-                    isPlaying = true;
-                    updatePlayButtons(true);
-                    startUpdateLoop();
-                } else if (currentHistoryIndex !== -1) {
-                    window.playHistoryIndex(currentHistoryIndex);
-                }
-            }
-        }
-
-        window.prevTrack = function () {
-            if (currentHistoryIndex < getHistory().length - 1) {
-                window.playHistoryIndex(currentHistoryIndex + 1);
-            } else {
-                showToast("已經是最後一首了", "error");
-            }
-        }
-
-        window.nextTrack = function () {
-            if (currentHistoryIndex > 0) {
-                window.playHistoryIndex(currentHistoryIndex - 1);
-            } else {
-                showToast("已經是第一首了", "error");
-            }
-        }
-
-        // Toggle Loop Logic
-        window.toggleLoop = function () {
-            isLooping = !isLooping;
-
-            const updateBtnState = (btn, active) => {
-                if (!btn) return;
-                if (active) btn.classList.add('active');
-                else btn.classList.remove('active');
-            };
-
-            updateBtnState(bpLoopBtn, isLooping);
-            updateBtnState(fpLoopBtn, isLooping);
-
-            if (isLooping) {
-                showToast("開啟循環播放", "success");
-            } else {
-                showToast("關閉循環播放", "success");
-            }
-        }
-
-        // [Add] Toggle Auto Play Logic
-        window.toggleAutoPlay = function () {
-            isAutoPlay = !isAutoPlay;
-
-            const updateBtnState = (btn, active) => {
-                if (!btn) return;
-                if (active) btn.classList.add('active');
-                else btn.classList.remove('active');
-            };
-
-            updateBtnState(bpAutoBtn, isAutoPlay);
-            updateBtnState(fpAutoBtn, isAutoPlay);
-
-            if (isAutoPlay) {
-                showToast("開啟自動播放", "success");
-            } else {
-                showToast("關閉自動播放", "success");
-            }
-        }
-
-        function updatePlayButtons(playing) {
-            const icon = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
-            if (bpPlayBtn) bpPlayBtn.innerHTML = icon;
-            if (playBtn) playBtn.innerText = playing ? "⏸" : "▶";
-            if (fpPlayBtn) fpPlayBtn.innerHTML = icon;
-            if (statusEl) statusEl.innerText = playing ? "播放中 ♪" : "已暫停";
-        }
-
-        // ----------------------------------------------------
+        window.toggleBottomPlay = function () { if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); } else { if (Tone.Transport.seconds > 0) { play(); isPlaying = true; updatePlayButtons(true); startUpdateLoop(); } else if (currentHistoryIndex !== -1) { window.playHistoryIndex(currentHistoryIndex); } } }
+        window.prevTrack = function () { if (currentHistoryIndex < getHistory().length - 1) { window.playHistoryIndex(currentHistoryIndex + 1); } else { showToast("已經是最後一首了", "error"); } }
+        window.nextTrack = function () { if (currentHistoryIndex > 0) { window.playHistoryIndex(currentHistoryIndex - 1); } else { showToast("已經是第一首了", "error"); } }
+        window.toggleLoop = function () { isLooping = !isLooping; const updateBtnState = (btn, active) => { if (!btn) return; if (active) btn.classList.add('active'); else btn.classList.remove('active'); }; updateBtnState(bpLoopBtn, isLooping); updateBtnState(fpLoopBtn, isLooping); showToast(isLooping ? "開啟循環播放" : "關閉循環播放", "success"); }
+        window.toggleAutoPlay = function () { isAutoPlay = !isAutoPlay; const updateBtnState = (btn, active) => { if (!btn) return; if (active) btn.classList.add('active'); else btn.classList.remove('active'); }; updateBtnState(bpAutoBtn, isAutoPlay); updateBtnState(fpAutoBtn, isAutoPlay); showToast(isAutoPlay ? "開啟自動播放" : "關閉自動播放", "success"); }
+        function updatePlayButtons(playing) { const icon = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; if (bpPlayBtn) bpPlayBtn.innerHTML = icon; if (playBtn) playBtn.innerText = playing ? "⏸" : "▶"; if (fpPlayBtn) fpPlayBtn.innerHTML = icon; if (statusEl) statusEl.innerText = playing ? "播放中 ♪" : "已暫停"; }
 
         if (selectEl) {
             selectEl.addEventListener('change', async (e) => {
                 statusEl.innerText = "載入音色中..."; selectEl.disabled = true;
-                try {
-                    if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); }
-                    await loadInstrument(e.target.value); isInstrumentLoaded = true; statusEl.innerText = "音色已切換";
-                } catch (err) { console.error(err); statusEl.innerText = "音色載入失敗"; } finally { selectEl.disabled = false; }
+                try { if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); } await loadInstrument(e.target.value); isInstrumentLoaded = true; statusEl.innerText = "音色已切換"; } catch (err) { console.error(err); statusEl.innerText = "音色載入失敗"; } finally { selectEl.disabled = false; }
             });
         }
-
         if (playBtn) {
             playBtn.addEventListener('click', async () => {
-                if (!window.currentMidiFilename) { alert("請先生成 MIDI 檔案！"); return; }
-                await Tone.start();
+                if (!window.currentMidiFilename) { alert("請先生成 MIDI 檔案！"); return; } await Tone.start();
                 if (!isPlaying) {
                     try {
                         playBtn.disabled = true;
                         if (Tone.Transport.seconds === 0 || !isInstrumentLoaded) {
-                            statusEl.innerText = "載入 MIDI...";
-                            if (!isInstrumentLoaded) { await loadInstrument(selectEl.value); isInstrumentLoaded = true; }
-                            const midiUrl = `midi/${window.currentMidiFilename}`;
-                            const res = await fetch(midiUrl);
-                            if (!res.ok) throw new Error("找不到檔案");
-                            const buf = await res.arrayBuffer();
-                            await loadAndPlayMIDI(buf);
+                            statusEl.innerText = "載入 MIDI..."; if (!isInstrumentLoaded) { await loadInstrument(selectEl.value); isInstrumentLoaded = true; }
+                            const midiUrl = `midi/${window.currentMidiFilename}`; const res = await fetch(midiUrl); if (!res.ok) throw new Error("找不到檔案"); const buf = await res.arrayBuffer(); await loadAndPlayMIDI(buf);
                         } else { play(); }
                         isPlaying = true; updatePlayButtons(true); seekBar.disabled = false; startUpdateLoop();
                     } catch (e) { console.error(e); statusEl.innerText = "播放錯誤"; togglePlayState(true); } finally { playBtn.disabled = false; }
                 } else { togglePlayState(false); }
             });
         }
+        function togglePlayState(resetToStart = false) { if (resetToStart) { stop(); isPlaying = false; updatePlayButtons(false); if (seekBar) seekBar.value = 0; if (currentTimeEl) currentTimeEl.innerText = "0:00"; } else { pause(); isPlaying = false; updatePlayButtons(false); } stopUpdateLoop(); }
 
-        function togglePlayState(resetToStart = false) {
-            if (resetToStart) { stop(); isPlaying = false; updatePlayButtons(false); if (seekBar) seekBar.value = 0; if (currentTimeEl) currentTimeEl.innerText = "0:00"; }
-            else { pause(); isPlaying = false; updatePlayButtons(false); }
-            stopUpdateLoop();
-        }
-
-        // Seek Bar Listeners
-        if (seekBar) {
-            seekBar.addEventListener('mousedown', () => { isDragging = true; });
-            seekBar.addEventListener('touchstart', () => { isDragging = true; });
-            seekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; });
-            seekBar.addEventListener('input', (e) => {
-                const duration = getDuration();
-                if (duration > 0) currentTimeEl.innerText = formatTime(duration * (e.target.value / 100));
-            });
-        }
-
-        if (bpSeekBar) {
-            bpSeekBar.addEventListener('mousedown', () => { isDragging = true; });
-            bpSeekBar.addEventListener('touchstart', () => { isDragging = true; });
-            bpSeekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; });
-            bpSeekBar.addEventListener('input', (e) => {
-                const duration = getDuration();
-                if (duration > 0) bpCurrentTimeEl.innerText = formatTime(duration * (e.target.value / 100));
-            });
-        }
+        if (seekBar) { seekBar.addEventListener('mousedown', () => { isDragging = true; }); seekBar.addEventListener('touchstart', () => { isDragging = true; }); seekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; }); seekBar.addEventListener('input', (e) => { const duration = getDuration(); if (duration > 0) currentTimeEl.innerText = formatTime(duration * (e.target.value / 100)); }); }
+        if (bpSeekBar) { bpSeekBar.addEventListener('mousedown', () => { isDragging = true; }); bpSeekBar.addEventListener('touchstart', () => { isDragging = true; }); bpSeekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; }); bpSeekBar.addEventListener('input', (e) => { const duration = getDuration(); if (duration > 0) bpCurrentTimeEl.innerText = formatTime(duration * (e.target.value / 100)); }); }
 
         function startUpdateLoop() {
             if (updateInterval) cancelAnimationFrame(updateInterval);
             function update() {
-                if (!isPlaying) return;
-                const now = getCurrentTime(); const total = getDuration();
+                if (!isPlaying) return; const now = getCurrentTime(); const total = getDuration();
                 if (total > 0) {
-                    const progress = (now / total) * 100;
-                    const timeStr = formatTime(now);
-                    const totalStr = formatTime(total);
-
-                    if (totalTimeEl) totalTimeEl.innerText = totalStr;
-                    if (!isDragging && seekBar) { seekBar.value = progress; currentTimeEl.innerText = timeStr; }
-
-                    if (bpTotalTimeEl) bpTotalTimeEl.innerText = totalStr;
-                    if (!isDragging && bpSeekBar) { bpSeekBar.value = progress; bpCurrentTimeEl.innerText = timeStr; }
-
+                    const progress = (now / total) * 100; const timeStr = formatTime(now); const totalStr = formatTime(total);
+                    if (totalTimeEl) totalTimeEl.innerText = totalStr; if (!isDragging && seekBar) { seekBar.value = progress; currentTimeEl.innerText = timeStr; }
+                    if (bpTotalTimeEl) bpTotalTimeEl.innerText = totalStr; if (!isDragging && bpSeekBar) { bpSeekBar.value = progress; bpCurrentTimeEl.innerText = timeStr; }
                     if (now >= total - 0.1) {
-                        if (isLooping) {
-                            seek(0);
-                            if (bpSeekBar) bpSeekBar.value = 0;
-                            if (bpCurrentTimeEl) bpCurrentTimeEl.innerText = "0:00";
-                            if (seekBar) seekBar.value = 0;
-                            if (currentTimeEl) currentTimeEl.innerText = "0:00";
-                        } else {
-                            // [Updated Logic] Auto Play Check
-                            if (isAutoPlay) {
-                                if (currentHistoryIndex !== -1 && currentHistoryIndex > 0) {
-                                    window.nextTrack();
-                                } else {
-                                    // 最後一首播完自動停止
-                                    togglePlayState(true);
-                                }
-                            } else {
-                                togglePlayState(true);
-                            }
-                            return;
-                        }
+                        if (isLooping) { seek(0); if (bpSeekBar) bpSeekBar.value = 0; if (bpCurrentTimeEl) bpCurrentTimeEl.innerText = "0:00"; if (seekBar) seekBar.value = 0; if (currentTimeEl) currentTimeEl.innerText = "0:00"; }
+                        else { if (isAutoPlay) { if (currentHistoryIndex !== -1 && currentHistoryIndex > 0) { window.nextTrack(); } else { togglePlayState(true); } } else { togglePlayState(true); } return; }
                     }
-                }
-                updateInterval = requestAnimationFrame(update);
-            }
-            update();
+                } updateInterval = requestAnimationFrame(update);
+            } update();
         }
         function stopUpdateLoop() { if (updateInterval) cancelAnimationFrame(updateInterval); }
-        function formatTime(seconds) {
-            if (isNaN(seconds) || seconds < 0) return "0:00";
-            const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60);
-            return `${m}:${s.toString().padStart(2, '0')}`;
+        function formatTime(seconds) { if (isNaN(seconds) || seconds < 0) return "0:00"; const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
+
+        // --- 9. Virtual Piano Logic (Updated) ---
+        let creationSampler = null;
+        let isCreationPianoRendered = false;
+
+        const creationSelectEl = document.getElementById('creation-instrument-select');
+        if (creationSelectEl) {
+            populateSelect(creationSelectEl);
+            creationSelectEl.addEventListener('change', async (e) => {
+                const instName = e.target.value;
+                creationSelectEl.disabled = true;
+                const loadingToast = showToast("正在切換創作樂器...", "info", 0);
+                try {
+                    await loadCreationInstrument(instName);
+                    removeToast(loadingToast);
+                    showToast("樂器切換完成！", "success");
+                } catch (err) {
+                    removeToast(loadingToast);
+                    showToast("切換失敗", "error");
+                    console.error(err);
+                }
+                creationSelectEl.disabled = false;
+            });
+        }
+
+        async function loadCreationInstrument(name) {
+            if (creationSampler) { creationSampler.disconnect(); creationSampler.dispose(); }
+            await Tone.start();
+            return new Promise((resolve) => {
+                creationSampler = new Tone.Sampler({
+                    urls: NOTE_MAP, baseUrl: INSTRUMENT_BASE_URLS[name], release: 1,
+                    onload: () => { console.log(`Creation instrument ${name} loaded`); resolve(); }
+                }).toDestination();
+            });
+        }
+
+        window.toggleCreationPiano = async function () {
+            const win = document.getElementById('floating-piano-app'); if (!win) return;
+            const isActive = win.classList.contains('active');
+            if (isActive) { window.closeCreationPiano(); } else {
+                await Tone.start();
+                if (!creationSampler) { const loadingToast = showToast("正在初始化樂器...", "info", 0); await loadCreationInstrument('acoustic_grand_piano'); removeToast(loadingToast); }
+                if (!isCreationPianoRendered) { renderCreationPiano(); isCreationPianoRendered = true; }
+                win.classList.add('active');
+            }
+        }
+        window.closeCreationPiano = function () { const win = document.getElementById('floating-piano-app'); if (win) win.classList.remove('active'); }
+
+        function renderCreationPiano() {
+            const container = document.getElementById('creation-piano-keys'); if (!container) return; container.innerHTML = '';
+            const startOctave = 2; const endOctave = 6;
+            const scaleNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+            let whiteKeyIndex = 0; const totalWhiteKeys = (endOctave - startOctave) * 7 + 1;
+            for (let oct = startOctave; oct <= endOctave; oct++) {
+                scaleNotes.forEach(note => {
+                    const fullNote = note + oct; const isBlack = note.includes('#'); const key = document.createElement('div'); key.dataset.note = fullNote;
+                    if (!isBlack) {
+                        key.className = 'key white'; if (note === 'C') key.innerText = fullNote;
+                        setupCreationKeyEvents(key, fullNote); container.appendChild(key); whiteKeyIndex++;
+                    } else {
+                        key.className = 'key black'; const blackKeyWidthPercent = 2; const leftPercent = (whiteKeyIndex / totalWhiteKeys * 100) - (blackKeyWidthPercent / 2); key.style.left = leftPercent + '%';
+                        setupCreationKeyEvents(key, fullNote); container.appendChild(key);
+                    }
+                });
+            }
+        }
+
+        function setupCreationKeyEvents(key, note) {
+            const play = () => { if (creationSampler && creationSampler.loaded) { creationSampler.triggerAttack(note); } key.classList.add('active'); if (!key.classList.contains('black')) key.style.transform = 'translateY(2px)'; };
+            const release = () => { if (creationSampler && creationSampler.loaded) { creationSampler.triggerRelease(note); } key.classList.remove('active'); if (!key.classList.contains('black')) key.style.transform = ''; };
+            key.addEventListener('mousedown', play); key.addEventListener('mouseup', release); key.addEventListener('mouseleave', release);
+            key.addEventListener('touchstart', (e) => { e.preventDefault(); play(); }); key.addEventListener('touchend', (e) => { e.preventDefault(); release(); });
         }
     </script>
 
