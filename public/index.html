@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Melody Visualizers</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@500;700&display=swap"
         rel="stylesheet">
@@ -15,7 +15,7 @@
         :root {
             --primary-color: #D81B60;
             --primary-hover: #ff4081;
-            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-bg: rgba(255, 255, 255, 0.75);
             --glass-border: rgba(255, 255, 255, 0.8);
             --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
             --text-main: #2c3e50;
@@ -23,6 +23,7 @@
             --bg-color: #f4f7f6;
             --sidebar-width: 340px;
             --nav-height: 70px;
+            --bottom-player-height: 90px;
         }
 
         *,
@@ -121,11 +122,6 @@
             color: var(--primary-color);
         }
 
-        .glass-btn-style:active {
-            transform: translateY(1px) scale(0.95);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
         /* 1. 主要 CTA 按鈕 */
         .generate-btn,
         .btn-start-create,
@@ -212,6 +208,10 @@
             color: #333;
             text-decoration: none;
             padding: 15px;
+            /* [RWD Fix 3] Ensure text wraps nicely */
+            white-space: normal;
+            text-align: center;
+            line-height: 1.2;
         }
 
         .action-btn:hover {
@@ -303,6 +303,11 @@
             display: flex;
         }
 
+        /* 當底部播放器顯示時，Creation 頁面要預留底部空間 */
+        #creations-screen.has-player {
+            padding-bottom: var(--bottom-player-height);
+        }
+
         .mode-card,
         .dashboard-card,
         .test-content,
@@ -339,7 +344,8 @@
         }
 
         .hero-title {
-            font-size: 56px;
+            font-size: clamp(36px, 5vw, 56px);
+            /* Responsive Font Size */
             font-family: 'Poppins';
             font-weight: 700;
             margin-bottom: 15px;
@@ -816,6 +822,10 @@
             border-left-color: #f44336;
         }
 
+        .toast.info {
+            border-left-color: #2196f3;
+        }
+
         .toast.show {
             opacity: 1;
             transform: translateX(0);
@@ -833,6 +843,7 @@
             padding: 40px;
         }
 
+        /* [RWD Fix 4] Piano RWD Optimization */
         .piano-wrapper {
             width: 100%;
             margin-top: 20px;
@@ -843,11 +854,14 @@
             position: relative;
             border: 4px solid #444;
             overflow-x: auto;
+            /* Enable scroll */
+            -webkit-overflow-scrolling: touch;
         }
 
         .piano-container {
             position: relative;
-            width: 100%;
+            width: 1200px;
+            /* Fixed width to prevent keys from squishing */
             height: 220px;
             display: flex;
         }
@@ -942,7 +956,10 @@
 
         /* Modals */
         #result-modal,
-        #quit-modal {
+        #quit-modal,
+        #clear-history-modal,
+        #delete-single-modal,
+        #video-playback-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -951,7 +968,7 @@
             height: 100%;
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(8px);
-            z-index: 1000;
+            z-index: 3000;
             align-items: center;
             justify-content: center;
         }
@@ -960,10 +977,22 @@
             background: rgba(255, 255, 255, 0.9);
             padding: 40px;
             width: 400px;
+            max-width: 90%;
+            /* RWD adjustment */
             border-radius: 30px;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
             border: 1px solid white;
+        }
+
+        /* Video Modal Specific */
+        #video-playback-modal .modal-content {
+            width: 90%;
+            max-width: 800px;
+            padding: 0;
+            background: #000;
+            border: none;
+            overflow: hidden;
         }
 
         .modal-btn-group {
@@ -1002,6 +1031,303 @@
             box-shadow: 0 15px 30px rgba(216, 27, 96, 0.4);
         }
 
+        /* --- Floating Mini Player (Right Bottom) --- */
+        .floating-player {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 250px;
+            /* 稍微加寬以容納新按鈕 */
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            display: none;
+            flex-direction: column;
+            padding: 15px;
+            z-index: 2100;
+            transition: transform 0.3s;
+            cursor: default;
+        }
+
+        .fp-close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #888;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .floating-player:hover {
+            transform: translateY(-2px);
+        }
+
+        .fp-info {
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 15px;
+            transition: 0.2s;
+        }
+
+        #fp-title {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        #fp-title:hover {
+            transform: scale(1.1);
+            color: var(--primary-color);
+        }
+
+        /* [CSS Fix: Centering] Updated layout for 5 buttons */
+        .fp-controls {
+            display: flex;
+            justify-content: space-between;
+            /* 平均分佈 */
+            align-items: center;
+            gap: 5px;
+        }
+
+        .fp-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary-color);
+            font-size: 16px;
+            width: 30px;
+            /* 固定寬度確保置中 */
+            display: flex;
+            justify-content: center;
+        }
+
+        /* --- 新增：創作卡片樣式與圖示 (Icons) --- */
+        .creation-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary-color), #ff4081);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 18px;
+            box-shadow: 0 5px 15px rgba(216, 27, 96, 0.3);
+            flex-shrink: 0;
+        }
+
+        /* --- 新增：底部播放器 (Glassmorphism & Light Theme) --- */
+        .bottom-player-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--bottom-player-height);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 2000;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .bottom-player-container.active {
+            transform: translateY(0);
+        }
+
+        /* 底部播放器左側資訊區 */
+        .bp-left-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 25%;
+            min-width: 150px;
+        }
+
+        .bp-text-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .bp-track-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bp-track-subtitle {
+            font-size: 11px;
+            color: #888;
+        }
+
+        /* 底部播放器中間控制區 */
+        .bp-center-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .bp-buttons-row {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 5px;
+        }
+
+        /* 底部播放器右側 (音量與樂器控制) */
+        .bp-right-spacer {
+            width: 25%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .bp-volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100px;
+        }
+
+        /* 底部播放器選單樣式 */
+        .bp-select {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #555;
+            cursor: pointer;
+            outline: none;
+            transition: 0.2s;
+            max-width: 120px;
+        }
+
+        .bp-select:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .bp-btn {
+            background: none;
+            border: none;
+            color: #555;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bp-btn:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        /* 啟用狀態的按鈕樣式 (綠色) */
+        .bp-btn.active,
+        .fp-btn.active {
+            color: #4caf50;
+            position: relative;
+        }
+
+        .bp-btn.active::after,
+        .fp-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            width: 4px;
+            height: 4px;
+            background: #4caf50;
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .bp-play-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            color: white !important;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(216, 27, 96, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bp-play-btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(216, 27, 96, 0.4);
+        }
+
+        .bp-progress-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            color: #666;
+            font-family: 'Inter', sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 底部播放器的 Slider 樣式 */
+        .bp-range {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .bp-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.1s;
+        }
+
+        .bp-range:hover::-webkit-slider-thumb {
+            transform: scale(1.3);
+        }
+
+        /* RWD Media Queries */
         @media (max-width: 768px) {
             :root {
                 --sidebar-width: 100%;
@@ -1037,8 +1363,107 @@
                 text-align: center;
             }
 
-            .piano-container {
-                width: 150%;
+            /* Navbar Adjustments */
+            .navbar {
+                padding: 0 15px;
+            }
+
+            .brand-logo {
+                font-size: 18px;
+            }
+
+            .nav-links {
+                gap: 10px;
+            }
+
+            .nav-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            /* Creation Item RWD */
+            .glass-btn-style {
+                padding: 15px !important;
+            }
+
+            .glass-btn-style>div {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 10px !important;
+            }
+
+            .glass-btn-style>div>div:first-child {
+                width: 100%;
+            }
+
+            .glass-btn-style>div>div:last-child {
+                width: 100%;
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+
+            .action-btn {
+                flex: 1;
+                min-width: 100px;
+            }
+
+            /* Bottom Player RWD */
+            .bottom-player-container {
+                padding: 10px 20px;
+                padding-bottom: 30px;
+                height: auto;
+                min-height: 120px;
+                flex-direction: column;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .bp-progress-container {
+                order: 1;
+                width: 100%;
+                margin-bottom: 2px;
+            }
+
+            .bp-left-info {
+                order: 2;
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .bp-text-group {
+                text-align: center;
+            }
+
+            .bp-center-controls {
+                order: 3;
+                width: 100%;
+                max-width: none;
+                flex: none;
+            }
+
+            .bp-buttons-row {
+                margin-bottom: 0;
+                justify-content: center;
+                gap: 35px;
+            }
+
+            .bp-right-spacer {
+                display: none;
+            }
+
+            /* [RWD Fix 1] Center Floating Player at Bottom */
+            .floating-player {
+                bottom: 30px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: 85%;
+                max-width: 350px;
+            }
+
+            .floating-player:hover {
+                transform: translateX(-50%) translateY(-2px);
             }
         }
     </style>
@@ -1049,6 +1474,22 @@
     <canvas id="bg-canvas"></canvas>
     <div id="toast-container"></div>
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar(false)"></div>
+
+    <div id="floating-player" class="floating-player">
+        <button class="fp-close-btn" onclick="closeFloatingPlayer()">&times;</button>
+        <div class="fp-info">
+            <span id="fp-title" onclick="goToScreen('creations-screen')">Loading...</span>
+        </div>
+        <div class="fp-controls">
+            <button class="fp-btn" id="fp-loop-btn" onclick="toggleLoop()" title="循環播放"><i
+                    class="fas fa-redo"></i></button>
+            <button class="fp-btn" onclick="prevTrack()"><i class="fas fa-step-backward"></i></button>
+            <button class="fp-btn" id="fp-play-btn" onclick="toggleBottomPlay()"><i class="fas fa-play"></i></button>
+            <button class="fp-btn" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
+            <button class="fp-btn active" id="fp-auto-btn" onclick="toggleAutoPlay()" title="自動播放下一首"><i
+                    class="fas fa-infinity"></i></button>
+        </div>
+    </div>
 
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -1126,7 +1567,7 @@
             <div class="nav-links">
                 <button class="nav-btn active" id="nav-home" onclick="goToScreen('start-screen')">Home</button>
                 <button class="nav-btn" id="nav-creations" onclick="goToScreen('creations-screen')">Creations</button>
-                <button class="nav-btn" onclick="scrollToFeatures()">Features</button>
+                <button class="nav-btn" id="nav-features" onclick="scrollToFeatures()">Features</button>
             </div>
         </nav>
 
@@ -1318,10 +1759,71 @@
         </div>
 
         <div id="creations-screen" class="screen">
-            <div class="test-content">
-                <h2>My Creations</h2>
-                <div style="font-size:50px; margin:20px;">📂</div>
-                <p style="color:#666;">尚無創作紀錄。</p>
+            <div class="test-content" style="max-width: 1000px; width: 95%;">
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:20px; flex-wrap: wrap; gap: 15px;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <h2 style="margin:0;">My Creations History</h2>
+                    </div>
+
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button onclick="clearHistory()" class="btn-modal-danger"
+                            style="padding: 8px 15px; font-size: 14px; height:fit-content; align-self: flex-end;">
+                            <i class="fas fa-trash"></i> 清除全部
+                        </button>
+                    </div>
+                </div>
+
+                <div id="history-list"
+                    style="width: 100%; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px;">
+                    <p style="color:#666; text-align:center; padding: 20px;">尚無創作紀錄。</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="bottom-player" class="bottom-player-container">
+            <div class="bp-left-info">
+                <div class="creation-icon-box" style="width: 40px; height: 40px; font-size: 16px;">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="bp-text-group">
+                    <div id="bp-track-title" class="bp-track-title">Not Playing</div>
+                    <div id="bp-track-subtitle" class="bp-track-subtitle">--</div>
+                </div>
+            </div>
+
+            <div class="bp-center-controls">
+                <div class="bp-buttons-row">
+                    <button class="bp-btn" onclick="prevTrack()" title="上一首"><i
+                            class="fas fa-step-backward"></i></button>
+                    <button class="bp-btn bp-play-btn" id="bp-play-btn" onclick="toggleBottomPlay()">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="bp-btn" onclick="nextTrack()" title="下一首"><i
+                            class="fas fa-step-forward"></i></button>
+
+                    <button class="bp-btn" id="bp-loop-btn" onclick="toggleLoop()" title="循環播放"><i
+                            class="fas fa-redo"></i></button>
+                    <button class="bp-btn active" id="bp-auto-btn" onclick="toggleAutoPlay()" title="自動播放下一首"><i
+                            class="fas fa-infinity"></i></button>
+                </div>
+
+                <div class="bp-progress-container">
+                    <span id="bp-current-time">0:00</span>
+                    <input type="range" id="bp-seek-bar" class="bp-range" value="0" min="0" max="100" step="0.1">
+                    <span id="bp-total-time">0:00</span>
+                </div>
+            </div>
+
+            <div class="bp-right-spacer">
+                <select id="bp-instrument-select" class="bp-select" title="更換播放樂器">
+                </select>
+
+                <div class="bp-volume-control">
+                    <i class="fas fa-volume-up" style="color:#555; font-size:14px;"></i>
+                    <input type="range" id="bp-volume-slider" class="bp-range" value="80" min="0" max="100"
+                        oninput="if(window.setGlobalVolume) window.setGlobalVolume(this.value)">
+                </div>
             </div>
         </div>
 
@@ -1346,16 +1848,287 @@
             </div>
         </div>
 
+        <div id="clear-history-modal">
+            <div class="modal-content">
+                <h2 style="color: #333; margin-top:0;">確定要清除全部紀錄嗎？</h2>
+                <p style="color: #666; margin-bottom: 30px;">此動作無法復原，所有創作將會消失。</p>
+                <div class="modal-btn-group">
+                    <button class="btn-modal-primary"
+                        style="background:#ddd !important; color:#333 !important; box-shadow:none;"
+                        onclick="closeClearHistoryModal()">取消</button>
+                    <button class="btn-modal-danger" onclick="confirmClearHistory()">確定清除</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="delete-single-modal">
+            <div class="modal-content">
+                <h2 style="color: #333; margin-top:0;">確定要刪除這筆創作嗎？</h2>
+                <p style="color: #666; margin-bottom: 30px;">此動作無法復原。</p>
+                <div class="modal-btn-group">
+                    <button class="btn-modal-primary"
+                        style="background:#ddd !important; color:#333 !important; box-shadow:none;"
+                        onclick="closeDeleteSingleModal()">取消</button>
+                    <button class="btn-modal-danger" onclick="confirmDeleteSingle()">確定刪除</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="video-playback-modal">
+            <div class="modal-content"
+                style="background:#000; width:80%; max-width:800px; padding:0; overflow:hidden; border-radius:15px; position:relative;">
+                <button onclick="closeVideoModal()"
+                    style="position:absolute; top:10px; right:10px; z-index:10; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer;">&times;</button>
+                <video id="modal-video-player" controls style="width:100%; display:block;">
+                    <source src="" type="video/mp4">
+                    您的瀏覽器不支援影片標籤。
+                </video>
+            </div>
+        </div>
+
     </div>
 
     <script>
         // --- Utils & Toast ---
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container'); const toast = document.createElement('div');
-            toast.className = `toast ${type}`; toast.innerText = message; container.appendChild(toast);
+        function showToast(message, type = 'success', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => container.removeChild(toast), 300); }, 3000);
+
+            if (duration > 0) {
+                setTimeout(() => {
+                    removeToast(toast);
+                }, duration);
+            }
+            return toast;
         }
+
+        function removeToast(toastElement) {
+            if (!toastElement) return;
+            toastElement.classList.remove('show');
+            setTimeout(() => {
+                if (toastElement.parentNode) toastElement.parentNode.removeChild(toastElement);
+            }, 300);
+        }
+
+        // --- Global State ---
+        let isFloatingPlayerClosed = false;
+
+        // --- Close Floating Player (Persist State) ---
+        function closeFloatingPlayer() {
+            if (window.playerStop) window.playerStop();
+            document.getElementById('floating-player').style.display = 'none';
+            isFloatingPlayerClosed = true;
+        }
+
+        // --- History / Storage Logic ---
+        const STORAGE_KEY = 'melody_visualizer_creations';
+        const MAX_HISTORY = 10;
+        let currentHistoryIndex = -1;
+
+        function getHistory() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveCreationToHistory(midiFilename, params) {
+            let history = getHistory();
+            const newRecord = {
+                id: Date.now(),
+                date: new Date().toLocaleString(),
+                midi: midiFilename,
+                video: null,
+                params: params
+            };
+            history.unshift(newRecord);
+            if (history.length > MAX_HISTORY) {
+                history.pop();
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            renderHistory();
+        }
+
+        function updateHistoryVideo(midiFilename, videoUrl) {
+            let history = getHistory();
+            const index = history.findIndex(item => item.midi === midiFilename);
+            if (index !== -1) {
+                history[index].video = videoUrl;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        // 觸發清除 Modal
+        function clearHistory() {
+            document.getElementById('clear-history-modal').style.display = 'flex';
+        }
+
+        // 確認清除
+        function confirmClearHistory() {
+            localStorage.removeItem(STORAGE_KEY);
+            renderHistory();
+            hideBottomPlayer();
+            // 如果正在播放，停止它
+            if (window.playerStop) window.playerStop();
+            closeClearHistoryModal();
+            showToast("紀錄已清除", "success");
+        }
+
+        // 關閉清除 Modal
+        function closeClearHistoryModal() {
+            document.getElementById('clear-history-modal').style.display = 'none';
+        }
+
+        // 單筆刪除功能
+        let pendingDeleteId = null;
+
+        function deleteCreation(id) {
+            pendingDeleteId = id;
+            document.getElementById('delete-single-modal').style.display = 'flex';
+        }
+
+        function closeDeleteSingleModal() {
+            pendingDeleteId = null;
+            document.getElementById('delete-single-modal').style.display = 'none';
+        }
+
+        function confirmDeleteSingle() {
+            if (!pendingDeleteId) return;
+            const id = pendingDeleteId;
+
+            let history = getHistory();
+
+            // 檢查是否正在播放被刪除的歌曲
+            if (currentHistoryIndex !== -1 && history[currentHistoryIndex] && history[currentHistoryIndex].id === id) {
+                if (window.playerStop) window.playerStop();
+                hideBottomPlayer();
+                currentHistoryIndex = -1;
+            }
+
+            history = history.filter(item => item.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+
+            renderHistory();
+            closeDeleteSingleModal();
+            showToast("創作已刪除", "success");
+        }
+
+        // Video Modal Logic
+        function openVideoModal(url) {
+            const modal = document.getElementById('video-playback-modal');
+            const video = document.getElementById('modal-video-player');
+            video.src = url;
+            modal.style.display = 'flex';
+            video.play();
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('video-playback-modal');
+            const video = document.getElementById('modal-video-player');
+            video.pause();
+            video.src = "";
+            modal.style.display = 'none';
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            const history = getHistory();
+
+            if (history.length === 0) {
+                list.innerHTML = '<p style="color:#666; text-align:center; padding: 20px;">尚無創作紀錄。</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            history.forEach((item, index) => {
+                const hasVideo = !!item.video;
+
+                const paramText = `Key: ${document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key}, Scale: ${item.params.scale}, BPM: ${item.params.tempo}`;
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'glass-btn-style';
+                itemDiv.style.borderRadius = '16px';
+                itemDiv.style.padding = '15px 20px';
+                itemDiv.style.display = 'flex';
+                itemDiv.style.flexDirection = 'column';
+                itemDiv.style.gap = '15px';
+                itemDiv.style.cursor = 'pointer';
+
+                itemDiv.onclick = function () { playHistoryIndex(index); };
+
+                // HTML 結構
+                itemDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:15px;">
+                        
+                        <div style="display:flex; align-items:center; gap:15px; flex:1;">
+                            <div class="creation-icon-box">
+                                <i class="fas fa-music"></i>
+                            </div>
+                            <div style="display:flex; flex-direction:column; align-items:flex-start; text-align:left;">
+                                <h4 style="margin:0 0 5px 0; color:var(--primary-color);">Creation #${item.id.toString().slice(-4)}</h4>
+                                <div style="font-size:12px; color:#666;">${item.date}</div>
+                                <div style="font-size:11px; color:#888; margin-top:4px;">${paramText}</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button class="player-circle-btn" style="width:40px; height:40px; font-size:14px;" title="Play">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            
+                            <div style="display:flex; flex-direction:column; gap:5px; align-items: flex-end;">
+                                <a href="midi/${item.midi}" download="${item.midi}" onclick="event.stopPropagation()" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center;">
+                                    <i class="fas fa-download"></i> 下載 MIDI 檔案
+                                </a>
+                                ${hasVideo ? `
+                                <button onclick="event.stopPropagation(); openVideoModal('${item.video}')" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center; color:#2196f3; border-color:#bbdefb;">
+                                    <i class="fas fa-film"></i> 觀看影片
+                                </button>
+                                ` : ''}
+                            </div>
+                            <button onclick="event.stopPropagation(); deleteCreation(${item.id})" class="action-btn" style="padding:10px; font-size:14px; color:#f44336; border-color:#ffcdd2;" title="刪除此創作">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(itemDiv);
+            });
+        }
+
+        // --- Bottom Player Logic ---
+        function showBottomPlayer() {
+            const player = document.getElementById('bottom-player');
+            const screen = document.getElementById('creations-screen');
+            const floating = document.getElementById('floating-player');
+
+            player.classList.add('active');
+            screen.classList.add('has-player');
+            floating.style.display = 'none';
+        }
+
+        function hideBottomPlayer() {
+            const player = document.getElementById('bottom-player');
+            const screen = document.getElementById('creations-screen');
+            const floating = document.getElementById('floating-player');
+
+            player.classList.remove('active');
+            screen.classList.remove('has-player');
+            floating.style.display = 'none';
+        }
+
+        function showFloatingPlayer() {
+            if (isFloatingPlayerClosed) return; // Don't show if closed
+            const player = document.getElementById('bottom-player');
+            const floating = document.getElementById('floating-player');
+
+            player.classList.remove('active');
+            floating.style.display = 'flex';
+        }
+
 
         // --- 輸入驗證 ---
         function validateInput(event) {
@@ -1373,31 +2146,62 @@
             if (show) { sidebar.classList.add('open'); overlay.classList.add('active'); } else { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
         }
 
-        function goToScreen(id) {
+        // [Fix Logic] Added forceScrollTop parameter to handle CSS overflow scrolling
+        function goToScreen(id, forceScrollTop = true) {
             document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.classList.remove('animate-enter'); });
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             const target = document.getElementById(id);
             target.classList.add('active'); target.classList.add('animate-enter');
 
-            if (id === 'start-screen') document.getElementById('nav-home').classList.add('active');
-            if (id === 'creations-screen') document.getElementById('nav-creations').classList.add('active');
+            if (id === 'start-screen') {
+                document.getElementById('nav-home').classList.add('active');
+
+                // [Fix] 強制捲動該 DIV 容器到頂部 (因為 body overflow:hidden, window.scrollTo 無效)
+                if (forceScrollTop) {
+                    target.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+            if (id === 'creations-screen') {
+                document.getElementById('nav-creations').classList.add('active');
+                renderHistory();
+
+                if (currentHistoryIndex !== -1) showBottomPlayer();
+            } else {
+                // [RWD Fix 2] 強制先隱藏底部播放器，避免在關閉懸浮視窗的狀態下殘留
+                hideBottomPlayer();
+
+                if (id === 'test-screen') {
+                    // Stop any active history playback
+                    if (window.playerStop && currentHistoryIndex !== -1) {
+                        window.playerStop();
+                        hideBottomPlayer();
+                        document.getElementById('floating-player').style.display = 'none';
+                    }
+                } else if (currentHistoryIndex !== -1) {
+                    showFloatingPlayer();
+                } else {
+                    hideBottomPlayer();
+                }
+            }
 
             if (id === 'main-screen') {
                 setTimeout(() => toggleSidebar(true), 100);
-                document.getElementById('floating-back-btn').style.display = 'block'; // 只有在創作模式顯示
+                document.getElementById('floating-back-btn').style.display = 'block';
             } else {
                 toggleSidebar(false);
-                document.getElementById('floating-back-btn').style.display = 'none'; // 其他模式隱藏
+                document.getElementById('floating-back-btn').style.display = 'none';
             }
-
-            if (window.timerInterval) clearInterval(window.timerInterval);
-            if (window.playerStop && typeof window.playerStop === 'function') window.playerStop();
-
-            if (id === 'start-screen') { target.scrollTop = 0; }
         }
 
+        // Features 按鈕
         function scrollToFeatures() {
-            goToScreen('start-screen');
+            // [Fix] 呼叫 goToScreen 但設為 false，避免先捲到頂再往下跳
+            goToScreen('start-screen', false);
+
+            // 強制切換 active class
+            document.getElementById('nav-home').classList.remove('active');
+            document.getElementById('nav-features').classList.add('active');
+
             setTimeout(() => {
                 const section = document.getElementById('features-section');
                 if (section) { section.scrollIntoView({ behavior: 'smooth' }); }
@@ -1437,6 +2241,10 @@
                 const data = await response.json();
                 if (data.success) {
                     window.currentMidiFilename = data.filename;
+
+                    // --- 儲存到歷史紀錄 ---
+                    saveCreationToHistory(data.filename, params);
+
                     visualLoader.style.display = 'none'; placeholder.style.display = 'block';
                     placeholder.innerHTML = `<h3 style="color:#28a745;"><i class="fas fa-check-circle"></i> 生成成功！</h3><p>準備進行視覺化。</p>`;
                     document.getElementById('status-text').innerText = "MIDI 已就緒";
@@ -1464,6 +2272,9 @@
                 const response = await fetch('http://localhost:3000/api/render-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ midiFilename: window.currentMidiFilename }) });
                 const data = await response.json();
                 if (data.success) {
+                    // --- 更新歷史紀錄影片 ---
+                    updateHistoryVideo(window.currentMidiFilename, data.videoUrl);
+
                     visualLoader.style.display = 'none'; statusDiv.style.display = 'none';
                     document.getElementById('visual-container').classList.add('has-result');
                     videoEl.src = data.videoUrl; videoEl.style.display = 'block'; videoEl.load();
@@ -1709,7 +2520,7 @@
             setupScrollReveal();
             document.getElementById('bars').addEventListener('change', validateInput);
             document.getElementById('tempo').addEventListener('change', validateInput);
-        }
+        };
     </script>
 
     <script type="module">
@@ -1723,7 +2534,24 @@
         const totalTimeEl = document.getElementById('total-time');
         const statusEl = document.getElementById('player-status');
 
-        let isPlaying = false, isDragging = false, updateInterval = null, isInstrumentLoaded = false;
+        // Bottom Player Elements
+        const bpPlayBtn = document.getElementById('bp-play-btn');
+        const bpLoopBtn = document.getElementById('bp-loop-btn');
+        const bpAutoBtn = document.getElementById('bp-auto-btn'); // [Add] Auto Play
+        const bpSeekBar = document.getElementById('bp-seek-bar');
+        const bpCurrentTimeEl = document.getElementById('bp-current-time');
+        const bpTotalTimeEl = document.getElementById('bp-total-time');
+        const bpTrackTitle = document.getElementById('bp-track-title');
+        const bpTrackSubtitle = document.getElementById('bp-track-subtitle');
+        const bpInstrumentSelect = document.getElementById('bp-instrument-select');
+
+        // Floating Player Elements
+        const fpTitle = document.getElementById('fp-title');
+        const fpPlayBtn = document.getElementById('fp-play-btn');
+        const fpLoopBtn = document.getElementById('fp-loop-btn');
+        const fpAutoBtn = document.getElementById('fp-auto-btn'); // [Add] Auto Play
+
+        let isPlaying = false, isDragging = false, isLooping = false, isAutoPlay = true, updateInterval = null, isInstrumentLoaded = false;
 
         const instruments = listAvailableInstruments();
 
@@ -1735,6 +2563,17 @@
                 option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase();
                 if (inst === 'acoustic_grand_piano') option.selected = true;
                 selectEl.appendChild(option);
+            });
+        }
+
+        // 填入底部播放器中的樂器選擇
+        if (bpInstrumentSelect) {
+            bpInstrumentSelect.innerHTML = "";
+            instruments.forEach(inst => {
+                const option = document.createElement('option');
+                option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase();
+                if (inst === 'acoustic_grand_piano') option.selected = true;
+                bpInstrumentSelect.appendChild(option);
             });
         }
 
@@ -1759,7 +2598,6 @@
         let testSampler = null;
         const reverb = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).toDestination();
 
-        // 初始化測驗樂器 (預設鋼琴)
         async function loadTestInstrument(name) {
             if (testSampler) {
                 testSampler.disconnect();
@@ -1778,37 +2616,217 @@
                 }).connect(reverb);
             });
         }
-        // 預先載入測驗樂器
         loadTestInstrument('acoustic_grand_piano');
 
-        // 監聽測驗樂器更換
+        // 測驗模式樂器切換
         if (testSelectEl) {
             testSelectEl.addEventListener('change', async (e) => {
                 const instName = e.target.value;
-                // 暫時禁用選單避免重複觸發
                 testSelectEl.disabled = true;
-                await loadTestInstrument(instName);
+                const loadingToast = showToast("正在切換樂器...", "info", 0);
+                try {
+                    await loadTestInstrument(instName);
+                    removeToast(loadingToast);
+                    showToast("樂器切換完成！", "success");
+                } catch (err) {
+                    removeToast(loadingToast);
+                    showToast("切換失敗", "error");
+                }
                 testSelectEl.disabled = false;
             });
         }
 
-        // 暴露播放函式給全域 (讓 playCurrentNote 使用)
         window.playTestNote = function (note) {
             if (testSampler && testSampler.loaded) {
                 testSampler.triggerAttackRelease(note, "8n");
             } else {
-                // Fallback (如果還沒載入好，用簡單合成器)
                 const synth = new Tone.Synth().toDestination();
                 synth.triggerAttackRelease(note, "8n");
             }
         };
+
+        // ----------------------------------------------------
+        // 全域音量控制
+        // ----------------------------------------------------
+        window.setGlobalVolume = function (val) {
+            const volumeValue = parseInt(val);
+            if (volumeValue === 0) {
+                Tone.getDestination().volume.rampTo(-Infinity, 0.1);
+            } else {
+                const db = 20 * Math.log10(volumeValue / 100);
+                Tone.getDestination().volume.rampTo(db, 0.1);
+            }
+        };
+        window.setGlobalVolume(80);
+
+        // ----------------------------------------------------
+        // 歷史紀錄播放邏輯
+        // ----------------------------------------------------
+        window.playHistoryIndex = async function (index) {
+            const history = getHistory();
+            if (index < 0 || index >= history.length) return;
+
+            currentHistoryIndex = index;
+            const item = history[index];
+
+            const titleText = `Creation #${item.id.toString().slice(-4)}`;
+
+            if (bpTrackTitle) bpTrackTitle.innerText = titleText;
+            if (bpTrackSubtitle) {
+                const keyName = document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key;
+                bpTrackSubtitle.innerText = `${keyName} - ${item.params.scale}`;
+            }
+
+            if (fpTitle) fpTitle.innerText = titleText;
+
+            stop();
+            isPlaying = false;
+            updatePlayButtons(false);
+
+            const isCreationsPage = document.getElementById('creations-screen').classList.contains('active');
+            if (isCreationsPage) {
+                showBottomPlayer();
+            } else {
+                hideBottomPlayer();
+                showFloatingPlayer();
+            }
+
+            const loadingToast = showToast(`正在載入 ${titleText}...`, "info", 0);
+
+            try {
+                await Tone.start();
+                const instrumentName = document.getElementById('bp-instrument-select')?.value || 'acoustic_grand_piano';
+                await loadInstrument(instrumentName);
+
+                const response = await fetch(`midi/${item.midi}`);
+                if (!response.ok) throw new Error("找不到檔案");
+                const arrayBuffer = await response.arrayBuffer();
+
+                await loadAndPlayMIDI(arrayBuffer);
+
+                removeToast(loadingToast);
+                showToast("載入完成，開始播放", "success");
+
+                isPlaying = true;
+                updatePlayButtons(true);
+                startUpdateLoop();
+
+            } catch (error) {
+                removeToast(loadingToast);
+                console.error(error);
+                showToast("播放失敗: " + error.message, "error");
+            }
+        };
+
+        if (bpInstrumentSelect) {
+            bpInstrumentSelect.addEventListener('change', async (e) => {
+                if (currentHistoryIndex !== -1 && isPlaying) {
+                    const loadingToast = showToast("正在切換樂器...", "info", 0);
+                    bpInstrumentSelect.disabled = true;
+                    try {
+                        const time = getCurrentTime();
+                        await loadInstrument(e.target.value);
+                        removeToast(loadingToast);
+                        showToast("樂器切換完成", "success");
+                    } catch (err) {
+                        removeToast(loadingToast);
+                        console.error(err);
+                        showToast("切換失敗", "error");
+                    } finally {
+                        bpInstrumentSelect.disabled = false;
+                    }
+                }
+            });
+        }
+
+        window.toggleBottomPlay = function () {
+            if (isPlaying) {
+                pause();
+                isPlaying = false;
+                updatePlayButtons(false);
+            } else {
+                if (Tone.Transport.seconds > 0) {
+                    play();
+                    isPlaying = true;
+                    updatePlayButtons(true);
+                    startUpdateLoop();
+                } else if (currentHistoryIndex !== -1) {
+                    window.playHistoryIndex(currentHistoryIndex);
+                }
+            }
+        }
+
+        window.prevTrack = function () {
+            if (currentHistoryIndex < getHistory().length - 1) {
+                window.playHistoryIndex(currentHistoryIndex + 1);
+            } else {
+                showToast("已經是最後一首了", "error");
+            }
+        }
+
+        window.nextTrack = function () {
+            if (currentHistoryIndex > 0) {
+                window.playHistoryIndex(currentHistoryIndex - 1);
+            } else {
+                showToast("已經是第一首了", "error");
+            }
+        }
+
+        // Toggle Loop Logic
+        window.toggleLoop = function () {
+            isLooping = !isLooping;
+
+            const updateBtnState = (btn, active) => {
+                if (!btn) return;
+                if (active) btn.classList.add('active');
+                else btn.classList.remove('active');
+            };
+
+            updateBtnState(bpLoopBtn, isLooping);
+            updateBtnState(fpLoopBtn, isLooping);
+
+            if (isLooping) {
+                showToast("開啟循環播放", "success");
+            } else {
+                showToast("關閉循環播放", "success");
+            }
+        }
+
+        // [Add] Toggle Auto Play Logic
+        window.toggleAutoPlay = function () {
+            isAutoPlay = !isAutoPlay;
+
+            const updateBtnState = (btn, active) => {
+                if (!btn) return;
+                if (active) btn.classList.add('active');
+                else btn.classList.remove('active');
+            };
+
+            updateBtnState(bpAutoBtn, isAutoPlay);
+            updateBtnState(fpAutoBtn, isAutoPlay);
+
+            if (isAutoPlay) {
+                showToast("開啟自動播放", "success");
+            } else {
+                showToast("關閉自動播放", "success");
+            }
+        }
+
+        function updatePlayButtons(playing) {
+            const icon = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            if (bpPlayBtn) bpPlayBtn.innerHTML = icon;
+            if (playBtn) playBtn.innerText = playing ? "⏸" : "▶";
+            if (fpPlayBtn) fpPlayBtn.innerHTML = icon;
+            if (statusEl) statusEl.innerText = playing ? "播放中 ♪" : "已暫停";
+        }
+
         // ----------------------------------------------------
 
         if (selectEl) {
             selectEl.addEventListener('change', async (e) => {
                 statusEl.innerText = "載入音色中..."; selectEl.disabled = true;
                 try {
-                    if (isPlaying) { pause(); isPlaying = false; playBtn.innerText = "▶"; }
+                    if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); }
                     await loadInstrument(e.target.value); isInstrumentLoaded = true; statusEl.innerText = "音色已切換";
                 } catch (err) { console.error(err); statusEl.innerText = "音色載入失敗"; } finally { selectEl.disabled = false; }
             });
@@ -1830,18 +2848,19 @@
                             const buf = await res.arrayBuffer();
                             await loadAndPlayMIDI(buf);
                         } else { play(); }
-                        isPlaying = true; playBtn.innerText = "⏸"; statusEl.innerText = "播放中 ♪"; seekBar.disabled = false; startUpdateLoop();
+                        isPlaying = true; updatePlayButtons(true); seekBar.disabled = false; startUpdateLoop();
                     } catch (e) { console.error(e); statusEl.innerText = "播放錯誤"; togglePlayState(true); } finally { playBtn.disabled = false; }
                 } else { togglePlayState(false); }
             });
         }
 
         function togglePlayState(resetToStart = false) {
-            if (resetToStart) { stop(); isPlaying = false; playBtn.innerText = "▶"; statusEl.innerText = "已停止"; seekBar.value = 0; currentTimeEl.innerText = "0:00"; }
-            else { pause(); isPlaying = false; playBtn.innerText = "▶"; statusEl.innerText = "已暫停"; }
+            if (resetToStart) { stop(); isPlaying = false; updatePlayButtons(false); if (seekBar) seekBar.value = 0; if (currentTimeEl) currentTimeEl.innerText = "0:00"; }
+            else { pause(); isPlaying = false; updatePlayButtons(false); }
             stopUpdateLoop();
         }
 
+        // Seek Bar Listeners
         if (seekBar) {
             seekBar.addEventListener('mousedown', () => { isDragging = true; });
             seekBar.addEventListener('touchstart', () => { isDragging = true; });
@@ -1852,15 +2871,54 @@
             });
         }
 
+        if (bpSeekBar) {
+            bpSeekBar.addEventListener('mousedown', () => { isDragging = true; });
+            bpSeekBar.addEventListener('touchstart', () => { isDragging = true; });
+            bpSeekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; });
+            bpSeekBar.addEventListener('input', (e) => {
+                const duration = getDuration();
+                if (duration > 0) bpCurrentTimeEl.innerText = formatTime(duration * (e.target.value / 100));
+            });
+        }
+
         function startUpdateLoop() {
             if (updateInterval) cancelAnimationFrame(updateInterval);
             function update() {
                 if (!isPlaying) return;
                 const now = getCurrentTime(); const total = getDuration();
                 if (total > 0) {
-                    totalTimeEl.innerText = formatTime(total);
-                    if (!isDragging && seekBar) { seekBar.value = (now / total) * 100; currentTimeEl.innerText = formatTime(now); }
-                    if (now >= total - 0.1) { togglePlayState(true); return; }
+                    const progress = (now / total) * 100;
+                    const timeStr = formatTime(now);
+                    const totalStr = formatTime(total);
+
+                    if (totalTimeEl) totalTimeEl.innerText = totalStr;
+                    if (!isDragging && seekBar) { seekBar.value = progress; currentTimeEl.innerText = timeStr; }
+
+                    if (bpTotalTimeEl) bpTotalTimeEl.innerText = totalStr;
+                    if (!isDragging && bpSeekBar) { bpSeekBar.value = progress; bpCurrentTimeEl.innerText = timeStr; }
+
+                    if (now >= total - 0.1) {
+                        if (isLooping) {
+                            seek(0);
+                            if (bpSeekBar) bpSeekBar.value = 0;
+                            if (bpCurrentTimeEl) bpCurrentTimeEl.innerText = "0:00";
+                            if (seekBar) seekBar.value = 0;
+                            if (currentTimeEl) currentTimeEl.innerText = "0:00";
+                        } else {
+                            // [Updated Logic] Auto Play Check
+                            if (isAutoPlay) {
+                                if (currentHistoryIndex !== -1 && currentHistoryIndex > 0) {
+                                    window.nextTrack();
+                                } else {
+                                    // 最後一首播完自動停止
+                                    togglePlayState(true);
+                                }
+                            } else {
+                                togglePlayState(true);
+                            }
+                            return;
+                        }
+                    }
                 }
                 updateInterval = requestAnimationFrame(update);
             }
