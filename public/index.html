@@ -2956,8 +2956,10 @@
                         <div style="margin-bottom:10px;"><label for="instrument-select"
                                 style="font-size:12px;">選擇樂器:</label><select id="instrument-select"
                                 class="sketch-select" style="padding:5px; width:100%;"></select></div>
+
                         <div style="display:flex; align-items:center; gap:15px; width:100%;">
                             <button id="play-toggle-btn" class="player-circle-btn">▶</button>
+
                             <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
                                 <input type="range" id="seek-bar" value="0" min="0" max="100" step="0.1" disabled
                                     style="width:100%;">
@@ -2966,6 +2968,14 @@
                                     <span id="current-time">0:00</span><span id="player-status"
                                         style="color:var(--primary-color);">準備就緒</span><span id="total-time">0:00</span>
                                 </div>
+                            </div>
+
+                            <div class="bp-volume-control"
+                                style="display:flex; align-items:center; gap:8px; width:80px; margin-left: 5px;">
+                                <i class="fas fa-volume-up" style="color:#888; font-size:12px;"></i>
+                                <input type="range" class="bp-range" value="80" min="0" max="100"
+                                    oninput="if(window.setGlobalVolume) window.setGlobalVolume(this.value)"
+                                    style="height: 3px;" title="預覽音量">
                             </div>
                         </div>
                     </div>
@@ -4009,9 +4019,12 @@
         }
 
         // --- 新增：佇列輪詢邏輯 ---
+        // --- 修改：佇列輪詢邏輯 (顯示順位與時間) ---
         function startQueuePolling(filename) {
+            // 如果已經有在跑的輪詢，先清除
             if (pollInterval) clearInterval(pollInterval);
 
+            // 取得 UI 元素
             const queueBox = document.getElementById('queue-status-container');
             const posEl = document.getElementById('queue-pos');
             const timeEl = document.getElementById('queue-time');
@@ -4022,18 +4035,29 @@
                     const res = await fetch(`/api/queue-status?filename=${filename}`);
                     const statusData = await res.json();
 
-                    if (statusData.status === 'rendering') {
-                        queueBox.style.display = 'none';
-                        loaderText.innerText = "正在進行 4K 渲染 (Piano VFX)...";
-                        loaderText.style.color = "#E91E63"; // 換個顏色表示正在做
-                    } else if (statusData.status === 'queued') {
+                    // --- 針對不同狀態更新 UI ---
+                    if (statusData.status === 'queued') {
+                        // [關鍵修改] 顯示排隊資訊框
                         queueBox.style.display = 'block';
-                        loaderText.innerText = "伺服器忙碌，排隊中...";
-                        loaderText.style.color = "#333";
 
-                        posEl.innerText = `No. ${statusData.position}`;
+                        // [關鍵修改] 將後端回傳的數據填入 HTML
+                        // 後端回傳範例: { status: 'queued', position: 3, waitTime: '45 秒' }
+                        posEl.innerText = statusData.position;
                         timeEl.innerText = statusData.waitTime;
+
+                        // 更新提示文字與顏色
+                        loaderText.innerText = "伺服器忙碌，排隊中...";
+                        loaderText.style.color = "#FF9800"; // 橘色代表等待
+
+                    } else if (statusData.status === 'rendering') {
+                        // 進入渲染狀態，隱藏排隊框
+                        queueBox.style.display = 'none';
+
+                        loaderText.innerText = "正在進行 4K 渲染 (Piano VFX)...";
+                        loaderText.style.color = "#E91E63"; // 粉紅色代表正在處理
                     }
+                    // 如果是 completed 或 error，會在 startRenderProcess 的主流程處理，這裡不用管
+
                 } catch (e) {
                     console.log("Polling error", e);
                 }
@@ -4192,7 +4216,7 @@
 
         // 【新增】全域樂器切換鎖
         let isSwitchingInstrument = false;
-        
+
         // 綁定 DOM 元素
         const selectEl = document.getElementById('instrument-select');
         const playBtn = document.getElementById('play-toggle-btn');
@@ -4274,11 +4298,11 @@
                 if (isSwitchingInstrument) return; // 防止連點
 
                 const instName = e.target.value;
-                
+
                 isSwitchingInstrument = true;
                 creationSelectEl.disabled = true;
                 const loadingToast = showToast("正在切換創作樂器...", "info", 0);
-                
+
                 try {
                     await loadCreationInstrument(instName);
                     removeToast(loadingToast);
@@ -4299,7 +4323,12 @@
 
         // --- 3. 測試模式邏輯 (Test Instrument) ---
         let testSampler = null;
+        // [修改 1] 建立一個專用的增益節點 (Volume)，提升 10 分貝，解決聲音太小的問題
+        const testVolume = new Tone.Volume(10);
         const reverb = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).toDestination();
+
+        // 將 Volume 連接到 Reverb
+        testVolume.connect(reverb);
 
         async function loadTestInstrument(name) {
             if (testSampler) { testSampler.disconnect(); testSampler.dispose(); }
@@ -4310,7 +4339,7 @@
                     baseUrl: INSTRUMENT_BASE_URLS[name],
                     release: 1,
                     onload: () => { console.log(`Test instrument ${name} loaded`); resolve(); }
-                }).connect(reverb);
+                }).connect(testVolume); // [修改 2] 連接到 testVolume 而不是直接連 reverb
             });
         }
         loadTestInstrument('acoustic_grand_piano');
@@ -4328,8 +4357,9 @@
         }
 
         window.playTestNote = function (note) {
-            if (testSampler && testSampler.loaded) { testSampler.triggerAttackRelease(note, "8n"); }
-            else { const synth = new Tone.Synth().toDestination(); synth.triggerAttackRelease(note, "8n"); }
+            // [修改 3] 加入第三個參數 1，代表 Velocity (力度) 為最大，確保每個音都很清楚
+            if (testSampler && testSampler.loaded) { testSampler.triggerAttackRelease(note, "8n", undefined, 1); }
+            else { const synth = new Tone.Synth().toDestination(); synth.triggerAttackRelease(note, "8n", undefined, 1); }
         };
 
         window.setGlobalVolume = function (val) {
@@ -4401,7 +4431,7 @@
 
                 const instName = e.target.value;
                 const wasPlaying = isPlaying; // 記住原本是否在播放
-                
+
                 // 2. 鎖定狀態
                 isSwitchingInstrument = true;
                 bpInstrumentSelect.disabled = true;
@@ -4417,7 +4447,7 @@
 
                     // 4. 載入新樂器
                     await loadInstrument(instName);
-                    
+
                     removeToast(loadingToast);
                     showToast("樂器切換完成", "success");
 
@@ -4523,7 +4553,7 @@
                 isSwitchingInstrument = true;
                 selectEl.disabled = true;
                 statusEl.innerText = "載入音色中...";
-                
+
                 // 顯示 Toast 讓使用者知道還在跑
                 const loadingToast = showToast("正在切換音色...", "info", 0);
 
@@ -4535,11 +4565,11 @@
                     }
 
                     await loadInstrument(instName);
-                    
+
                     isInstrumentLoaded = true;
                     statusEl.innerText = "音色已切換";
                     removeToast(loadingToast);
-                    
+
                 } catch (err) {
                     console.error(err);
                     statusEl.innerText = "音色載入失敗";
