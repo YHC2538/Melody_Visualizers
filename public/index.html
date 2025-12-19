@@ -1604,7 +1604,28 @@
             align-items: center;
             justify-content: center;
         }
-
+        /* --- Queue Status Styles --- */
+        .queue-status-box {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .queue-info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .queue-val {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
         .spinner {
             width: 40px;
             height: 40px;
@@ -2894,7 +2915,21 @@
                     </div>
                     <div id="visual-loader" class="loader-container" style="display:none;">
                         <div class="spinner"></div>
-                        <p style="font-weight: bold; color: #333; margin-top:10px;">生成中...</p>
+                        <p style="font-weight: bold; color: #333; margin-top:10px;">正在連線至渲染伺服器...</p>
+                        
+                        <div id="queue-status-container" class="queue-status-box" style="display:none;">
+                            <div class="queue-info-row">
+                                <span>目前順位:</span>
+                                <span id="queue-pos" class="queue-val">--</span>
+                            </div>
+                            <div class="queue-info-row">
+                                <span>預估等待:</span>
+                                <span id="queue-time" class="queue-val">--</span>
+                            </div>
+                            <div style="font-size:11px; color:#888; margin-top:5px;">
+                                <i class="fas fa-desktop"></i> Server Busy
+                            </div>
+                        </div>
                     </div>
                     <video id="result-video" controls
                         style="display:none; width:100%; height:100%; object-fit:contain;"></video>
@@ -3824,54 +3859,135 @@
             // 3. 給予使用者回饋
             showToast("參數已重置為預設值", "info");
 
-            // (選用) 如果您希望重置時有個小動畫強調一下，可以加上這行
-            // document.querySelector('.sidebar').classList.add('flash-effect');
+            // (選用) 如果您希望重置時有個小動畫強調一下，可以加上這行:
+            document.querySelector('.sidebar').classList.add('flash-effect');
         }
+
+        let pollInterval = null; // 用來存輪詢的 Timer
 
         async function startRenderProcess() {
             if (!window.currentMidiFilename) { showToast("找不到 MIDI 檔案！", "error"); return; }
+            
             const renderBtn = document.getElementById('render-video-btn');
             const visualLoader = document.getElementById('visual-loader');
             const placeholder = document.getElementById('placeholder-text');
             const videoEl = document.getElementById('result-video');
             const statusDiv = document.getElementById('render-status');
+            const queueBox = document.getElementById('queue-status-container');
+            const loaderText = visualLoader.querySelector('p');
 
+            // Reset UI
             renderBtn.disabled = true;
-            renderBtn.innerText = "渲染中...";
+            renderBtn.innerText = "請求中...";
             statusDiv.style.display = 'block';
+            statusDiv.innerText = "加入佇列...";
             placeholder.style.display = 'none';
             videoEl.style.display = 'none';
             videoEl.pause();
+            
             visualLoader.style.display = 'flex';
-            visualLoader.querySelector('p').innerText = "影片渲染中...";
+            queueBox.style.display = 'none'; // 先隱藏排隊框
+            loaderText.innerText = "正在聯絡渲染引擎...";
 
             try {
-                const response = await fetch('http://localhost:3000/api/render-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ midiFilename: window.currentMidiFilename }) });
+                // 1. 發送渲染請求
+                const response = await fetch('http://localhost:3000/api/render-video', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ midiFilename: window.currentMidiFilename }) 
+                });
+
+                // 2. 處理錯誤狀態 (例如 429 Too Many Requests)
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error || `Server Error: ${response.status}`);
+                }
+
+                // 3. 請求成功，進入排隊/渲染等待模式
+                renderBtn.innerText = "渲染進行中...";
+                statusDiv.innerText = "渲染中...";
+                
+                // 開始輪詢狀態 (每 2 秒一次)
+                startQueuePolling(window.currentMidiFilename);
+
+                // 等待最終結果 (fetch 會等到 server 回傳 response 才結束，也就是渲染完成時)
                 const data = await response.json();
+
                 if (data.success) {
+                    stopQueuePolling(); // 停止輪詢
+                    
                     updateHistoryVideo(window.currentMidiFilename, data.videoUrl);
                     unlockAchievement('film_maker');
+                    
                     visualLoader.style.display = 'none';
                     statusDiv.style.display = 'none';
                     document.getElementById('visual-container').classList.add('has-result');
+                    
                     videoEl.src = data.videoUrl;
                     videoEl.style.display = 'block';
                     videoEl.load();
+                    
                     const videoLink = document.getElementById('video-download-link');
                     videoLink.href = data.videoUrl;
                     videoLink.download = data.filename;
                     videoLink.style.display = 'flex';
+                    
                     renderBtn.disabled = false;
                     renderBtn.innerText = "再次渲染";
                     showToast("渲染完成！", "success");
-                } else { throw new Error(data.error); }
+                } else { 
+                    throw new Error(data.error); 
+                }
+
             } catch (error) {
                 console.error(error);
-                showToast("渲染失敗", "error");
+                stopQueuePolling();
+                showToast(error.message, "error", 5000); // 顯示久一點
+                
                 visualLoader.style.display = 'none';
-                placeholder.style.display = 'block';
+                placeholder.style.display = 'block'; // 顯示回原本的圖示
                 renderBtn.disabled = false;
                 renderBtn.innerText = "渲染影片";
+                statusDiv.style.display = 'none';
+            }
+        }
+
+        // --- 新增：佇列輪詢邏輯 ---
+        function startQueuePolling(filename) {
+            if (pollInterval) clearInterval(pollInterval);
+            
+            const queueBox = document.getElementById('queue-status-container');
+            const posEl = document.getElementById('queue-pos');
+            const timeEl = document.getElementById('queue-time');
+            const loaderText = document.querySelector('#visual-loader p');
+
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`http://localhost:3000/api/queue-status?filename=${filename}`);
+                    const statusData = await res.json();
+
+                    if (statusData.status === 'rendering') {
+                        queueBox.style.display = 'none';
+                        loaderText.innerText = "正在進行 4K 渲染 (Piano VFX)...";
+                        loaderText.style.color = "#E91E63"; // 換個顏色表示正在做
+                    } else if (statusData.status === 'queued') {
+                        queueBox.style.display = 'block';
+                        loaderText.innerText = "伺服器忙碌，排隊中...";
+                        loaderText.style.color = "#333";
+                        
+                        posEl.innerText = `No. ${statusData.position}`;
+                        timeEl.innerText = statusData.waitTime;
+                    }
+                } catch (e) {
+                    console.log("Polling error", e);
+                }
+            }, 2000); // 每 2 秒更新一次
+        }
+
+        function stopQueuePolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
             }
         }
 

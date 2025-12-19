@@ -34,7 +34,7 @@ Sleep, 4000
 
 ; --- 2. 匯入 MIDI ---
 Click, 60, 95
-Sleep, 500
+Sleep, 100
 
 ; 等待「開啟舊檔」視窗
 WinWaitActive, ahk_class #32770, , 5
@@ -48,16 +48,16 @@ if ErrorLevel
 Clipboard := MidiPath  ; 把路徑存入剪貼簿
 ClipWait, 1            ; 等待剪貼簿準備好
 Send, ^v               ; 傳送 Ctrl + V (貼上)
-Sleep, 500
+Sleep, 100
 Send, {Enter}
-Sleep, 500
+Sleep, 100
 
 ; --- 3. 匯入 WAV ---
 WinActivate, Piano VFX
-Sleep, 500
+Sleep, 100
 
 Click, 60, 131
-Sleep, 500
+Sleep, 100
 
 WinWaitActive, ahk_class #32770, , 5
 if ErrorLevel
@@ -70,19 +70,19 @@ if ErrorLevel
 Clipboard := WavPath
 ClipWait, 1
 Send, ^v
-Sleep, 500
+Sleep, 100
 Send, {Enter}
-Sleep, 500
+Sleep, 100
 
 ; --- 4. 從主 UI 點擊 Render---
 WinActivate, Piano VFX
 Click, 285, 242 
-Sleep, 500
+Sleep, 100
 
 ; --- 5. 設定 PATH 輸出資料夾路徑 ---
 WinActivate, Piano VFX
 Click, 88, 120
-Sleep, 500
+Sleep, 100
 
 WinWaitActive, ahk_class #32770, , 5
 if ErrorLevel
@@ -94,15 +94,14 @@ if ErrorLevel
 Clipboard := VideoOutputPath
 ClipWait, 1
 Send, ^v
-Sleep, 500
+Sleep, 100
 Send, {Enter}
-Sleep, 500
+Sleep, 100
 Send, {Enter}
-Sleep, 300
+Sleep, 100
 
 ; -- 6. click Render, 真正開始渲染
 Click, 209, 115
-Sleep 1000
 
 ; --- 6. 監控渲染 (deprecated) ---
 ; 等待 18.5 秒 (寫死的秒數,希望有其他辦法偵測)
@@ -129,6 +128,7 @@ StartTime := A_TickCount
 
 Loop
 {
+    WinActivate, Piano VFX
     ; 1. 檢查是否超時
     ElapsedTime := (A_TickCount - StartTime) / 1000
     if (ElapsedTime > MaxWaitSeconds)
@@ -145,7 +145,6 @@ Loop
     if (ErrorLevel = 0)
     {
         ; 找到了！
-        Sleep, 2000 
         Break
     }
     else if (ErrorLevel = 2)
@@ -154,7 +153,7 @@ Loop
         ExitApp
     }
 
-    Sleep, 1000
+    Sleep, 100
 }
 
 ; --- 7. 結束程序 ---
