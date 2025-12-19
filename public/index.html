@@ -4190,6 +4190,9 @@
         let isPlaying = false, isDragging = false, isLooping = false, isAutoPlay = true, updateInterval = null, isInstrumentLoaded = false;
         let currentPlayerContext = 'history'; // 記錄當前播放情境
 
+        // 【新增】全域樂器切換鎖
+        let isSwitchingInstrument = false;
+        
         // 綁定 DOM 元素
         const selectEl = document.getElementById('instrument-select');
         const playBtn = document.getElementById('play-toggle-btn');
@@ -4268,9 +4271,14 @@
         const creationSelectEl = document.getElementById('creation-instrument-select');
         if (creationSelectEl) {
             creationSelectEl.addEventListener('change', async (e) => {
+                if (isSwitchingInstrument) return; // 防止連點
+
                 const instName = e.target.value;
+                
+                isSwitchingInstrument = true;
                 creationSelectEl.disabled = true;
                 const loadingToast = showToast("正在切換創作樂器...", "info", 0);
+                
                 try {
                     await loadCreationInstrument(instName);
                     removeToast(loadingToast);
@@ -4279,8 +4287,10 @@
                     removeToast(loadingToast);
                     showToast("切換失敗", "error");
                     console.error(err);
+                } finally {
+                    isSwitchingInstrument = false;
+                    creationSelectEl.disabled = false;
                 }
-                creationSelectEl.disabled = false;
             });
         }
 
@@ -4383,13 +4393,48 @@
             }
         };
 
+        // 底部播放器樂器選單
         if (bpInstrumentSelect) {
             bpInstrumentSelect.addEventListener('change', async (e) => {
-                if (currentHistoryIndex !== -1 && isPlaying) {
-                    const loadingToast = showToast("正在切換樂器...", "info", 0); bpInstrumentSelect.disabled = true;
-                    try { const time = getCurrentTime(); await loadInstrument(e.target.value); removeToast(loadingToast); showToast("樂器切換完成", "success"); }
-                    catch (err) { removeToast(loadingToast); console.error(err); showToast("切換失敗", "error"); }
-                    finally { bpInstrumentSelect.disabled = false; }
+                // 1. 如果正在切換中，直接無視這次點擊 (防止連點)
+                if (isSwitchingInstrument) return;
+
+                const instName = e.target.value;
+                const wasPlaying = isPlaying; // 記住原本是否在播放
+                
+                // 2. 鎖定狀態
+                isSwitchingInstrument = true;
+                bpInstrumentSelect.disabled = true;
+                const loadingToast = showToast("正在切換樂器...", "info", 0); // 0 代表不自動消失
+
+                try {
+                    // 3. 【關鍵】切換前強制停止播放，避免 Tone.Part 繼續觸發
+                    if (wasPlaying) {
+                        stop(); // 使用 stop() 比 pause() 更徹底
+                        isPlaying = false;
+                        updatePlayButtons(false);
+                    }
+
+                    // 4. 載入新樂器
+                    await loadInstrument(instName);
+                    
+                    removeToast(loadingToast);
+                    showToast("樂器切換完成", "success");
+
+                    // 5. 如果原本在播放，切換完後自動恢復播放 (可選)
+                    // 為了安全起見，這裡建議讓使用者自己按播放，或者延遲一點再播
+                    // if (wasPlaying && currentHistoryIndex !== -1) {
+                    //     // 重新觸發播放邏輯 (略)
+                    // }
+
+                } catch (err) {
+                    removeToast(loadingToast);
+                    console.error(err);
+                    showToast("切換失敗: " + err.message, "error");
+                } finally {
+                    // 6. 【關鍵】無論成功失敗，一定要解鎖 UI
+                    isSwitchingInstrument = false;
+                    bpInstrumentSelect.disabled = false;
                 }
             });
         }
@@ -4469,13 +4514,41 @@
 
         if (selectEl) {
             selectEl.addEventListener('change', async (e) => {
-                statusEl.innerText = "載入音色中..."; selectEl.disabled = true;
+                if (isSwitchingInstrument) return; // 防止連點
+
+                const statusEl = document.getElementById('player-status');
+                const instName = e.target.value;
+                const wasPlaying = isPlaying;
+
+                isSwitchingInstrument = true;
+                selectEl.disabled = true;
+                statusEl.innerText = "載入音色中...";
+                
+                // 顯示 Toast 讓使用者知道還在跑
+                const loadingToast = showToast("正在切換音色...", "info", 0);
+
                 try {
-                    if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); }
-                    await loadInstrument(e.target.value);
-                    isInstrumentLoaded = true; statusEl.innerText = "音色已切換";
-                } catch (err) { console.error(err); statusEl.innerText = "音色載入失敗"; }
-                finally { selectEl.disabled = false; }
+                    if (wasPlaying) {
+                        stop(); // 強制停止
+                        isPlaying = false;
+                        updatePlayButtons(false);
+                    }
+
+                    await loadInstrument(instName);
+                    
+                    isInstrumentLoaded = true;
+                    statusEl.innerText = "音色已切換";
+                    removeToast(loadingToast);
+                    
+                } catch (err) {
+                    console.error(err);
+                    statusEl.innerText = "音色載入失敗";
+                    removeToast(loadingToast);
+                    showToast("切換失敗", "error");
+                } finally {
+                    isSwitchingInstrument = false;
+                    selectEl.disabled = false;
+                }
             });
         }
 

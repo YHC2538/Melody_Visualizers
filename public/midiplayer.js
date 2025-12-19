@@ -153,7 +153,14 @@ export async function loadAndPlayMIDI(arrayBuffer, trackIndex = 0) {
 
   midiDuration = midi.duration;
 
+  // 建立新的 Part 進行播放
   currentPart = new Tone.Part((time, note) => {
+    // 【修正重點】加入安全檢查！
+    // 如果 sampler 已經被銷毀 (null) 或還沒載入好 (loaded=false)，直接跳過，不要報錯
+    if (!sampler || !sampler.loaded || sampler.disposed) {
+        return;
+    }
+
     sampler.triggerAttackRelease(
       note.name,
       note.duration,
