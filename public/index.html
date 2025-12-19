@@ -3854,7 +3854,7 @@
             document.getElementById('status-text').innerText = "生成中...";
 
             try {
-                const response = await fetch('http://localhost:3000/api/generate-midi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
+                const response = await fetch('api/generate-midi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
                 const data = await response.json();
                 // ... 在 generateMidi 函式內的 if (data.success) 區塊中 ...
 
@@ -3947,7 +3947,7 @@
 
             try {
                 // 1. 發送渲染請求
-                const response = await fetch('http://localhost:3000/api/render-video', {
+                const response = await fetch('/api/render-video', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ midiFilename: window.currentMidiFilename })
@@ -4019,7 +4019,7 @@
 
             pollInterval = setInterval(async () => {
                 try {
-                    const res = await fetch(`http://localhost:3000/api/queue-status?filename=${filename}`);
+                    const res = await fetch(`/api/queue-status?filename=${filename}`);
                     const statusData = await res.json();
 
                     if (statusData.status === 'rendering') {

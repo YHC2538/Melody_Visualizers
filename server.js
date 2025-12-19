@@ -160,7 +160,7 @@ const processRenderQueue = async () => {
         res.json({
             success: true,
             message: "影片生成成功",
-            videoUrl: `http://localhost:${PORT}/videos/${videoFilename}`,
+            videoUrl: `/videos/${videoFilename}`,
             filename: videoFilename
         });
 
@@ -211,7 +211,7 @@ app.post('/api/generate-midi', async (req, res) => {
         res.json({
             success: true,
             message: "MIDI 生成成功",
-            midiUrl: `http://localhost:${PORT}/midi/${midiFilename}`,
+            midiUrl: `/midi/${midiFilename}`,
             filename: midiFilename, // 回傳檔名供下一步使用
             timestamp: timestamp
         });
