@@ -243,6 +243,37 @@
             border: none;
         }
 
+        /* --- 次要按鈕 (重置用) --- */
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #ddd;
+            color: #888;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+            /* 與上方按鈕保持距離 */
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-secondary:hover {
+            border-color: #aaa;
+            color: #555;
+            background: rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary:active {
+            transform: scale(0.98);
+        }
+
         /* --- 4. 導覽列 (Navbar) --- */
         .navbar {
             height: var(--nav-height);
@@ -477,35 +508,86 @@
             border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
-        /* --- 6. 側邊欄與輸入框 (Sidebar & Inputs) --- */
+        /* --- Sidebar 完整修正版 (包含外觀與排版) --- */
         .sidebar {
+            /* 1. 基礎外觀與定位 (之前遺失的部分) */
             position: fixed;
             top: 0;
             left: calc(var(--sidebar-width) * -1);
+            /* 預設隱藏在左側 */
             width: var(--sidebar-width);
             height: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(25px);
-            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.1);
-            padding: 30px 25px;
+            /* 關鍵：設定高度，內部的捲動才會生效 */
+            background: rgba(255, 255, 255, 0.9);
+            /* 稍微不透明一點，提升閱讀性 */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 10px 0 40px rgba(0, 0, 0, 0.1);
             z-index: 1001;
             transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow-y: auto;
+            padding: 25px;
+            /* 統一內距 */
+
+            /* 2. 彈性排版 (解決按鈕被壓縮問題) */
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            border-right: 1px solid rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+            /* 防止捲軸出現在最外層 */
         }
 
         .sidebar.open {
             left: 0;
         }
 
+        /* 頭部區域 */
         .sidebar-header {
+            flex-shrink: 0;
+            /* 固定不壓縮 */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 15px;
+        }
+
+        /* 底部按鈕區域 */
+        .sidebar-footer {
+            flex-shrink: 0;
+            /* 固定不壓縮 */
+            padding-top: 20px;
+            background: transparent;
+            z-index: 2;
+        }
+
+        /* 中間捲動區域 (參數都在這) */
+        .sidebar-scroll-content {
+            flex: 1;
+            /* 自動佔滿剩餘空間 */
+            overflow-y: auto;
+            /* 內容過多時顯示捲軸 */
+            overflow-x: hidden;
+            padding-right: 5px;
+            /* 避免捲軸蓋住內容 */
+
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            /* 參數間距 */
+
+            /* 美化捲軸 */
+            scrollbar-width: thin;
+            scrollbar-color: #ccc transparent;
+        }
+
+        .sidebar-scroll-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-scroll-content::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 4px;
         }
 
         .sidebar-overlay {
@@ -1014,36 +1096,46 @@
             padding: 40px;
         }
 
+        /* --- 1. 基礎設定 (預設為桌機模式：完整展示、無捲軸) --- */
         .piano-wrapper {
             width: 100%;
             margin-top: 20px;
-            padding: 15px;
+            padding: 5px;
+            /* 內距避免陰影被切掉 */
             background: #222;
             border-radius: 16px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
             position: relative;
             border: 4px solid #444;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+
+            /* [桌機重點] 強制隱藏捲軸，讓內容縮放適應 */
+            overflow: hidden;
         }
 
         .piano-container {
             position: relative;
-            width: 1200px;
             height: 220px;
+            /* 您原本的高度 */
             display: flex;
+
+            /* [桌機重點] 寬度 100% 填滿，不設最小寬度 */
+            width: 100%;
+            min-width: auto;
         }
 
+        /* 琴鍵樣式 (保持不變，讓它自動分配空間) */
         .key {
             position: relative;
             cursor: pointer;
             border-radius: 0 0 6px 6px;
             user-select: none;
             transition: transform 0.1s;
+            /* 移除 background transition 以保持 active 反應速度 */
         }
 
         .key.white {
             flex: 1;
+            /* [桌機重點] 自動平分剩餘空間 */
             height: 100%;
             background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
             border: 1px solid #aaa;
@@ -1054,27 +1146,30 @@
             justify-content: center;
             padding-bottom: 8px;
             color: #777;
-            font-size: 10px;
+            font-size: clamp(8px, 1.2vw, 12px);
+            /* 字體隨寬度微調 */
             font-weight: 600;
             z-index: 1;
-            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.1), inset 0 2px 2px rgba(255, 255, 255, 0.8);
         }
 
-        .key.white:active {
+        /* 確保點擊效果保留 */
+        .key.white:active,
+        .key.white.active {
             background: linear-gradient(180deg, #e0e0e0 0%, #ccc 100%);
             transform: translateY(2px);
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .key.black {
-            width: 2%;
+            /* 黑鍵寬度建議用 % 數，這樣在縮放時才不會跑版 */
+            width: 2.2%;
             height: 60%;
             background: linear-gradient(180deg, #444 0%, #111 100%);
             position: absolute;
             top: 0;
             z-index: 2;
             border-radius: 0 0 5px 5px;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5), inset 1px 1px 2px rgba(255, 255, 255, 0.3);
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
 
         .key.black:active {
@@ -1580,94 +1675,82 @@
             color: white;
         }
 
-        .mac-window {
+        /* --- 全新現代化懸浮視窗 (取代 Mac Window) --- */
+        .studio-panel {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            margin: auto;
-            width: 700px;
-            height: 400px;
-            background: rgba(245, 245, 245, 0.98);
-            border: 1px solid rgba(0, 0, 0, 0.15);
-            border-radius: 12px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 90%;
+            max-width: 900px;
+            /* 限制最大寬度 */
+            background: rgba(255, 255, 255, 0.95);
+            /* 極簡白 */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
             z-index: 2001;
-            overflow: hidden;
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(45%, 0) scale(0.1);
-            transform-origin: 100% 50%;
-            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
             display: flex;
             flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
         }
 
-        .mac-window.active {
+        .studio-panel.active {
             opacity: 1;
             pointer-events: auto;
-            transform: translate(0, 0) scale(1);
+            transform: translate(-50%, -50%) scale(1);
         }
 
-        .mac-window-header {
-            height: 30px;
-            background: linear-gradient(to bottom, #e8e8e8, #dcdcdc);
-            border-bottom: 1px solid #c0c0c0;
+        .studio-header {
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            cursor: move;
+        }
+
+        .studio-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
             display: flex;
             align-items: center;
-            position: relative;
-            padding: 0 10px;
-            flex-shrink: 0;
+            gap: 10px;
         }
 
-        .mac-traffic-lights {
-            display: flex;
-            gap: 8px;
-        }
-
-        .traffic-light {
-            width: 12px;
-            height: 12px;
+        .studio-close-btn {
+            background: #f0f2f5;
+            border: none;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-        }
-
-        .traffic-light.close {
-            background: #ff5f56;
-            border: 1px solid #e0443e;
-            cursor: pointer;
-        }
-
-        .traffic-light.minimize {
-            background: #ffbd2e;
-            border: 1px solid #dea123;
-        }
-
-        .traffic-light.maximize {
-            background: #27c93f;
-            border: 1px solid #1aab29;
-        }
-
-        .mac-window-title {
-            position: absolute;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 13px;
             color: #555;
-            font-weight: 600;
-            pointer-events: none;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .mac-window-body {
-            padding: 20px;
-            background: #f0f0f0;
-            flex: 1;
-            overflow-y: auto;
+        .studio-close-btn:hover {
+            background: #ff4757;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .studio-body {
+            padding: 30px;
+            background: linear-gradient(to bottom, #fff, #f9f9f9);
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
         #creation-piano-keys {
@@ -1852,8 +1935,143 @@
                 top: auto;
             }
 
+            /* --- 在 @media (max-width: 768px) 內部 --- */
+
+            /* 1. [修正] 讓鋼琴按鈕在手機上顯示，並調整位置 */
             #piano-trigger-btn {
-                display: none !important;
+                display: flex !important;
+                /* 強制顯示 */
+                top: auto !important;
+                /* 取消原本的垂直置中 */
+                bottom: 160px;
+                /* 放在右下角 (避開底部播放器) */
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                /* 變成圓形 FAB 風格 */
+                padding: 0;
+                justify-content: center;
+                align-items: center;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                background: white;
+                color: var(--primary-color);
+                z-index: 2000;
+            }
+
+            /* 2. [修正] 確保鋼琴內容可以左右滑動 */
+            .piano-wrapper {
+                overflow-x: auto !important;
+                /* 允許橫向捲動 */
+                -webkit-overflow-scrolling: touch;
+                /* 讓滑動更順暢 */
+            }
+
+            .piano-container {
+                width: auto !important;
+                /* 取消 100% 寬度限制 */
+                min-width: 800px !important;
+                /* 強制最小寬度，確保琴鍵夠大 */
+            }
+
+            .key.white {
+                /* 手機上字體固定大小，不用縮放 */
+                font-size: 10px;
+            }
+
+            /* 強制卡片內容垂直排列 */
+            .glass-btn-style>.history-card-inner {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 15px !important;
+            }
+
+            .history-info-group {
+                width: 100%;
+                gap: 15px;
+            }
+
+            .history-text-col {
+                width: 100%;
+            }
+
+            .history-title {
+                white-space: normal;
+                font-size: 15px;
+            }
+
+            /* 操作區塊：按鈕分散對齊 */
+            .history-actions-group {
+                width: 100%;
+                justify-content: space-between;
+                padding-top: 15px;
+                border-top: 1px solid rgba(0, 0, 0, 0.05);
+                align-items: center;
+                /* 垂直置中 */
+            }
+
+            .history-download-col {
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                flex: 1;
+                /* 讓下載區塊佔據中間大部分空間 */
+                justify-content: center;
+            }
+
+            .history-divider {
+                display: none;
+            }
+
+            /* 微調主要播放按鈕大小 */
+            .history-actions-group .player-circle-btn {
+                width: 42px;
+                height: 42px;
+                flex-shrink: 0;
+            }
+
+            /* [修正重點] 刪除按鈕：縮小尺寸，但強制保留原本的紅色外觀 */
+            .history-delete-btn {
+                width: 36px !important;
+                /* 稍微縮小 (原本40px) */
+                height: 36px !important;
+                padding: 0 !important;
+
+                /* 強制還原原本的配色 (紅字、粉紅框、白底) */
+                background: white !important;
+                border: 1px solid #ffcdd2 !important;
+                color: #f44336 !important;
+                border-radius: 10px !important;
+
+                box-shadow: 0 2px 5px rgba(244, 67, 54, 0.1) !important;
+            }
+
+            /* 按下去的效果 */
+            .history-delete-btn:active {
+                background: #ffebee !important;
+                /* 淡淡的紅色背景 */
+                border-color: #f44336 !important;
+                transform: scale(0.95);
+            }
+
+            .guide-modal-content {
+                height: 100vh;
+                width: 100%;
+                border-radius: 0;
+            }
+
+            .guide-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .guide-list-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .guide-list-icon {
+                display: none;
             }
         }
 
@@ -1895,6 +2113,540 @@
             animation: none;
             /* 碰到的時候停止自動循環 */
         }
+
+        /* --- History Card RWD 優化 (My Creations) --- */
+
+        /* 1. 電腦版基礎佈局 (保持橫向，但優化細節) */
+        .history-card-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .history-info-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+            min-width: 0;
+            /* 關鍵：防止 flex 子元素撐開導致無法縮略文字 */
+        }
+
+        .history-text-col {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            overflow: hidden;
+            /* 確保文字過長會切掉 */
+        }
+
+        .history-title {
+            margin: 0 0 5px 0;
+            color: var(--primary-color);
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .history-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+            /* 防止按鈕區被壓扁 */
+        }
+
+        .history-divider {
+            width: 1px;
+            height: 30px;
+            background: #eee;
+            margin: 0 5px;
+        }
+
+        .history-download-col {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: flex-end;
+        }
+
+        /* --- 互動式導覽 (Interactive Tour) --- */
+        /* 1. 全螢幕遮罩：讓背景變暗 */
+        #tour-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            /* 深色半透明背景 */
+            z-index: 9998;
+            /* 確保蓋住大部分內容，但比高亮元素低 */
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #tour-overlay.active {
+            opacity: 1;
+        }
+
+        /* --- Tour Highlight 修正 (最終版：解決陰影被切掉的問題) --- */
+
+        /* 1. 聚光燈樣式 */
+        .tour-highlight {
+            position: relative;
+            z-index: 9999 !important;
+
+            /* 巨大的陰影 (內圈亮，外圈黑) 用來遮住周圍 */
+            box-shadow: 0 0 0 4px var(--primary-color),
+                0 0 0 9999px rgba(0, 0, 0, 0.75);
+
+            background: white;
+            pointer-events: none;
+
+            /* [關鍵] 允許陰影超出元素本身 */
+            overflow: visible !important;
+
+            transition: all 0.3s;
+        }
+
+        /* --- 修正 Step 2 奇怪陰影 --- */
+        /* 當按鈕變成導覽目標時，隱藏它的流光動畫偽元素 */
+        .tour-highlight::after {
+            display: none !important;
+        }
+
+        /* 2. [關鍵修正] 讓被提升的父容器「允許內容溢出」
+   這樣 Highlight 的黑色大陰影才能蓋住同層級的其他元素 (如參數框、渲染介面) */
+        .sidebar.tour-active-parent,
+        .sidebar-scroll-content.tour-active-parent,
+        .app-container.tour-active-parent {
+            z-index: 10000 !important;
+            overflow: visible !important;
+            /* 解除切邊限制 */
+        }
+
+        /* 強制關閉動畫，避免干擾 */
+        .tour-no-animation {
+            animation: none !important;
+            transform: none !important;
+            opacity: 1 !important;
+            transition: none !important;
+        }
+
+        /* 讓父層級浮起來 (這是為了突破遮罩) */
+        .sidebar.tour-active-parent,
+        .app-container.tour-active-parent {
+            z-index: 10000 !important;
+        }
+
+        /* [修正 Step 2] 生成按鈕是膠囊狀，Highlight 也要是膠囊狀 */
+        .generate-btn.tour-highlight {
+            border-radius: 50px !important;
+        }
+
+        /* [修正 Step 4] 圓形按鈕形狀修正 */
+        #piano-trigger-btn.tour-highlight,
+        .player-circle-btn.tour-highlight {
+            border-radius: 50% !important;
+        }
+
+        /* 針對圓形按鈕的修正 */
+        button.tour-highlight {
+            border-radius: 50% !important;
+        }
+
+        .sidebar.tour-highlight {
+            border-radius: 0 !important;
+            /* 側邊欄不需要圓角 */
+        }
+
+        /* 3. 導覽對話框 (Tooltip) */
+        .tour-tooltip {
+            position: fixed;
+            z-index: 10000;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .tour-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .tour-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+
+        .tour-step-counter {
+            font-size: 12px;
+            color: #999;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .tour-content {
+            font-size: 14px;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .tour-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .tour-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .tour-btn-skip {
+            background: transparent;
+            color: #888;
+        }
+
+        .tour-btn-skip:hover {
+            color: #555;
+        }
+
+        .tour-btn-next {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(216, 27, 96, 0.3);
+        }
+
+        .tour-btn-next:hover {
+            transform: translateY(-2px);
+            background: var(--primary-hover);
+        }
+
+        /* --- Parameter Guide 2.0 Styles --- */
+
+        /* --- Parameter Guide Button (Compact Version) --- */
+        .btn-guide-trigger {
+            width: 100%;
+            /* 改用透明或極淡的背景，不搶視覺 */
+            background: rgba(33, 150, 243, 0.05);
+            color: #2196f3;
+            /* 細緻的邊框 */
+            border: 1px dashed rgba(33, 150, 243, 0.3);
+
+            /* [關鍵] 縮小尺寸與間距 */
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
+
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-guide-trigger:hover {
+            background: rgba(33, 150, 243, 0.15);
+            border-color: #2196f3;
+            transform: translateY(-1px);
+        }
+
+        .btn-guide-trigger i {
+            font-size: 12px;
+            /* 確保圖示小巧 */
+        }
+
+        /* --- Guide 按鈕樣式 (小巧膠囊版) --- */
+        .header-guide-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            background: rgba(33, 150, 243, 0.08);
+            color: #2196f3;
+            border: 1px solid rgba(33, 150, 243, 0.2);
+            border-radius: 20px;
+
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            margin-left: 12px;
+        }
+
+        .header-guide-pill:hover {
+            background: #2196f3;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(33, 150, 243, 0.2);
+        }
+
+        /* 2. Modal 外框與佈局 */
+        .guide-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .guide-modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .guide-modal-content {
+            background: #fff;
+            width: 900px;
+            max-width: 95%;
+            height: 85vh;
+            /* 固定高度 */
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* 內部捲動 */
+            position: relative;
+        }
+
+        .guide-modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            background: #fafafa;
+        }
+
+        /* 關閉按鈕樣式 */
+        .guide-close-btn {
+            background: #eee;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            color: #555;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .guide-close-btn:hover {
+            background: #ff4757;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .guide-scroll-area {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .guide-section-title {
+            color: #333;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+            padding-left: 12px;
+            font-size: 18px;
+        }
+
+        /* 3. 卡片網格 */
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .guide-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .guide-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border-color: transparent;
+        }
+
+        /* 針對不同音階的 Hover 效果 (搭配 Icon 顏色) */
+        .guide-card:hover:has(.major) {
+            border-top: 4px solid #ff9800;
+        }
+
+        .guide-card:hover:has(.minor) {
+            border-top: 4px solid #607d8b;
+        }
+
+        /* 修正：改用灰藍色代表憂鬱 */
+        .guide-card:hover:has(.blues) {
+            border-top: 4px solid #3f51b5;
+        }
+
+        .guide-card:hover:has(.penta) {
+            border-top: 4px solid #4caf50;
+        }
+
+        .guide-card:hover:has(.penta-m) {
+            border-top: 4px solid #ff5722;
+        }
+
+        .guide-card h4 {
+            margin: 15px 0 8px 0;
+            color: #333;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+        }
+
+        .guide-card p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* 圖示顏色定義 (符合文字敘述) */
+        .guide-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+        }
+
+        .guide-icon.major {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        /* 太陽橘 */
+        .guide-icon.minor {
+            background: #eceff1;
+            color: #607d8b;
+        }
+
+        /* 雨雲灰藍 */
+        .guide-icon.blues {
+            background: #e8eaf6;
+            color: #3f51b5;
+        }
+
+        /* 爵士深藍 */
+        .guide-icon.penta {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        /* 自然綠 */
+        .guide-icon.penta-m {
+            background: #fbe9e7;
+            color: #ff5722;
+        }
+
+        /* 搖滾紅 */
+
+        /* 4. 列表樣式 */
+        .guide-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .guide-list-item {
+            background: #f9f9f9;
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: 0.2s;
+        }
+
+        .guide-list-item:hover {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .guide-list-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--primary-color);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .guide-label {
+            font-weight: 700;
+            color: #333;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .guide-desc {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 
@@ -1921,74 +2673,92 @@
     </div>
 
     <div class="sidebar" id="sidebar">
+
         <div class="sidebar-header">
-            <h3 style="margin:0; font-family:'Poppins'">Parameters</h3>
+            <div style="display:flex; align-items:center;">
+                <h3 style="margin:0; font-family:'Poppins';">Parameters</h3>
+                <button onclick="openGuideModal()" class="header-guide-pill" title="查看參數說明">
+                    <i class="fas fa-book-open"></i> Guide
+                </button>
+            </div>
             <button onclick="toggleSidebar(false)"
-                style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
+                style="background:none; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
         </div>
 
-        <label>Scale Mode (音階模式)</label>
-        <select id="scale" class="sketch-select">
-            <option value="Major Scale">大調音階 (Major)</option>
-            <option value="Minor Scale">小調音階 (Minor)</option>
-            <option value="Blues">藍調音階 (Blues)</option>
-            <option value="Pentatonic Major">大調五聲音階 (Pentatonic Major)</option>
-            <option value="Pentatonic Minor">小調五聲音階 (Pentatonic Minor)</option>
-        </select>
+        <div class="sidebar-scroll-content">
 
-        <label>Key (調性)</label>
-        <select id="key" class="sketch-select">
-            <option value="0">C</option>
-            <option value="1">C#</option>
-            <option value="2">D</option>
-            <option value="3">D#</option>
-            <option value="4">E</option>
-            <option value="5">F</option>
-            <option value="6">F#</option>
-            <option value="7">G</option>
-            <option value="8">G#</option>
-            <option value="9">A</option>
-            <option value="9">A#</option>
-            <option value="11">B</option>
-        </select>
+            <label>Scale Mode (音階模式)</label>
+            <select id="scale" class="sketch-select">
+                <option value="Major Scale">大調音階 (Major)</option>
+                <option value="Minor Scale">小調音階 (Minor)</option>
+                <option value="Blues">藍調音階 (Blues)</option>
+                <option value="Pentatonic Major">大調五聲音階 (Pentatonic Major)</option>
+                <option value="Pentatonic Minor">小調五聲音階 (Pentatonic Minor)</option>
+            </select>
 
-        <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label>Bars (小節數)</label><input type="number" id="bars" value="4" min="1" max="30"
-                    class="sketch-input"></div>
-            <div style="flex:1;"><label>BPM (速度)</label><input type="number" id="tempo" value="120" min="1" max="300"
-                    class="sketch-input"></div>
+            <label>Key (調性)</label>
+            <select id="key" class="sketch-select">
+                <option value="0">C</option>
+                <option value="1">C#</option>
+                <option value="2">D</option>
+                <option value="3">D#</option>
+                <option value="4">E</option>
+                <option value="5">F</option>
+                <option value="6">F#</option>
+                <option value="7">G</option>
+                <option value="8">G#</option>
+                <option value="9">A</option>
+                <option value="9">A#</option>
+                <option value="11">B</option>
+            </select>
+
+            <div style="display:flex; gap:10px;">
+                <div style="flex:1;"><label>Bars (小節)</label><input type="number" id="bars" value="4" min="1" max="30"
+                        class="sketch-input"></div>
+                <div style="flex:1;"><label>BPM (速度)</label><input type="number" id="tempo" value="120" min="1"
+                        max="300" class="sketch-input"></div>
+            </div>
+
+            <label>Duration (音符長度)</label>
+            <select id="note_duration" class="sketch-select">
+                <option value="0.25">16分 (1/16)</option>
+                <option value="0.5" selected>8分 (1/8)</option>
+                <option value="1">4分 (1/4)</option>
+            </select>
+
+            <label>Octave (八度)</label>
+            <select id="octave" class="sketch-select">
+                <option value="-2">極低</option>
+                <option value="-1">低</option>
+                <option value="0" selected>中等</option>
+                <option value="1">高</option>
+                <option value="2">極高</option>
+            </select>
+
+            <div class="checkbox-group" style="padding: 10px;">
+                <div class="checkbox-row"><label style="margin:0;">Arpeggios (琶音)</label><input type="checkbox"
+                        id="include_arpeggios"></div>
+                <div class="checkbox-row"><label style="margin:0;">Rests (休止符)</label><input type="checkbox"
+                        id="include_rests"></div>
+                <div class="checkbox-row"><label style="margin:0;">Chords (和弦)</label><input type="checkbox"
+                        id="include_chords"></div>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <button class="generate-btn" id="gen-midi-btn" onclick="generateMidi()">
+                    <i class="fas fa-magic"></i> 生成 MIDI
+                </button>
+
+                <button class="btn-secondary" onclick="resetParameters()">
+                    <i class="fas fa-undo"></i> 重置 (Reset)
+                </button>
+                <p style="font-size:11px; color:#aaa; text-align:center; margin-top:5px;">生成後將顯示更多選項。</p>
+            </div>
+
+            <div style="height: 30px;"></div>
         </div>
 
-        <label>Duration (音符長度)</label>
-        <select id="note_duration" class="sketch-select">
-            <option value="0.25">16分音符 (1/16)</option>
-            <option value="0.5" selected>8分音符 (1/8)</option>
-            <option value="1">4分音符 (1/4)</option>
-        </select>
-
-        <label>Octave (八度音高)</label>
-        <select id="octave" class="sketch-select">
-            <option value="-2">極低 (Very Low)</option>
-            <option value="-1">低 (Low)</option>
-            <option value="0" selected>中等 (Medium)</option>
-            <option value="1">高 (High)</option>
-            <option value="2">極高 (Very High)</option>
-        </select>
-
-        <div class="checkbox-group">
-            <div class="checkbox-row"><label style="margin:0;">Arpeggios (包含琶音)</label><input type="checkbox"
-                    id="include_arpeggios"></div>
-            <div class="checkbox-row"><label style="margin:0;">Rests (包含休止符)</label><input type="checkbox"
-                    id="include_rests"></div>
-            <div class="checkbox-row"><label style="margin:0;">Chords (包含和弦)</label><input type="checkbox"
-                    id="include_chords"></div>
-        </div>
-
-        <button class="generate-btn" id="gen-midi-btn" onclick="generateMidi()"><i class="fas fa-magic"></i> 生成
-            MIDI</button>
-        <p style="font-size:12px; color:#999; text-align:center; margin-top:10px;">生成後將顯示更多操作選項。</p>
     </div>
-
     <div class="app-container">
         <nav class="navbar">
             <div class="brand-logo" onclick="goToScreen('start-screen')">
@@ -2080,7 +2850,8 @@
                 </div>
                 <div id="home-showcase-container" style="width: 100%;"></div>
                 <div style="margin-top: 30px;"><button class="glass-btn-style" onclick="goToScreen('creations-screen')"
-                        style="padding: 12px 30px; font-weight:600;">查看所有創作 <i class="fas fa-arrow-right"></i></button>
+                        style="padding: 12px 30px; font-weight:600;">查看所有創作
+                        <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -2130,7 +2901,8 @@
                 </div>
                 <div id="result-dashboard">
                     <div class="dashboard-card card-preview">
-                        <div class="card-header"><i class="fas fa-headphones" style="color:#2196f3;"></i> Preview (試聽)
+                        <div class="card-header"><i class="fas fa-headphones" style="color:#2196f3;"></i> Preview
+                            (試聽)
                         </div>
                         <div style="margin-bottom:10px;"><label for="instrument-select"
                                 style="font-size:12px;">選擇樂器:</label><select id="instrument-select"
@@ -2152,11 +2924,13 @@
                         <div class="card-header"><i class="fas fa-video" style="color:#ff9800;"></i> Visualize</div>
                         <button id="render-video-btn" class="action-btn btn-render"
                             onclick="startRenderProcess()">渲染影片</button>
-                        <div id="render-status" style="font-size:12px; color:#888; display:none; margin-top:5px;">處理中...
+                        <div id="render-status" style="font-size:12px; color:#888; display:none; margin-top:5px;">
+                            處理中...
                         </div>
                     </div>
                     <div class="dashboard-card">
-                        <div class="card-header"><i class="fas fa-download" style="color:#4caf50;"></i> Download</div>
+                        <div class="card-header"><i class="fas fa-download" style="color:#4caf50;"></i> Download
+                        </div>
                         <div style="display:flex; gap:10px; height:100%; align-items:center;">
                             <a href="#" class="action-btn btn-download glass-btn-style" id="midi-download-link"
                                 target="_blank"
@@ -2178,7 +2952,8 @@
                         style="padding:5px 15px; border-radius:20px; font-weight:bold; color:#28a745; background:#e8f5e9;">
                         得分: 0</div>
                     <div id="attempt-display"
-                        style="padding:5px 15px; border-radius:20px; font-weight:bold; color:#555; background:#eee;">點擊:
+                        style="padding:5px 15px; border-radius:20px; font-weight:bold; color:#555; background:#eee;">
+                        點擊:
                         0 / 10</div>
                 </div>
                 <div id="timer-display"
@@ -2212,7 +2987,8 @@
                         style="padding: 8px 15px; font-size: 14px;"><i class="fas fa-trash"></i> 清除全部</button>
                 </div>
                 <div id="history-list"
-                    style="width: 100%; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px;"></div>
+                    style="width: 100%; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px;">
+                </div>
             </div>
         </div>
 
@@ -2313,8 +3089,7 @@
             </div>
         </div>
 
-        <button id="help-fab-btn" onclick="toggleHelpModal(true)" style="display:none;"><i
-                class="fas fa-question"></i></button>
+        <button id="help-fab-btn" onclick="startTour()" style="display:none;"><i class="fas fa-question"></i></button>
         <div id="help-modal">
             <div class="modal-content" style="text-align: left; max-width: 600px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -2337,31 +3112,147 @@
             </div>
         </div>
 
-        <button id="piano-trigger-btn" onclick="toggleCreationPiano()"><i class="fas fa-keyboard"></i></button>
-        <div id="floating-piano-app" class="mac-window">
-            <div class="mac-window-header">
-                <div class="mac-traffic-lights">
-                    <div class="traffic-light close" onclick="toggleCreationPiano()"></div>
-                    <div class="traffic-light minimize"></div>
-                    <div class="traffic-light maximize"></div>
-                </div>
-                <div class="mac-window-title">Virtual Studio Piano</div>
+
+    </div>
+
+    <div id="tour-overlay"></div>
+    <button id="piano-trigger-btn" onclick="toggleCreationPiano()"><i class="fas fa-keyboard"></i></button>
+    <div id="floating-piano-app" class="studio-panel">
+        <div class="studio-header">
+            <div class="studio-title">
+                <i class="fas fa-keyboard" style="color: var(--primary-color);"></i>
+                Virtual Studio Piano
             </div>
-            <div class="mac-window-body" style="display:flex; flex-direction:column; gap:15px;">
-                <div style="display:flex; align-items:center; gap:10px; justify-content:center;">
-                    <label style="font-size:12px; color:#666; margin:0;">Instrument:</label>
-                    <select id="creation-instrument-select" class="sketch-select"
-                        style="padding: 5px 15px; width:auto; height:35px;"></select>
+            <button class="studio-close-btn" onclick="toggleCreationPiano()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="studio-body">
+            <div style="display:flex; align-items:center; gap:15px; justify-content:center;">
+                <label style="font-size:14px; color:#555; font-weight:600;">Instrument Sound:</label>
+                <select id="creation-instrument-select" class="sketch-select"
+                    style="padding: 8px 20px; width:auto;"></select>
+            </div>
+
+            <div class="piano-wrapper"
+                style="margin:0; border:none; background:#222; box-shadow:inset 0 0 20px rgba(0,0,0,0.5); padding: 5px;">
+                <div class="piano-container" id="creation-piano-keys" style="height: 180px;">
                 </div>
-                <div class="piano-wrapper"
-                    style="margin:0; border:none; background:#222; box-shadow:inset 0 0 20px rgba(0,0,0,0.5);">
-                    <div class="piano-container" id="creation-piano-keys" style="height: 180px; min-width: 800px;">
+            </div>
+
+            <p style="text-align:center; font-size:13px; color:#888; margin:0;">
+                <i class="fas fa-info-circle"></i> 提示: 鍵盤寬度會自動適應您的螢幕大小
+            </p>
+        </div>
+    </div>
+
+    <div id="tour-tooltip" class="tour-tooltip">
+        <div class="tour-header">
+            <div class="tour-title" id="tour-title">Step Title</div>
+            <span class="tour-step-counter" id="tour-counter">1/5</span>
+        </div>
+        <div class="tour-content" id="tour-content">
+            Description goes here.
+        </div>
+        <div class="tour-controls">
+            <button class="tour-btn tour-btn-skip" onclick="endTour()">Skip</button>
+            <button class="tour-btn tour-btn-next" id="tour-next-btn" onclick="nextTourStep()">Next</button>
+        </div>
+    </div>
+
+    <div id="guide-modal" class="guide-modal-overlay">
+        <div class="guide-modal-content">
+
+            <div class="guide-modal-header">
+                <div>
+                    <h2
+                        style="margin:0; color:var(--primary-color); font-family:'Poppins'; display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-info-circle"></i> Music Parameters Guide
+                    </h2>
+                    <p style="color:#666; margin:5px 0 0 0; font-size:14px;">了解每一個設定如何改變您的音樂氛圍。</p>
+                </div>
+                <button onclick="closeGuideModal()" class="guide-close-btn" title="關閉視窗">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="guide-scroll-area">
+                <h3 class="guide-section-title">Scale Modes (音階風格)</h3>
+                <div class="guide-grid">
+
+                    <div class="guide-card">
+                        <div class="guide-icon major"><i class="fas fa-sun"></i></div>
+                        <h4>Major Scale</h4>
+                        <p>基礎大調。聽起來**明亮、快樂、充滿希望**。這是流行音樂中最常見的風格，給人正向的感覺。</p>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon minor"><i class="fas fa-cloud-showers-heavy"></i></div>
+                        <h4>Minor Scale</h4>
+                        <p>自然小調。聽起來帶有**悲傷、嚴肅或情感豐富**的特質。適合營造深沉、內斂的氛圍。</p>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon blues"><i class="fas fa-wine-glass-alt"></i></div>
+                        <h4>Blues</h4>
+                        <p>藍調音階。帶有**憂鬱、慵懶與靈魂感**。源自美國黑人音樂，常帶有獨特的切分音與情感宣洩。</p>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon penta"><i class="fas fa-leaf"></i></div>
+                        <h4>Pentatonic Major</h4>
+                        <p>大調五聲。去掉了半音，聽起來**非常純淨、和諧、有東方色彩**。常聽起來像民謠或兒歌般單純。</p>
+                    </div>
+
+                    <div class="guide-card">
+                        <div class="guide-icon penta-m"><i class="fas fa-bolt"></i></div>
+                        <h4>Pentatonic Minor</h4>
+                        <p>小調五聲。這是**搖滾樂與電吉他獨奏**的靈魂。聽起來酷勁十足、充滿能量且不容易出錯。</p>
                     </div>
                 </div>
-                <p style="text-align:center; font-size:12px; color:#888; margin:0;"><i class="fas fa-info-circle"></i>
-                    提示: 可使用滑鼠點擊或滑動彈奏</p>
+
+                <h3 class="guide-section-title" style="border-left-color: #2196f3; margin-top:30px;">General
+                    Settings (基礎設定)</h3>
+                <div class="guide-list-container">
+                    <div class="guide-list-item">
+                        <div class="guide-list-icon"><i class="fas fa-key"></i></div>
+                        <div style="flex:1;">
+                            <span class="guide-label">Key (調性)</span>
+                            <div class="guide-desc">音樂的中心音高。例如 C Key (C大調) 以 Do 為中心。改變調性會改變整首歌的音域高低。</div>
+                        </div>
+                    </div>
+                    <div class="guide-list-item">
+                        <div class="guide-list-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        <div style="flex:1;">
+                            <span class="guide-label">BPM (速度)</span>
+                            <div class="guide-desc">Beats Per Minute。數值越高 (如 140+)，音樂越**激昂快節奏**；數值越低 (如
+                                80-)，則越**放鬆緩慢**。</div>
+                        </div>
+                    </div>
+                    <div class="guide-list-item">
+                        <div class="guide-list-icon"><i class="fas fa-ruler-horizontal"></i></div>
+                        <div style="flex:1;">
+                            <span class="guide-label">Bars (長度)</span>
+                            <div class="guide-desc">樂曲長度。**4 小節**適合短旋律試聽；**16-32 小節**則是一段完整的樂章。</div>
+                        </div>
+                    </div>
+                    <div class="guide-list-item">
+                        <div class="guide-list-icon"><i class="fas fa-water"></i></div>
+                        <div style="flex:1;">
+                            <span class="guide-label">Arpeggios (琶音)</span>
+                            <div class="guide-desc">像流水一樣將和弦的音符**依序彈奏**，而不是同時按下。能增加音樂的流動感與裝飾性。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top:30px; text-align:center;">
+                    <button class="btn-modal-primary" onclick="closeGuideModal()"
+                        style="padding:12px 40px;">我瞭解了，開始創作</button>
+                </div>
             </div>
         </div>
+    </div>
 
     </div>
 
@@ -2526,55 +3417,72 @@
         function renderHistory() {
             const list = document.getElementById('history-list');
             const history = getHistory();
+
             if (history.length === 0) {
                 list.innerHTML = '<p style="color:#666; text-align:center; padding: 20px;">尚無創作紀錄。</p>';
                 return;
             }
+
             list.innerHTML = '';
+
             history.forEach((item, index) => {
                 const hasVideo = !!item.video;
                 const isFav = !!item.isFavorite;
-                const paramText = `Key: ${document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key}, Scale: ${item.params.scale}, BPM: ${item.params.tempo}`;
+                const paramText = `Key: ${document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key} | ${item.params.scale} | ${item.params.tempo} BPM`;
 
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'glass-btn-style';
                 itemDiv.style.borderRadius = '16px';
-                itemDiv.style.padding = '15px 20px';
-                itemDiv.style.display = 'flex';
-                itemDiv.style.flexDirection = 'column';
-                itemDiv.style.gap = '15px';
+                itemDiv.style.padding = '20px';
                 itemDiv.style.cursor = 'pointer';
 
-                // Prevent click on buttons from triggering play
+                // 點擊卡片播放 (防呆機制保持不變)
                 itemDiv.onclick = function (e) {
+                    // 如果點擊的是按鈕或連結，則不觸發卡片本身的播放，避免重複觸發
                     if (e.target.closest('button') || e.target.closest('a')) return;
                     playHistoryIndex(index);
                 };
 
                 itemDiv.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:15px;">
-                        <div style="display:flex; align-items:center; gap:15px; flex:1;">
-                            <div class="creation-icon-box"><i class="fas fa-music"></i></div>
-                            <div style="display:flex; flex-direction:column; align-items:flex-start; text-align:left;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <h4 style="margin:0 0 5px 0; color:var(--primary-color);">Creation #${item.id.toString().slice(-4)}</h4>
-                                    ${isFav ? '<i class="fas fa-heart" style="font-size:12px; color:#ff4081;"></i>' : ''}
-                                </div>
-                                <div style="font-size:12px; color:#666;">${item.date}</div>
-                                <div style="font-size:11px; color:#888; margin-top:4px;">${paramText}</div>
-                            </div>
+            <div class="history-card-inner">
+                <div class="history-info-group">
+                    <div class="creation-icon-box"><i class="fas fa-music"></i></div>
+                    <div class="history-text-col">
+                        <div style="display:flex; align-items:center; gap:8px; width:100%;">
+                            <h4 class="history-title">Creation #${item.id.toString().slice(-4)}</h4>
+                            ${isFav ? '<i class="fas fa-heart" style="font-size:12px; color:#ff4081;"></i>' : ''}
                         </div>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <button onclick="toggleFavorite(${item.id})" class="btn-favorite ${isFav ? 'active' : ''}"><i class="${isFav ? 'fas' : 'far'} fa-heart"></i></button>
-                            <div style="width:1px; height:30px; background:#eee; margin:0 5px;"></div>
-                            <button class="player-circle-btn" style="width:40px; height:40px; font-size:14px;" title="Play"><i class="fas fa-play"></i></button>
-                            <div style="display:flex; flex-direction:column; gap:5px; align-items: flex-end;">
-                                <a href="midi/${item.midi}" download="${item.midi}" onclick="event.stopPropagation()" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center;"><i class="fas fa-download"></i> MIDI</a>
-                                ${hasVideo ? `<button onclick="event.stopPropagation(); openVideoModal('${item.video}')" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center; color:#2196f3; border-color:#bbdefb;"><i class="fas fa-film"></i> 影片</button>` : ''}
-                            </div>
-                            <button onclick="event.stopPropagation(); deleteCreation(${item.id})" class="action-btn" style="width:40px; height:40px; padding:0; font-size:14px; color:#f44336; border-color:#ffcdd2; display:flex; justify-content:center; align-items:center;" title="刪除"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
+                        <div style="font-size:12px; color:#666;">${item.date}</div>
+                        <div style="font-size:11px; color:#888; margin-top:4px;">${paramText}</div>
+                    </div>
+                </div>
+
+                <div class="history-actions-group">
+                    <button onclick="toggleFavorite(${item.id}); event.stopPropagation();" class="btn-favorite ${isFav ? 'active' : ''}" title="加到最愛">
+                        <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+                    </button>
+                    
+                    <div class="history-divider"></div>
+                    
+                    <button onclick="playHistoryIndex(${index}); event.stopPropagation();" class="player-circle-btn" style="width:40px; height:40px; font-size:14px; flex-shrink:0;" title="Play">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    
+                    <div class="history-download-col">
+                        <a href="midi/${item.midi}" download="${item.midi}" onclick="event.stopPropagation()" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center; width:100%; justify-content:center;">
+                            <i class="fas fa-download"></i> MIDI
+                        </a>
+                        ${hasVideo ? `<button onclick="openVideoModal('${item.video}'); event.stopPropagation();" class="action-btn" style="padding:5px 10px; font-size:11px; height:fit-content; border-radius:8px; display:flex; gap:5px; align-items:center; color:#2196f3; border-color:#bbdefb; width:100%; justify-content:center;">
+                            <i class="fas fa-film"></i> 影片
+                        </button>` : ''}
+                    </div>
+
+                    <button onclick="deleteCreation(${item.id}); event.stopPropagation();" class="action-btn history-delete-btn" style="width:40px; height:40px; padding:0; font-size:14px; color:#f44336; border-color:#ffcdd2; display:flex; justify-content:center; align-items:center; flex-shrink:0;" title="刪除">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>`;
+
                 list.appendChild(itemDiv);
             });
         }
@@ -2635,6 +3543,9 @@
         }
 
         function goToScreen(id, forceScrollTop = true) {
+            // [新增這行] 每次切換頁面時，將頁面 ID 存入 localStorage
+            localStorage.setItem('melody_current_screen', id);
+
             document.querySelectorAll('.screen').forEach(s => {
                 s.classList.remove('active'); s.classList.remove('animate-enter');
             });
@@ -2895,6 +3806,28 @@
             }
         }
 
+        // --- 重置參數功能 ---
+        function resetParameters() {
+            // 1. 重置下拉選單與輸入框 (設定回 HTML 最初的預設值)
+            document.getElementById('scale').value = "Major Scale";
+            document.getElementById('key').value = "0";    // C Key
+            document.getElementById('bars').value = "4";
+            document.getElementById('tempo').value = "120";
+            document.getElementById('note_duration').value = "0.5"; // 8分音符
+            document.getElementById('octave').value = "0"; // Medium
+
+            // 2. 重置核取方塊 (全部取消勾選)
+            document.getElementById('include_arpeggios').checked = false;
+            document.getElementById('include_rests').checked = false;
+            document.getElementById('include_chords').checked = false;
+
+            // 3. 給予使用者回饋
+            showToast("參數已重置為預設值", "info");
+
+            // (選用) 如果您希望重置時有個小動畫強調一下，可以加上這行
+            // document.querySelector('.sidebar').classList.add('flash-effect');
+        }
+
         async function startRenderProcess() {
             if (!window.currentMidiFilename) { showToast("找不到 MIDI 檔案！", "error"); return; }
             const renderBtn = document.getElementById('render-video-btn');
@@ -3048,23 +3981,39 @@
             setupScrollReveal();
             document.getElementById('bars').addEventListener('change', validateInput);
             document.getElementById('tempo').addEventListener('change', validateInput);
+
             renderHomeShowcase();
             renderHomeShowcaseBadges();
             renderBestScore();
+
+            // [新增] 檢查是否有儲存的頁面紀錄
+            const lastScreen = localStorage.getItem('melody_current_screen');
+
+            // 如果有紀錄，且該頁面 ID 存在，就跳轉過去；否則預設回首頁 ('start-screen')
+            if (lastScreen && document.getElementById(lastScreen)) {
+                // 第二個參數設為 false，避免重新整理時畫面劇烈跳動
+                goToScreen(lastScreen, false);
+            } else {
+                // 第一次訪問或無紀錄時，顯示首頁
+                goToScreen('start-screen');
+            }
         };
     </script>
 
     <script type="module">
         import { loadInstrument, loadAndPlayMIDI, play, pause, stop, seek, getCurrentTime, getDuration, listAvailableInstruments, INSTRUMENT_BASE_URLS, NOTE_MAP } from "./midiplayer.js";
 
+        // --- 全域變數設定 ---
         window.playerStop = stop;
+        let isPlaying = false, isDragging = false, isLooping = false, isAutoPlay = true, updateInterval = null, isInstrumentLoaded = false;
+
+        // --- 綁定 DOM 元素 ---
         const selectEl = document.getElementById('instrument-select');
         const playBtn = document.getElementById('play-toggle-btn');
         const seekBar = document.getElementById('seek-bar');
         const currentTimeEl = document.getElementById('current-time');
         const totalTimeEl = document.getElementById('total-time');
         const statusEl = document.getElementById('player-status');
-
         const bpPlayBtn = document.getElementById('bp-play-btn');
         const bpLoopBtn = document.getElementById('bp-loop-btn');
         const bpAutoBtn = document.getElementById('bp-auto-btn');
@@ -3074,19 +4023,43 @@
         const bpTrackTitle = document.getElementById('bp-track-title');
         const bpTrackSubtitle = document.getElementById('bp-track-subtitle');
         const bpInstrumentSelect = document.getElementById('bp-instrument-select');
-
         const fpTitle = document.getElementById('fp-title');
         const fpPlayBtn = document.getElementById('fp-play-btn');
         const fpLoopBtn = document.getElementById('fp-loop-btn');
         const fpAutoBtn = document.getElementById('fp-auto-btn');
 
-        let isPlaying = false, isDragging = false, isLooping = false, isAutoPlay = true, updateInterval = null, isInstrumentLoaded = false;
+        // --- 初始化樂器列表 ---
         const instruments = listAvailableInstruments();
         const populateSelect = (el) => { if (!el) return; el.innerHTML = ""; instruments.forEach(inst => { const option = document.createElement('option'); option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase(); if (inst === 'acoustic_grand_piano') option.selected = true; el.appendChild(option); }); };
-        populateSelect(selectEl); populateSelect(bpInstrumentSelect); populateSelect(document.getElementById('test-instrument-select'));
+        populateSelect(selectEl);
+        populateSelect(bpInstrumentSelect);
+        populateSelect(document.getElementById('test-instrument-select'));
 
+        // 創作模式樂器選單
+        const creationSelectEl = document.getElementById('creation-instrument-select');
+        if (creationSelectEl) {
+            populateSelect(creationSelectEl);
+            creationSelectEl.addEventListener('change', async (e) => {
+                const instName = e.target.value;
+                creationSelectEl.disabled = true;
+                const loadingToast = showToast("正在切換創作樂器...", "info", 0);
+                try {
+                    await loadCreationInstrument(instName);
+                    removeToast(loadingToast);
+                    showToast("樂器切換完成！", "success");
+                } catch (err) {
+                    removeToast(loadingToast);
+                    showToast("切換失敗", "error");
+                    console.error(err);
+                }
+                creationSelectEl.disabled = false;
+            });
+        }
+
+        // 預載鋼琴音色
         loadInstrument('acoustic_grand_piano').then(() => { isInstrumentLoaded = true; }).catch(e => console.error("Instrument load failed", e));
 
+        // --- 測試模式相關邏輯 (Test Instrument) ---
         let testSampler = null;
         const reverb = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).toDestination();
         async function loadTestInstrument(name) {
@@ -3106,12 +4079,29 @@
             });
         }
 
+        // 將 playTestNote 綁定到 window
         window.playTestNote = function (note) { if (testSampler && testSampler.loaded) { testSampler.triggerAttackRelease(note, "8n"); } else { const synth = new Tone.Synth().toDestination(); synth.triggerAttackRelease(note, "8n"); } };
-
         window.setGlobalVolume = function (val) { const volumeValue = parseInt(val); if (volumeValue === 0) { Tone.getDestination().volume.rampTo(-Infinity, 0.1); } else { const db = 20 * Math.log10(volumeValue / 100); Tone.getDestination().volume.rampTo(db, 0.1); } };
         window.setGlobalVolume(80);
 
+        // --- User Guide Logic ---
+        window.openGuideModal = function () {
+            const modal = document.getElementById('guide-modal');
+            modal.style.display = 'flex';
+            // 延遲一點點加 active 讓 transition 生效
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        window.closeGuideModal = function () {
+            const modal = document.getElementById('guide-modal');
+            modal.classList.remove('active');
+            // 等動畫跑完再隱藏
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // --- 播放控制邏輯 ---
         window.playHistoryIndex = async function (index) {
+            // (這裡保持您原本的播放邏輯，略為縮短以節省空間)
             const history = getHistory(); if (index < 0 || index >= history.length) return;
             currentHistoryIndex = index; const item = history[index]; const titleText = `Creation #${item.id.toString().slice(-4)}`;
             if (bpTrackTitle) bpTrackTitle.innerText = titleText;
@@ -3138,19 +4128,16 @@
             });
         }
 
+        // 將播放控制綁定到 window
         window.toggleBottomPlay = function () { if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); } else { if (Tone.Transport.seconds > 0) { play(); isPlaying = true; updatePlayButtons(true); startUpdateLoop(); } else if (currentHistoryIndex !== -1) { window.playHistoryIndex(currentHistoryIndex); } } }
         window.prevTrack = function () { if (currentHistoryIndex < getHistory().length - 1) { window.playHistoryIndex(currentHistoryIndex + 1); } else { showToast("已經是最後一首了", "error"); } }
         window.nextTrack = function () { if (currentHistoryIndex > 0) { window.playHistoryIndex(currentHistoryIndex - 1); } else { showToast("已經是第一首了", "error"); } }
         window.toggleLoop = function () { isLooping = !isLooping; const updateBtnState = (btn, active) => { if (!btn) return; if (active) btn.classList.add('active'); else btn.classList.remove('active'); }; updateBtnState(bpLoopBtn, isLooping); updateBtnState(fpLoopBtn, isLooping); showToast(isLooping ? "開啟循環播放" : "關閉循環播放", "success"); }
         window.toggleAutoPlay = function () { isAutoPlay = !isAutoPlay; const updateBtnState = (btn, active) => { if (!btn) return; if (active) btn.classList.add('active'); else btn.classList.remove('active'); }; updateBtnState(bpAutoBtn, isAutoPlay); updateBtnState(fpAutoBtn, isAutoPlay); showToast(isAutoPlay ? "開啟自動播放" : "關閉自動播放", "success"); }
+
         function updatePlayButtons(playing) { const icon = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; if (bpPlayBtn) bpPlayBtn.innerHTML = icon; if (playBtn) playBtn.innerText = playing ? "⏸" : "▶"; if (fpPlayBtn) fpPlayBtn.innerHTML = icon; if (statusEl) statusEl.innerText = playing ? "播放中 ♪" : "已暫停"; }
 
-        if (selectEl) {
-            selectEl.addEventListener('change', async (e) => {
-                statusEl.innerText = "載入音色中..."; selectEl.disabled = true;
-                try { if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); } await loadInstrument(e.target.value); isInstrumentLoaded = true; statusEl.innerText = "音色已切換"; } catch (err) { console.error(err); statusEl.innerText = "音色載入失敗"; } finally { selectEl.disabled = false; }
-            });
-        }
+        // 主頁面播放按鈕監聽
         if (playBtn) {
             playBtn.addEventListener('click', async () => {
                 if (!window.currentMidiFilename) { alert("請先生成 MIDI 檔案！"); return; } await Tone.start();
@@ -3166,6 +4153,15 @@
                 } else { togglePlayState(false); }
             });
         }
+
+        // 音色選單監聽
+        if (selectEl) {
+            selectEl.addEventListener('change', async (e) => {
+                statusEl.innerText = "載入音色中..."; selectEl.disabled = true;
+                try { if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); } await loadInstrument(e.target.value); isInstrumentLoaded = true; statusEl.innerText = "音色已切換"; } catch (err) { console.error(err); statusEl.innerText = "音色載入失敗"; } finally { selectEl.disabled = false; }
+            });
+        }
+
         function togglePlayState(resetToStart = false) { if (resetToStart) { stop(); isPlaying = false; updatePlayButtons(false); if (seekBar) seekBar.value = 0; if (currentTimeEl) currentTimeEl.innerText = "0:00"; } else { pause(); isPlaying = false; updatePlayButtons(false); } stopUpdateLoop(); }
 
         if (seekBar) { seekBar.addEventListener('mousedown', () => { isDragging = true; }); seekBar.addEventListener('touchstart', () => { isDragging = true; }); seekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; }); seekBar.addEventListener('input', (e) => { const duration = getDuration(); if (duration > 0) currentTimeEl.innerText = formatTime(duration * (e.target.value / 100)); }); }
@@ -3189,29 +4185,10 @@
         function stopUpdateLoop() { if (updateInterval) cancelAnimationFrame(updateInterval); }
         function formatTime(seconds) { if (isNaN(seconds) || seconds < 0) return "0:00"; const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
 
-        // --- 9. Virtual Piano Logic (Updated) ---
+        // --- 9. Virtual Piano Logic (創作鋼琴) ---
+        // [重要] 將這些邏輯從全域移入模組，並綁定到 window
         let creationSampler = null;
         let isCreationPianoRendered = false;
-
-        const creationSelectEl = document.getElementById('creation-instrument-select');
-        if (creationSelectEl) {
-            populateSelect(creationSelectEl);
-            creationSelectEl.addEventListener('change', async (e) => {
-                const instName = e.target.value;
-                creationSelectEl.disabled = true;
-                const loadingToast = showToast("正在切換創作樂器...", "info", 0);
-                try {
-                    await loadCreationInstrument(instName);
-                    removeToast(loadingToast);
-                    showToast("樂器切換完成！", "success");
-                } catch (err) {
-                    removeToast(loadingToast);
-                    showToast("切換失敗", "error");
-                    console.error(err);
-                }
-                creationSelectEl.disabled = false;
-            });
-        }
 
         async function loadCreationInstrument(name) {
             if (creationSampler) { creationSampler.disconnect(); creationSampler.dispose(); }
@@ -3224,6 +4201,7 @@
             });
         }
 
+        // 綁定到 window 讓 HTML onclick 可以呼叫
         window.toggleCreationPiano = async function () {
             const win = document.getElementById('floating-piano-app'); if (!win) return;
             const isActive = win.classList.contains('active');
@@ -3231,25 +4209,54 @@
                 await Tone.start();
                 if (!creationSampler) { const loadingToast = showToast("正在初始化樂器...", "info", 0); await loadCreationInstrument('acoustic_grand_piano'); removeToast(loadingToast); }
                 if (!isCreationPianoRendered) { renderCreationPiano(); isCreationPianoRendered = true; }
+                win.style.top = "";
+                win.style.left = "";
+                win.style.transform = "";
                 win.classList.add('active');
             }
         }
-        window.closeCreationPiano = function () { const win = document.getElementById('floating-piano-app'); if (win) win.classList.remove('active'); }
 
+        window.closeCreationPiano = function () {
+            const win = document.getElementById('floating-piano-app');
+            if (win) win.classList.remove('active');
+        }
+
+        // [您的關鍵函式：渲染鋼琴]
         function renderCreationPiano() {
-            const container = document.getElementById('creation-piano-keys'); if (!container) return; container.innerHTML = '';
-            const startOctave = 2; const endOctave = 6;
+            const container = document.getElementById('creation-piano-keys');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const startOctave = 2;
+            const endOctave = 6;
             const scaleNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-            let whiteKeyIndex = 0; const totalWhiteKeys = (endOctave - startOctave) * 7 + 1;
+
+            let whiteKeyIndex = 0;
+            const totalWhiteKeys = (endOctave - startOctave) * 7 + 1;
+
             for (let oct = startOctave; oct <= endOctave; oct++) {
                 scaleNotes.forEach(note => {
-                    const fullNote = note + oct; const isBlack = note.includes('#'); const key = document.createElement('div'); key.dataset.note = fullNote;
+                    // 確保到 C6 結束，這會解決長度和 RWD 問題
+                    if (oct === endOctave && note !== 'C') return;
+
+                    const fullNote = note + oct;
+                    const isBlack = note.includes('#');
+                    const key = document.createElement('div');
+                    key.dataset.note = fullNote;
+
                     if (!isBlack) {
-                        key.className = 'key white'; if (note === 'C') key.innerText = fullNote;
-                        setupCreationKeyEvents(key, fullNote); container.appendChild(key); whiteKeyIndex++;
+                        key.className = 'key white';
+                        if (note === 'C') key.innerText = fullNote;
+                        setupCreationKeyEvents(key, fullNote);
+                        container.appendChild(key);
+                        whiteKeyIndex++;
                     } else {
-                        key.className = 'key black'; const blackKeyWidthPercent = 2; const leftPercent = (whiteKeyIndex / totalWhiteKeys * 100) - (blackKeyWidthPercent / 2); key.style.left = leftPercent + '%';
-                        setupCreationKeyEvents(key, fullNote); container.appendChild(key);
+                        key.className = 'key black';
+                        const blackKeyWidthPercent = 2;
+                        const leftPercent = (whiteKeyIndex / totalWhiteKeys * 100) - (blackKeyWidthPercent / 2);
+                        key.style.left = leftPercent + '%';
+                        setupCreationKeyEvents(key, fullNote);
+                        container.appendChild(key);
                     }
                 });
             }
@@ -3261,8 +4268,317 @@
             key.addEventListener('mousedown', play); key.addEventListener('mouseup', release); key.addEventListener('mouseleave', release);
             key.addEventListener('touchstart', (e) => { e.preventDefault(); play(); }); key.addEventListener('touchend', (e) => { e.preventDefault(); release(); });
         }
-    </script>
 
+        // --- Interactive Tour Logic (最終修正版) ---
+
+        // 記錄導覽前狀態
+        let preTourState = {
+            hasMidi: false
+        };
+
+        function simulateGeneratedState(active) {
+            const dashboard = document.getElementById('result-dashboard');
+            const placeholder = document.getElementById('placeholder-text');
+
+            if (active) {
+                // [模擬開啟]
+                if (placeholder) placeholder.style.display = 'none';
+                if (dashboard) {
+                    // 1. 顯示出來
+                    dashboard.style.display = 'grid';
+                    dashboard.style.opacity = '1'; // 確保可見
+                    dashboard.style.transform = 'none'; // 移除位移
+                    // 2. [關鍵] 加上禁止動畫 class，確保它能浮在遮罩上
+                    dashboard.classList.add('tour-no-animation');
+                }
+            } else {
+                // [還原狀態]
+                if (!window.currentMidiFilename) {
+                    if (placeholder) placeholder.style.display = 'block';
+                    if (dashboard) {
+                        dashboard.style.display = 'none';
+                        dashboard.classList.remove('tour-no-animation');
+                    }
+                }
+            }
+        }
+
+        const tourSteps = [
+            {
+                elementId: 'sidebar',
+                title: '1. 調整參數 (Parameters)',
+                text: '這裡是控制中心。設定音階、調性、BPM，調整完畢後請看下一步。',
+                position: 'right',
+                action: () => {
+                    toggleSidebar(true);
+                    simulateGeneratedState(false);
+                }
+            },
+            {
+                elementId: 'gen-midi-btn',
+                title: '2. 生成 MIDI (Generate)',
+                text: '設定完成後，點擊這裡！AI 會立即為您生成一段獨一無二的旋律。',
+                // [修正] 改為 top，顯示在按鈕上方，就不會擋住按鈕了
+                position: 'top',
+                action: () => {
+                    toggleSidebar(true);
+                    // 捲動到底部確保按鈕可見
+                    setTimeout(() => {
+                        const scrollArea = document.querySelector('.sidebar-scroll-content');
+                        if (scrollArea) {
+                            scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: 'smooth' });
+                        }
+                    }, 10);
+                }
+            },
+            {
+                elementId: 'result-dashboard',
+                title: '3. 預覽與渲染 (Preview)',
+                text: '（模擬生成畫面）生成後側邊欄會收起。您可以在此試聽，滿意後點擊「渲染影片」。',
+                position: 'top',
+                action: () => {
+                    toggleSidebar(false);
+                    // 開啟模擬狀態
+                    simulateGeneratedState(true);
+                }
+            },
+            {
+                elementId: 'piano-trigger-btn',
+                title: '4. 虛擬鋼琴 (Virtual Piano)',
+                text: '想要自己加入靈感嗎？點擊右側這個按鈕，隨時喚醒虛擬鍵盤進行創作。',
+                position: 'left',
+                action: () => {
+                    toggleSidebar(false);
+                    simulateGeneratedState(true);
+                    // 強制顯示鋼琴按鈕
+                    const btn = document.getElementById('piano-trigger-btn');
+                    if (btn) btn.style.display = 'flex';
+                }
+            },
+            {
+                elementId: 'visual-container',
+                title: '5. 開始創作吧！',
+                text: '現在您已經熟悉流程了。按下結束，開始您的音樂視覺化之旅！',
+                position: 'center',
+                action: () => {
+                    toggleSidebar(false);
+                    simulateGeneratedState(true);
+                }
+            }
+        ];
+
+        let currentTourIndex = 0;
+
+        window.startTour = function () {
+            if (!document.getElementById('main-screen').classList.contains('active')) {
+                goToScreen('main-screen');
+            }
+
+            preTourState.hasMidi = !!window.currentMidiFilename;
+
+            currentTourIndex = 0;
+            document.getElementById('tour-overlay').style.display = 'block';
+            setTimeout(() => document.getElementById('tour-overlay').classList.add('active'), 10);
+            document.getElementById('tour-tooltip').style.display = 'flex';
+
+            showTourStep();
+        }
+
+        window.nextTourStep = function () {
+            if (currentTourIndex < tourSteps.length - 1) {
+                currentTourIndex++;
+                showTourStep();
+            } else {
+                window.endTour();
+            }
+        }
+
+        window.endTour = function () {
+            document.getElementById('tour-overlay').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('tour-overlay').style.display = 'none';
+                document.getElementById('tour-tooltip').style.display = 'none';
+
+                // 清除所有高亮與特殊 class
+                document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+                document.querySelectorAll('.tour-active-parent').forEach(el => el.classList.remove('tour-active-parent'));
+                document.querySelectorAll('.tour-no-animation').forEach(el => el.classList.remove('tour-no-animation'));
+
+                // 還原介面 (Dashboard)
+                simulateGeneratedState(false);
+
+                // [修正] 刪除了原本在這裡「隱藏鋼琴按鈕」的程式碼
+                // 因為在創作模式 (Main Screen) 下，鋼琴按鈕應該要一直保持顯示才對
+
+            }, 300);
+        }
+        function showTourStep() {
+            const step = tourSteps[currentTourIndex];
+
+            // 1. 清除舊狀態
+            document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+            document.querySelectorAll('.tour-active-parent').forEach(el => el.classList.remove('tour-active-parent'));
+
+            // 2. 執行動作
+            if (step.action) step.action();
+
+            // 3. 定位與高亮
+            setTimeout(() => {
+                const target = document.getElementById(step.elementId);
+                const tooltip = document.getElementById('tour-tooltip');
+
+                if (target) {
+                    const rect = target.getBoundingClientRect();
+                    if (rect.width === 0 && rect.height === 0) {
+                        positionTooltip(target, tooltip, 'center');
+                        return;
+                    }
+
+                    target.classList.add('tour-highlight');
+
+                    // [關鍵修正] 判斷並提升父層級 (加入 sidebar-scroll-content)
+                    if (target.closest('.sidebar')) {
+                        // 提升側邊欄外框
+                        document.getElementById('sidebar').classList.add('tour-active-parent');
+                        // 提升側邊欄內部捲動區 (解決 Step 2 參數框也亮的問題)
+                        const scrollContent = document.querySelector('.sidebar-scroll-content');
+                        if (scrollContent) scrollContent.classList.add('tour-active-parent');
+                    } else if (target.closest('.app-container')) {
+                        // 提升主畫面容器 (解決 Step 4 渲染介面也亮的問題)
+                        document.querySelector('.app-container').classList.add('tour-active-parent');
+                    }
+
+                    document.getElementById('tour-title').innerText = step.title;
+                    document.getElementById('tour-content').innerText = step.text;
+                    document.getElementById('tour-counter').innerText = `${currentTourIndex + 1}/${tourSteps.length}`;
+
+                    const nextBtn = document.getElementById('tour-next-btn');
+                    if (currentTourIndex === tourSteps.length - 1) {
+                        nextBtn.innerText = "Finish";
+                        nextBtn.onclick = window.endTour;
+                    } else {
+                        nextBtn.innerText = "Next";
+                        nextBtn.onclick = window.nextTourStep;
+                    }
+                    positionTooltip(target, tooltip, step.position);
+                }
+            }, 350);
+        }
+        function positionTooltip(target, tooltip, positionPref) {
+            tooltip.style.top = '0px';
+            tooltip.style.left = '0px';
+
+            const rect = target.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const margin = 20;
+            let top, left;
+
+            // 特殊處理：置中
+            if (positionPref === 'center') {
+                top = (window.innerHeight / 2) - (tooltipRect.height / 2);
+                left = (window.innerWidth / 2) - (tooltipRect.width / 2);
+            } else if (positionPref === 'right') {
+                top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                left = rect.right + margin;
+            } else if (positionPref === 'left') {
+                top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                left = rect.left - tooltipRect.width - margin;
+            } else if (positionPref === 'bottom') {
+                top = rect.bottom + margin;
+                left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+            } else if (positionPref === 'top') {
+                // 顯示在上方
+                top = rect.top - tooltipRect.height - margin;
+                left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+            } else {
+                top = rect.top - tooltipRect.height - margin;
+                left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+            }
+
+            // 邊界檢查 (防止切出螢幕)
+            if (left < 10) left = 10;
+            if (top < 10) top = 10;
+            if (left + tooltipRect.width > window.innerWidth) left = window.innerWidth - tooltipRect.width - 10;
+            if (top + tooltipRect.height > window.innerHeight) top = window.innerHeight - tooltipRect.height - 10;
+
+            tooltip.style.top = `${top}px`;
+            tooltip.style.left = `${left}px`;
+        }
+
+        // --- 10. Draggable Window Logic (優化版：解決笨重感) ---
+
+        function makeElementDraggable(element, handle) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+            handle.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+
+                // 1. 取得滑鼠初始位置
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+
+                // 2. [關鍵優化] 移除 CSS Transition
+                // 這樣拖曳時位置會「瞬間」更新，不會有 0.4秒 的延遲感
+                element.style.transition = "none";
+
+                // 3. 修正定位 (從 transform 改為 top/left)
+                const rect = element.getBoundingClientRect();
+                element.style.transform = "none";
+                element.style.left = rect.left + "px";
+                element.style.top = rect.top + "px";
+                element.style.margin = 0;
+
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+
+                // 計算位移
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+
+                // 計算新座標
+                let newTop = element.offsetTop - pos2;
+                let newLeft = element.offsetLeft - pos1;
+
+                // 邊界檢查 (防止拖出視窗)
+                if (newTop < 0) newTop = 0;
+                if (newLeft < 0) newLeft = 0;
+                if (newLeft + 100 > window.innerWidth) newLeft = window.innerWidth - 100;
+                if (newTop + 50 > window.innerHeight) newTop = window.innerHeight - 50;
+
+                // 套用新位置
+                element.style.top = newTop + "px";
+                element.style.left = newLeft + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+
+                // [關鍵優化] 拖曳結束後，把 transition 加回來
+                // 這樣下次關閉視窗時，才會有漂亮的淡出動畫
+                // 我們清空 inline style，讓它吃回 CSS 檔案裡的設定
+                element.style.transition = "";
+            }
+        }
+
+        // 初始化綁定 (保持不變)
+        const draggablePanel = document.getElementById("floating-piano-app");
+        const dragHandle = document.querySelector("#floating-piano-app .studio-header");
+
+        if (draggablePanel && dragHandle) {
+            makeElementDraggable(draggablePanel, dragHandle);
+        }
+    </script>
 </body>
 
 </html>
