@@ -2107,6 +2107,29 @@
             .guide-list-icon {
                 display: none;
             }
+
+            .presentation-float-btn {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+
+            .presentation-float-btn span {
+                display: none;
+                /* 手機版只顯示 Icon，避免佔位 */
+            }
+
+            .app-footer {
+                padding: 15px 20px;
+                flex-direction: row;
+                /* 手機版保持橫向，但縮小間距 */
+                gap: 15px;
+            }
+
+            .footer-text {
+                font-size: 10px;
+                /* 手機字體縮小 */
+                text-align: right;
+            }
         }
 
         /* 新增自動流光動畫 */
@@ -2681,6 +2704,111 @@
             font-size: 13px;
             line-height: 1.4;
         }
+
+        /* --- 新增功能：首頁專用樣式 --- */
+
+        /* 1. 側邊懸浮簡報按鈕 */
+        .presentation-float-btn {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            /* 垂直置中 */
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            /* 使用專案主色 (粉紅) */
+            color: white;
+            padding: 15px 20px 15px 25px;
+            border-radius: 30px 0 0 30px;
+            /* 左邊圓角，右邊貼齊螢幕 */
+            text-decoration: none;
+            box-shadow: -5px 0 15px rgba(216, 27, 96, 0.3);
+            z-index: 1900;
+            /* 確保在內容之上，但在 Modal 之下 */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: none;
+        }
+
+        .presentation-float-btn:hover {
+            padding-right: 35px;
+            /* 滑鼠移過去伸長 */
+            background: var(--primary-hover);
+            transform: translateY(-50%) translateX(-5px);
+            box-shadow: -8px 0 20px rgba(216, 27, 96, 0.5);
+        }
+
+        .presentation-float-btn i {
+            font-size: 18px;
+        }
+
+        /* --- 2. 精緻版首頁頁尾 (Enhanced Footer) --- */
+        .app-footer {
+            width: 100%;
+            /* 使用漸層背景，比單色更有質感 */
+            background: linear-gradient(135deg, var(--primary-color), #ff4081);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            position: relative;
+            z-index: 10;
+
+            /* 頂部加上半透明白線，營造玻璃邊緣感 */
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            /* 加上深色陰影讓它浮起來 */
+            box-shadow: 0 -10px 30px rgba(216, 27, 96, 0.15);
+        }
+
+        /* 讓背景有些微的紋理 (選用) */
+        .app-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 40%);
+            pointer-events: none;
+        }
+
+        .footer-logo-circle {
+            width: 40px;
+            /* 稍微加大一點 */
+            height: 40px;
+            background: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            /* 加上 Logo 的陰影 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        /* 滑鼠移過 Logo 會旋轉一下 */
+        .footer-logo-circle:hover {
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        .footer-text {
+            font-family: 'Poppins', sans-serif;
+            /* 改用 Poppins 字體，更現代 */
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -2911,7 +3039,23 @@
                         style="padding: 12px 30px; font-weight:600;"><i class="fas fa-th-large"></i> 管理所有成就</button>
                 </div>
             </div>
-            <div style="height: 100px;"></div>
+            <div style="height: 50px;"></div>
+
+            <a href="https://gamma.app/docs/Melody-Visualizers-8br90kx3b718jtj" target="_blank"
+                class="presentation-float-btn" title="View Presentation">
+                <i class="fas fa-file-powerpoint"></i>
+                <span>Project Slides</span>
+            </a>
+
+            <footer class="app-footer">
+                <div class="footer-logo-circle">
+                    <i class="fas fa-infinity"></i>
+                </div>
+
+                <div class="footer-text">
+                    &copy; 2025 Melody Visualizers. All rights reserved.
+                </div>
+            </footer>
         </div>
 
         <div id="main-screen" class="screen">
@@ -3929,7 +4073,8 @@
             document.querySelector('.sidebar').classList.add('flash-effect');
         }
 
-        let pollInterval = null; // 用來存輪詢的 Timer
+        // --- 渲染與排隊邏輯 (Updated) ---
+        let pollInterval = null;
 
         async function startRenderProcess() {
             if (!window.currentMidiFilename) { showToast("找不到 MIDI 檔案！", "error"); return; }
@@ -3942,7 +4087,7 @@
             const queueBox = document.getElementById('queue-status-container');
             const loaderText = visualLoader.querySelector('p');
 
-            // Reset UI
+            // 初始化 UI 狀態
             renderBtn.disabled = true;
             renderBtn.innerText = "請求中...";
             statusDiv.style.display = 'block';
@@ -3952,33 +4097,32 @@
             videoEl.pause();
 
             visualLoader.style.display = 'flex';
-            queueBox.style.display = 'none'; // 先隱藏排隊框
+            queueBox.style.display = 'none'; // 初始隱藏，直到確認排隊
             loaderText.innerText = "正在聯絡渲染引擎...";
 
             try {
                 // 1. 發送渲染請求
-                const response = await fetch('/api/render-video', {
+                const response = await fetch('api/render-video', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ midiFilename: window.currentMidiFilename })
                 });
 
-                // 2. 處理錯誤狀態 (例如 429 Too Many Requests)
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error || `Server Error: ${response.status}`);
-                }
-
-                // 3. 請求成功，進入排隊/渲染等待模式
-                renderBtn.innerText = "渲染進行中...";
-                statusDiv.innerText = "渲染中...";
-
-                // 開始輪詢狀態 (每 2 秒一次)
+                // 2. 開始輪詢 (不管是否立刻回傳，都開始監聽狀態以防萬一)
                 startQueuePolling(window.currentMidiFilename);
 
-                // 等待最終結果 (fetch 會等到 server 回傳 response 才結束，也就是渲染完成時)
+                // 3. 解析伺服器回應 (這可能會等待直到渲染完成，或是立刻回傳排隊狀態)
                 const data = await response.json();
 
+                // 4. 針對「立刻回傳排隊狀態」的處理 [關鍵修改]
+                if (data.status === 'queued') {
+                    // 如果伺服器立刻告訴我們在排隊，馬上更新 UI
+                    updateQueueUI(data.position, data.waitTime);
+                    statusDiv.innerText = "排隊中...";
+                    // 注意：這裡不 throw error，而是讓使用者留在這個狀態，等待輪詢或後續回應
+                }
+
+                // 5. 如果渲染成功 (可能是等待很久後回傳，或是立刻完成)
                 if (data.success) {
                     stopQueuePolling(); // 停止輪詢
 
@@ -4001,67 +4145,72 @@
                     renderBtn.disabled = false;
                     renderBtn.innerText = "再次渲染";
                     showToast("渲染完成！", "success");
-                } else {
-                    throw new Error(data.error);
+                } else if (data.status !== 'queued') {
+                    // 如果既不是 success 也不是 queued，那就是錯誤
+                    throw new Error(data.error || "Unknown Error");
                 }
 
             } catch (error) {
                 console.error(error);
+                // 只有在真的出錯時才停止輪詢 (例如網路斷線)
                 stopQueuePolling();
-                showToast(error.message, "error", 5000); // 顯示久一點
 
+                showToast(error.message || "渲染請求失敗", "error", 5000);
                 visualLoader.style.display = 'none';
-                placeholder.style.display = 'block'; // 顯示回原本的圖示
+                placeholder.style.display = 'block';
                 renderBtn.disabled = false;
                 renderBtn.innerText = "渲染影片";
                 statusDiv.style.display = 'none';
             }
         }
 
-        // --- 新增：佇列輪詢邏輯 ---
-        // --- 修改：佇列輪詢邏輯 (顯示順位與時間) ---
-        function startQueuePolling(filename) {
-            // 如果已經有在跑的輪詢，先清除
-            if (pollInterval) clearInterval(pollInterval);
-
-            // 取得 UI 元素
+        // 獨立出更新 UI 的函式，方便呼叫
+        function updateQueueUI(position, waitTime) {
             const queueBox = document.getElementById('queue-status-container');
             const posEl = document.getElementById('queue-pos');
             const timeEl = document.getElementById('queue-time');
             const loaderText = document.querySelector('#visual-loader p');
 
+            if (queueBox && posEl && timeEl) {
+                queueBox.style.display = 'block'; // 顯示排隊框
+                posEl.innerText = position !== undefined ? position : "--";
+                timeEl.innerText = waitTime !== undefined ? waitTime : "計算中...";
+                if (loaderText) {
+                    loaderText.innerText = "伺服器忙碌，排隊中...";
+                    loaderText.style.color = "#FF9800"; // 橘色文字
+                }
+            }
+        }
+
+        function startQueuePolling(filename) {
+            if (pollInterval) clearInterval(pollInterval);
+
+            // 每 2 秒詢問一次狀態
             pollInterval = setInterval(async () => {
                 try {
-                    const res = await fetch(`/api/queue-status?filename=${filename}`);
+                    const res = await fetch(`api/queue-status?filename=${filename}`);
+                    if (!res.ok) return; // 忽略錯誤，繼續輪詢
+
                     const statusData = await res.json();
 
-                    // --- 針對不同狀態更新 UI ---
                     if (statusData.status === 'queued') {
-                        // [關鍵修改] 顯示排隊資訊框
-                        queueBox.style.display = 'block';
-
-                        // [關鍵修改] 將後端回傳的數據填入 HTML
-                        // 後端回傳範例: { status: 'queued', position: 3, waitTime: '45 秒' }
-                        posEl.innerText = statusData.position;
-                        timeEl.innerText = statusData.waitTime;
-
-                        // 更新提示文字與顏色
-                        loaderText.innerText = "伺服器忙碌，排隊中...";
-                        loaderText.style.color = "#FF9800"; // 橘色代表等待
-
+                        // [關鍵] 接收後端回傳的 position 與 waitTime 並更新
+                        updateQueueUI(statusData.position, statusData.waitTime);
                     } else if (statusData.status === 'rendering') {
-                        // 進入渲染狀態，隱藏排隊框
-                        queueBox.style.display = 'none';
-
-                        loaderText.innerText = "正在進行 4K 渲染 (Piano VFX)...";
-                        loaderText.style.color = "#E91E63"; // 粉紅色代表正在處理
+                        // 進入渲染狀態，隱藏排隊框，改顯示渲染中文字
+                        const queueBox = document.getElementById('queue-status-container');
+                        const loaderText = document.querySelector('#visual-loader p');
+                        if (queueBox) queueBox.style.display = 'none';
+                        if (loaderText) {
+                            loaderText.innerText = "正在進行 4K 渲染 (Piano VFX)...";
+                            loaderText.style.color = "#E91E63"; // 粉紅色文字
+                        }
                     }
-                    // 如果是 completed 或 error，會在 startRenderProcess 的主流程處理，這裡不用管
-
+                    // completed 狀態通常由 startRenderProcess 的主 response 處理
                 } catch (e) {
-                    console.log("Polling error", e);
+                    console.log("Polling logic error", e);
                 }
-            }, 2000); // 每 2 秒更新一次
+            }, 2000);
         }
 
         function stopQueuePolling() {
@@ -4183,6 +4332,196 @@
         const canvasEl = document.getElementById('bg-canvas'); const ctxEl = canvasEl.getContext('2d');
         function resize() { canvasEl.width = window.innerWidth; canvasEl.height = window.innerHeight; }
         resize(); window.addEventListener('resize', resize);
+
+        // --- 9. Tour Logic (補回導覽邏輯) ---
+        // 預先定義導覽所需的變數與函式
+        const tourSteps = [
+            {
+                elementId: 'sidebar',
+                title: '1. 調整參數 (Parameters)',
+                text: '這裡是控制中心。設定音階、調性、BPM，調整完畢後請看下一步。',
+                position: 'right',
+                action: () => { toggleSidebar(true); simulateGeneratedState(false); }
+            },
+            {
+                elementId: 'gen-midi-btn',
+                title: '2. 生成 MIDI (Generate)',
+                text: '設定完成後，點擊這裡！AI 會立即為您生成一段獨一無二的旋律。',
+                position: 'top',
+                action: () => {
+                    toggleSidebar(true);
+                    setTimeout(() => {
+                        const scrollArea = document.querySelector('.sidebar-scroll-content');
+                        if (scrollArea) scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: 'smooth' });
+                    }, 10);
+                }
+            },
+            {
+                elementId: 'result-dashboard',
+                title: '3. 預覽與渲染 (Preview)',
+                text: '（模擬生成畫面）生成後側邊欄會收起。您可以在此試聽，滿意後點擊「渲染影片」。',
+                position: 'top',
+                action: () => { toggleSidebar(false); simulateGeneratedState(true); }
+            },
+            {
+                elementId: 'piano-trigger-btn',
+                title: '4. 虛擬鋼琴 (Virtual Piano)',
+                text: '想要自己加入靈感嗎？點擊右側這個按鈕，隨時喚醒虛擬鍵盤進行創作。',
+                position: 'left',
+                action: () => {
+                    toggleSidebar(false);
+                    simulateGeneratedState(true);
+                    const btn = document.getElementById('piano-trigger-btn');
+                    if (btn) btn.style.display = 'flex';
+                }
+            },
+            {
+                elementId: 'visual-container',
+                title: '5. 開始創作吧！',
+                text: '現在您已經熟悉流程了。按下結束，開始您的音樂視覺化之旅！',
+                position: 'center',
+                action: () => { toggleSidebar(false); simulateGeneratedState(true); }
+            }
+        ];
+
+        let currentTourIndex = 0;
+
+        // 模擬生成狀態 (讓導覽時能看到隱藏的介面)
+        function simulateGeneratedState(active) {
+            const dashboard = document.getElementById('result-dashboard');
+            const placeholder = document.getElementById('placeholder-text');
+
+            if (active) {
+                if (placeholder) placeholder.style.display = 'none';
+                if (dashboard) {
+                    dashboard.style.display = 'grid';
+                    dashboard.style.opacity = '1';
+                    dashboard.style.transform = 'none';
+                    dashboard.classList.add('tour-no-animation');
+                }
+            } else {
+                if (!window.currentMidiFilename) {
+                    if (placeholder) placeholder.style.display = 'block';
+                    if (dashboard) {
+                        dashboard.style.display = 'none';
+                        dashboard.classList.remove('tour-no-animation');
+                    }
+                }
+            }
+        }
+
+        // 開始導覽
+        window.startTour = function () {
+            if (!document.getElementById('main-screen').classList.contains('active')) {
+                goToScreen('main-screen');
+            }
+            currentTourIndex = 0;
+            document.getElementById('tour-overlay').style.display = 'block';
+            setTimeout(() => document.getElementById('tour-overlay').classList.add('active'), 10);
+            document.getElementById('tour-tooltip').style.display = 'flex';
+            showTourStep();
+        };
+
+        // 下一步
+        window.nextTourStep = function () {
+            if (currentTourIndex < tourSteps.length - 1) {
+                currentTourIndex++;
+                showTourStep();
+            } else {
+                window.endTour();
+            }
+        };
+
+        // 結束導覽
+        window.endTour = function () {
+            document.getElementById('tour-overlay').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('tour-overlay').style.display = 'none';
+                document.getElementById('tour-tooltip').style.display = 'none';
+                // 清除所有高亮樣式
+                document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+                document.querySelectorAll('.tour-active-parent').forEach(el => el.classList.remove('tour-active-parent'));
+                document.querySelectorAll('.tour-no-animation').forEach(el => el.classList.remove('tour-no-animation'));
+                simulateGeneratedState(false);
+            }, 300);
+        };
+
+        // 顯示步驟內容
+        function showTourStep() {
+            const step = tourSteps[currentTourIndex];
+            // 清除舊高亮
+            document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
+            document.querySelectorAll('.tour-active-parent').forEach(el => el.classList.remove('tour-active-parent'));
+
+            if (step.action) step.action();
+
+            setTimeout(() => {
+                const target = document.getElementById(step.elementId);
+                const tooltip = document.getElementById('tour-tooltip');
+
+                if (target) {
+                    target.classList.add('tour-highlight');
+                    // 處理層級問題 (Z-Index)
+                    if (target.closest('.sidebar')) {
+                        document.getElementById('sidebar').classList.add('tour-active-parent');
+                        const scrollContent = document.querySelector('.sidebar-scroll-content');
+                        if (scrollContent) scrollContent.classList.add('tour-active-parent');
+                    } else if (target.closest('.app-container')) {
+                        document.querySelector('.app-container').classList.add('tour-active-parent');
+                    }
+
+                    // 設定文字
+                    document.getElementById('tour-title').innerText = step.title;
+                    document.getElementById('tour-content').innerText = step.text;
+                    document.getElementById('tour-counter').innerText = `${currentTourIndex + 1}/${tourSteps.length}`;
+
+                    // 設定按鈕文字
+                    const nextBtn = document.getElementById('tour-next-btn');
+                    if (currentTourIndex === tourSteps.length - 1) {
+                        nextBtn.innerText = "Finish";
+                        nextBtn.onclick = window.endTour;
+                    } else {
+                        nextBtn.innerText = "Next";
+                        nextBtn.onclick = window.nextTourStep;
+                    }
+
+                    // 計算 Tooltip 位置
+                    positionTooltip(target, tooltip, step.position);
+                }
+            }, 350); // 等待側邊欄動畫
+        }
+
+        // 計算 Tooltip 位置的輔助函式
+        function positionTooltip(target, tooltip, positionPref) {
+            const rect = target.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const margin = 20;
+            let top, left;
+
+            if (positionPref === 'center') {
+                top = (window.innerHeight / 2) - (tooltipRect.height / 2);
+                left = (window.innerWidth / 2) - (tooltipRect.width / 2);
+            } else if (positionPref === 'right') {
+                top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                left = rect.right + margin;
+            } else if (positionPref === 'left') {
+                top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                left = rect.left - tooltipRect.width - margin;
+            } else if (positionPref === 'top') {
+                top = rect.top - tooltipRect.height - margin;
+                left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+            } else {
+                top = rect.bottom + margin;
+                left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+            }
+
+            // 邊界檢查
+            if (left < 10) left = 10;
+            if (left + tooltipRect.width > window.innerWidth) left = window.innerWidth - tooltipRect.width - 10;
+            if (top < 10) top = 10;
+            tooltip.style.top = `${top}px`;
+            tooltip.style.left = `${left}px`;
+        }
         window.onload = function () {
             setupScrollReveal();
             document.getElementById('bars').addEventListener('change', validateInput);
