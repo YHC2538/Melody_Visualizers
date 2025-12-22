@@ -15,6 +15,8 @@ app.use(express.static('public'));
 app.use('/midi', express.static('midi')); 
 app.use('/videos', express.static('videos')); // 記得開放 videos
 
+
+
 // --- 輔助函式 ---
 
 function executeCommand(command) {
@@ -31,9 +33,9 @@ function executeCommand(command) {
     });
 }
 
-function waitForNewFile(directory, startTime, timeout = 120000) {
+function waitForNewFile(directory, startTime, timeout = 5000) {
     return new Promise((resolve, reject) => {
-        const checkInterval = 2000;
+        const checkInterval =1000;
         let elapsedTime = 0;
         console.log(`[Watcher] 開始監聽資料夾: ${directory}, 基準時間: ${startTime}`);
 
@@ -71,12 +73,27 @@ function waitForNewFile(directory, startTime, timeout = 120000) {
 // 只針對需要 "搶佔滑鼠/螢幕" 的任務 (TiMidity + AHK)
 const renderQueue = [];
 let isRendering = false;
+let currentRenderingJob = null; // 追蹤正在執行的任務
+
+// 防護機制變數
+const userCooldowns = new Map(); // 記錄 IP 的冷卻時間: IP -> Timestamp
+const activeIPs = new Set();     // 記錄目前正在排隊或渲染的 IP
+const COOLDOWN_TIME = 60 * 1000; // 冷卻時間：60 秒
+const AVG_RENDER_TIME = 60 * 1000; // 預估平均渲染時間：60 秒
+
+// 取得客戶端 IP 的輔助函式
+function getClientIp(req) {
+    return req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+}
 
 const processRenderQueue = async () => {
     if (isRendering || renderQueue.length === 0) return;
 
     isRendering = true;
-    const { midiFilename, res } = renderQueue.shift();
+    const job = renderQueue.shift();
+    currentRenderingJob = job; // 標記當前任務
+    
+    const { midiFilename, res, userIp } = job; // 取出 userIp
     
     // 從檔名 (melody_123.mid) 提取 timestamp (123)
     // 假設格式固定為 melody_TIMESTAMP.mid
@@ -134,12 +151,16 @@ const processRenderQueue = async () => {
         if (fs.existsSync(finalVideoPath)) fs.unlinkSync(finalVideoPath);
         
         fs.renameSync(originalVideoPath, finalVideoPath);
+
+        // 設定冷卻時間
+        userCooldowns.set(userIp, Date.now() + COOLDOWN_TIME);
+
         console.log(`[Rename] 檔案已重新命名為: ${videoFilename}`);
 
         res.json({
             success: true,
             message: "影片生成成功",
-            videoUrl: `http://localhost:${PORT}/videos/${videoFilename}`,
+            videoUrl: `/videos/${videoFilename}`,
             filename: videoFilename
         });
 
@@ -147,8 +168,11 @@ const processRenderQueue = async () => {
         console.error("Render Task Error:", error);
         res.status(500).json({ success: false, message: "渲染失敗", error: error.message });
     } finally {
+        // 清理狀態
+        activeIPs.delete(userIp); // 移除活躍 IP，允許該使用者重新排隊
         isRendering = false;
-        processRenderQueue(); // 處理下一個
+        currentRenderingJob = null;
+        processRenderQueue();
     }
 };
 
@@ -187,7 +211,7 @@ app.post('/api/generate-midi', async (req, res) => {
         res.json({
             success: true,
             message: "MIDI 生成成功",
-            midiUrl: `http://localhost:${PORT}/midi/${midiFilename}`,
+            midiUrl: `/midi/${midiFilename}`,
             filename: midiFilename, // 回傳檔名供下一步使用
             timestamp: timestamp
         });
@@ -198,25 +222,80 @@ app.post('/api/generate-midi', async (req, res) => {
     }
 });
 
-// 2. 渲染影片 (加入 Queue)
+// 2. 渲染影片 (加入防護邏輯)
 app.post('/api/render-video', (req, res) => {
     const { midiFilename } = req.body;
+    const userIp = getClientIp(req);
     
-    if (!midiFilename) {
-        return res.status(400).json({ success: false, error: "缺少 MIDI 檔名" });
+    if (!midiFilename) return res.status(400).json({ success: false, error: "缺少 MIDI 檔名" });
+
+    // --- 防護檢查 1: 是否已經在排隊或執行中 ---
+    if (activeIPs.has(userIp)) {
+        return res.status(429).json({ 
+            success: false, 
+            error: "您已經有一個影片正在渲染或排隊中，請耐心等候。" 
+        });
     }
 
-    console.log(`[Render API] 收到渲染請求: ${midiFilename}`);
+    // --- 防護檢查 2: 冷卻時間 ---
+    const cooldownEnd = userCooldowns.get(userIp);
+    if (cooldownEnd && Date.now() < cooldownEnd) {
+        const waitSeconds = Math.ceil((cooldownEnd - Date.now()) / 1000);
+        return res.status(429).json({ 
+            success: false, 
+            error: `伺服器忙碌，請等待 ${waitSeconds} 秒後再試。` 
+        });
+    }
 
-    // 加入佇列
+    console.log(`[Render API] 收到渲染請求: ${midiFilename} (IP: ${userIp})`);
+
+    // 加入活躍名單
+    activeIPs.add(userIp);
+
+    // 加入佇列 (附帶 IP)
     renderQueue.push({
         midiFilename,
-        res
+        res,
+        userIp // 記錄是誰請求的
     });
 
     console.log(`[Queue] 渲染任務已加入，目前排隊數: ${renderQueue.length}`);
     processRenderQueue();
 });
+
+// 3. 【新增】查詢排隊狀態 API
+app.get('/api/queue-status', (req, res) => {
+    const userIp = getClientIp(req);
+    const { filename } = req.query; // 前端傳來它正在等的檔案名稱
+
+    // 檢查是否正在渲染
+    if (currentRenderingJob && currentRenderingJob.userIp === userIp && currentRenderingJob.midiFilename === filename) {
+        return res.json({ status: 'rendering', position: 0, waitTime: '處理中...' });
+    }
+
+    // 檢查在佇列中的位置
+    const queueIndex = renderQueue.findIndex(job => job.userIp === userIp && job.midiFilename === filename);
+
+    if (queueIndex !== -1) {
+        // 在隊伍中 (前面還有 queueIndex 個人 + 正在渲染的那 1 個)
+        // 順位 = index + 1
+        const position = queueIndex + 1;
+        // 預估時間 = (排在前面的人數 + 正在做的那個人) * 平均時間
+        // 如果現在沒有人在做 (isRendering=false)，就少算一個
+        const pendingJobsCount = isRendering ? (queueIndex + 1) : (queueIndex); 
+        const estimatedSeconds = pendingJobsCount * (AVG_RENDER_TIME / 1000);
+        
+        return res.json({ 
+            status: 'queued', 
+            position: position, 
+            waitTime: `${Math.ceil(estimatedSeconds)} 秒` 
+        });
+    }
+
+    // 找不到紀錄 (可能是做完了，或根本沒請求)
+    return res.json({ status: 'unknown', position: -1, waitTime: '--' });
+});
+
 
 // 啟動伺服器
 app.listen(PORT, () => {

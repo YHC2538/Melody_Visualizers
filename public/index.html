@@ -640,7 +640,7 @@
 
         /* [箭頭修復] 補回遺失的 SVG 箭頭 */
         .sketch-select {
-            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23D81B60%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyOTIuNCIgaGVpZ2h0PSIyOTIuNCIgdmlld0JveD0iMCAwIDI5Mi40IDI5Mi40Ij48cGF0aCBmaWxsPSIjZDgxYjYwIiBkPSJNMjg3IDY5LjRhMTcuNiAxNy42IDAgMCAwLTEzLTUuNEgxOC40Yy01IDAtOS4zIDEuOC0xMi45IDUuNEExNy42IDE3LjYgMCAwIDAgMCA4Mi4yYzAgNSAxLjggOS4zIDUuNCAxMi45bDEyOCAxMjcuOWMzLjYgMy42IDcuOCA1LjQgMTIuOCA1LjRzOS4yLTEuOCAxMi44LTUuNEwyODcgOTVjMy41LTMuNSA1LjQtNy44IDUuNC0xMi44IDAtNS0xLjktOS4yLTUuNS0xMi44eiIvPjwvc3ZnPg==');
             background-repeat: no-repeat;
             background-position: right 18px top 50%;
             background-size: 10px auto;
@@ -804,13 +804,18 @@
             object-fit: contain;
         }
 
+        /* 修改：展示櫃容器支援自動換行，讓使用者可以展示所有成就 */
         .showcase-container {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 20px;
+            /*稍微縮小間距以容納更多*/
             flex-wrap: wrap;
+            /* 關鍵：允許換行 */
             margin-top: 30px;
             min-height: 160px;
+            width: 100%;
+            /* 確保寬度足夠 */
         }
 
         .empty-showcase-placeholder {
@@ -898,9 +903,13 @@
             z-index: 3;
         }
 
+        /* 修改：讓鎖定的徽章更暗、更不明顯，凸顯已獲得的徽章 */
         .badge-locked {
-            filter: grayscale(100%) brightness(0.6);
-            opacity: 0.6;
+            filter: grayscale(100%) brightness(0.3);
+            /* 亮度從 0.6 降為 0.3 */
+            opacity: 0.5;
+            cursor: not-allowed;
+            /* 滑鼠移過去顯示禁止符號 */
         }
 
         .manage-card {
@@ -1605,6 +1614,31 @@
             justify-content: center;
         }
 
+        /* --- Queue Status Styles --- */
+        .queue-status-box {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .queue-info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .queue-val {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
         .spinner {
             width: 40px;
             height: 40px;
@@ -2073,6 +2107,29 @@
             .guide-list-icon {
                 display: none;
             }
+
+            .presentation-float-btn {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+
+            .presentation-float-btn span {
+                display: none;
+                /* 手機版只顯示 Icon，避免佔位 */
+            }
+
+            .app-footer {
+                padding: 15px 20px;
+                flex-direction: row;
+                /* 手機版保持橫向，但縮小間距 */
+                gap: 15px;
+            }
+
+            .footer-text {
+                font-size: 10px;
+                /* 手機字體縮小 */
+                text-align: right;
+            }
         }
 
         /* 新增自動流光動畫 */
@@ -2227,27 +2284,8 @@
         /* 3. 導覽對話框 (Tooltip) */
         .tour-tooltip {
             position: fixed;
-            /* [修改] 這裡原本是 10000，必須改成比 spotlight (10001) 高 */
-            z-index: 10002 !important;
-
-            width: 300px;
-            background: rgba(255, 255, 255, 0.95);
-            /* ... 其他樣式保持不變 ... */
-        }
-
-        /* [重置] 移除原本提升側邊欄層級的寫法，避免白色背景浮上來 */
-        .sidebar.tour-active-parent,
-        .app-container.tour-active-parent,
-        .sidebar-scroll-content.tour-active-parent {
-            z-index: auto !important;
-            overflow: visible !important;
-            /* 保持預設 */
-        }
-
-        /* 3. 導覽對話框 (Tooltip) */
-        .tour-tooltip {
-            position: fixed;
-            z-index: 10000;
+            z-index: 10005 !important;
+            /* [修改] 這裡改成 10005，比 spotlight 高 */
             width: 300px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
@@ -2260,6 +2298,15 @@
             flex-direction: column;
             gap: 10px;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* [重置] 移除原本提升側邊欄層級的寫法，避免白色背景浮上來 */
+        .sidebar.tour-active-parent,
+        .app-container.tour-active-parent,
+        .sidebar-scroll-content.tour-active-parent {
+            z-index: auto !important;
+            overflow: visible !important;
+            /* 保持預設 */
         }
 
         .tour-header {
@@ -2623,6 +2670,111 @@
             font-size: 13px;
             line-height: 1.4;
         }
+
+        /* --- 新增功能：首頁專用樣式 --- */
+
+        /* 1. 側邊懸浮簡報按鈕 */
+        .presentation-float-btn {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            /* 垂直置中 */
+            transform: translateY(-50%);
+            background: var(--primary-color);
+            /* 使用專案主色 (粉紅) */
+            color: white;
+            padding: 15px 20px 15px 25px;
+            border-radius: 30px 0 0 30px;
+            /* 左邊圓角，右邊貼齊螢幕 */
+            text-decoration: none;
+            box-shadow: -5px 0 15px rgba(216, 27, 96, 0.3);
+            z-index: 1900;
+            /* 確保在內容之上，但在 Modal 之下 */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: none;
+        }
+
+        .presentation-float-btn:hover {
+            padding-right: 35px;
+            /* 滑鼠移過去伸長 */
+            background: var(--primary-hover);
+            transform: translateY(-50%) translateX(-5px);
+            box-shadow: -8px 0 20px rgba(216, 27, 96, 0.5);
+        }
+
+        .presentation-float-btn i {
+            font-size: 18px;
+        }
+
+        /* --- 2. 精緻版首頁頁尾 (Enhanced Footer) --- */
+        .app-footer {
+            width: 100%;
+            /* 使用漸層背景，比單色更有質感 */
+            background: linear-gradient(135deg, var(--primary-color), #ff4081);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            position: relative;
+            z-index: 10;
+
+            /* 頂部加上半透明白線，營造玻璃邊緣感 */
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            /* 加上深色陰影讓它浮起來 */
+            box-shadow: 0 -10px 30px rgba(216, 27, 96, 0.15);
+        }
+
+        /* 讓背景有些微的紋理 (選用) */
+        .app-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent 40%);
+            pointer-events: none;
+        }
+
+        .footer-logo-circle {
+            width: 40px;
+            /* 稍微加大一點 */
+            height: 40px;
+            background: #222;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            /* 加上 Logo 的陰影 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        /* 滑鼠移過 Logo 會旋轉一下 */
+        .footer-logo-circle:hover {
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        .footer-text {
+            font-family: 'Poppins', sans-serif;
+            /* 改用 Poppins 字體，更現代 */
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
@@ -2641,8 +2793,9 @@
             <button class="fp-btn" id="fp-loop-btn" onclick="toggleLoop()" title="循環播放"><i
                     class="fas fa-redo"></i></button>
             <button class="fp-btn" onclick="prevTrack()"><i class="fas fa-step-backward"></i></button>
-            <button class="fp-btn" id="fp-play-btn" onclick="toggleBottomPlay()"><i class="fas fa-play"></i></button>
-            <button class="fp-btn" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
+            <button class="fp-btn" id="fp-play-btn" onclick="handleFloatingPlayClick()">
+                <i class="fas fa-play"></i>
+            </button> <button class="fp-btn" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
             <button class="fp-btn active" id="fp-auto-btn" onclick="toggleAutoPlay()" title="自動播放下一首"><i
                     class="fas fa-infinity"></i></button>
         </div>
@@ -2852,7 +3005,23 @@
                         style="padding: 12px 30px; font-weight:600;"><i class="fas fa-th-large"></i> 管理所有成就</button>
                 </div>
             </div>
-            <div style="height: 100px;"></div>
+            <div style="height: 50px;"></div>
+
+            <a href="https://gamma.app/docs/Melody-Visualizers-8br90kx3b718jtj" target="_blank"
+                class="presentation-float-btn" title="View Presentation">
+                <i class="fas fa-file-powerpoint"></i>
+                <span>Project Slides</span>
+            </a>
+
+            <footer class="app-footer">
+                <div class="footer-logo-circle">
+                    <i class="fas fa-infinity"></i>
+                </div>
+
+                <div class="footer-text">
+                    &copy; 2025 Melody Visualizers. All rights reserved.
+                </div>
+            </footer>
         </div>
 
         <div id="main-screen" class="screen">
@@ -2870,7 +3039,21 @@
                     </div>
                     <div id="visual-loader" class="loader-container" style="display:none;">
                         <div class="spinner"></div>
-                        <p style="font-weight: bold; color: #333; margin-top:10px;">生成中...</p>
+                        <p style="font-weight: bold; color: #333; margin-top:10px;">正在連線至渲染伺服器...</p>
+
+                        <div id="queue-status-container" class="queue-status-box" style="display:none;">
+                            <div class="queue-info-row">
+                                <span>目前順位:</span>
+                                <span id="queue-pos" class="queue-val">--</span>
+                            </div>
+                            <div class="queue-info-row">
+                                <span>預估等待:</span>
+                                <span id="queue-time" class="queue-val">--</span>
+                            </div>
+                            <div style="font-size:11px; color:#888; margin-top:5px;">
+                                <i class="fas fa-desktop"></i> Server Busy
+                            </div>
+                        </div>
                     </div>
                     <video id="result-video" controls
                         style="display:none; width:100%; height:100%; object-fit:contain;"></video>
@@ -2883,8 +3066,10 @@
                         <div style="margin-bottom:10px;"><label for="instrument-select"
                                 style="font-size:12px;">選擇樂器:</label><select id="instrument-select"
                                 class="sketch-select" style="padding:5px; width:100%;"></select></div>
+
                         <div style="display:flex; align-items:center; gap:15px; width:100%;">
                             <button id="play-toggle-btn" class="player-circle-btn">▶</button>
+
                             <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
                                 <input type="range" id="seek-bar" value="0" min="0" max="100" step="0.1" disabled
                                     style="width:100%;">
@@ -2893,6 +3078,14 @@
                                     <span id="current-time">0:00</span><span id="player-status"
                                         style="color:var(--primary-color);">準備就緒</span><span id="total-time">0:00</span>
                                 </div>
+                            </div>
+
+                            <div class="bp-volume-control"
+                                style="display:flex; align-items:center; gap:8px; width:80px; margin-left: 5px;">
+                                <i class="fas fa-volume-up" style="color:#888; font-size:12px;"></i>
+                                <input type="range" class="bp-range" value="80" min="0" max="100"
+                                    oninput="if(window.setGlobalVolume) window.setGlobalVolume(this.value)"
+                                    style="height: 3px;" title="預覽音量">
                             </div>
                         </div>
                     </div>
@@ -3055,7 +3248,7 @@
                     <button onclick="closeAchievementsManager()"
                         style="background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
                 </div>
-                <p style="color:#666; margin-bottom:20px;">點擊已解鎖的成就將其加入首頁展示櫃 (最多 3 個)。<span id="showcase-counter"
+                <p style="color:#666; margin-bottom:20px;">點擊已解鎖的成就將其加入首頁展示櫃。<span id="showcase-counter"
                         style="color:var(--primary-color); font-weight:bold; margin-left:10px;">0 / 3</span></p>
                 <div id="manager-grid"
                     style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px;">
@@ -3519,24 +3712,27 @@
             if (modal) { modal.style.display = show ? 'flex' : 'none'; }
         }
 
-        function goToScreen(id, forceScrollTop = true) {
-            // [新增這行] 每次切換頁面時，將頁面 ID 存入 localStorage
+        // 修改後的 goToScreen：新增 autoOpenSidebar 參數，預設為 true
+        function goToScreen(id, forceScrollTop = true, autoOpenSidebar = true) {
+            // 記錄頁面狀態
             localStorage.setItem('melody_current_screen', id);
 
+            // 移除所有頁面的 active class
             document.querySelectorAll('.screen').forEach(s => {
                 s.classList.remove('active'); s.classList.remove('animate-enter');
             });
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
+            // 啟動目標頁面
             const target = document.getElementById(id);
             target.classList.add('active');
             target.classList.add('animate-enter');
 
+            // --- 針對各頁面的初始化邏輯 ---
             if (id === 'start-screen') {
                 document.getElementById('nav-home').classList.add('active');
                 renderHomeShowcase();
                 renderHomeShowcaseBadges();
-                // [Fix from old_index] Force scroll to top
                 if (forceScrollTop) target.scrollTo({ top: 0, behavior: 'smooth' });
             }
             else if (id === 'creations-screen') {
@@ -3545,6 +3741,7 @@
                 if (currentHistoryIndex !== -1) showBottomPlayer();
             }
             else {
+                // 非 Creation 頁面時的播放器狀態處理
                 hideBottomPlayer();
                 if (id === 'test-screen') {
                     if (window.playerStop && currentHistoryIndex !== -1) {
@@ -3559,9 +3756,15 @@
                 }
             }
 
-            // [New Feature Logic] Main Screen controls
+            // [重點修改] Main Screen 的側邊欄邏輯
             if (id === 'main-screen') {
-                setTimeout(() => toggleSidebar(true), 100);
+                // 只有當 autoOpenSidebar 為 true 時，才自動打開側邊欄
+                if (autoOpenSidebar) {
+                    setTimeout(() => toggleSidebar(true), 100);
+                } else {
+                    toggleSidebar(false); // 否則強制關閉
+                }
+
                 document.getElementById('floating-back-btn').style.display = 'block';
                 const helpBtn = document.getElementById('help-fab-btn'); if (helpBtn) helpBtn.style.display = 'flex';
                 const pianoBtn = document.getElementById('piano-trigger-btn'); if (pianoBtn) pianoBtn.style.display = 'flex';
@@ -3572,8 +3775,12 @@
                 const pianoBtn = document.getElementById('piano-trigger-btn'); if (pianoBtn) pianoBtn.style.display = 'none';
                 if (window.closeCreationPiano) window.closeCreationPiano();
             }
-        }
 
+            // 檢查懸浮視窗狀態
+            if (window.checkFloatingPlayerState) {
+                window.checkFloatingPlayerState(id);
+            }
+        }
         function scrollToSection(sectionId) {
             goToScreen('start-screen', false); // Don't scroll to top immediately
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -3600,11 +3807,20 @@
         // --- 6. Achievement Logic ---
         const ACHIEVEMENT_KEY = 'melody_achievements';
         const SHOWCASE_KEY = 'melody_showcase';
+
+        // 修改：擴充成就列表
         const achievementsData = [
             { id: 'first_melody', title: '初試啼聲', desc: '生成您的第一首 MIDI 旋律', icon: 'fa-music', rarity: 'common' },
             { id: 'creator_novice', title: '創作新手', desc: '累積生成 5 次旋律', icon: 'fa-pencil-alt', rarity: 'rare' },
-            { id: 'pitch_perfect', title: '絕對音感', desc: '在 Pitch Challenge 獲得滿分', icon: 'fa-star', rarity: 'legendary' },
-            { id: 'film_maker', title: '電影大師', desc: '成功渲染出一部影片', icon: 'fa-video', rarity: 'epic' }
+            // 新增成就 1
+            { id: 'blues_traveler', title: '藍調旅人', desc: '使用 Blues 音階生成音樂', icon: 'fa-guitar', rarity: 'rare' },
+            // 新增成就 2
+            { id: 'speed_demon', title: '極速快感', desc: '生成 BPM 超過 180 的音樂', icon: 'fa-tachometer-alt', rarity: 'epic' },
+            // 新增成就 3
+            { id: 'slow_jam', title: '慢活時光', desc: '生成 BPM 低於 70 的音樂', icon: 'fa-couch', rarity: 'common' },
+            { id: 'film_maker', title: '電影大師', desc: '成功渲染出一部影片', icon: 'fa-video', rarity: 'epic' },
+            // 絕對音感 (Legendary)
+            { id: 'pitch_perfect', title: '絕對音感', desc: '在 Expert 難度獲得滿分', icon: 'fa-crown', rarity: 'legendary' }
         ];
 
         function getUnlockedAchievements() { const data = localStorage.getItem(ACHIEVEMENT_KEY); return data ? JSON.parse(data) : []; }
@@ -3652,8 +3868,12 @@
             const grid = document.getElementById('manager-grid');
             const unlocked = getUnlockedAchievements();
             const showcase = getShowcaseItems();
-            document.getElementById('showcase-counter').innerText = `${showcase.length} / 3`;
+
+            // 修改：文字不再顯示上限，改為顯示目前展示數量
+            document.getElementById('showcase-counter').innerText = `目前展示: ${showcase.length} 個`;
+
             grid.innerHTML = '';
+            // ... (其餘代碼保持不變)
             achievementsData.forEach(ach => {
                 const isUnlocked = unlocked.includes(ach.id);
                 const isSelected = showcase.includes(ach.id);
@@ -3668,11 +3888,15 @@
         function toggleShowcaseItem(id) {
             let showcase = getShowcaseItems();
             const index = showcase.indexOf(id);
-            if (index !== -1) { showcase.splice(index, 1); }
-            else {
-                if (showcase.length >= 3) { showToast("展示櫃已滿 (最多 3 個)，請先移除舊的", "info"); return; }
+
+            if (index !== -1) {
+                showcase.splice(index, 1);
+            } else {
+                // 修改：移除了 showcase.length >= 3 的限制檢查
+                // 讓使用者想放幾個就放幾個
                 showcase.push(id);
             }
+
             saveShowcaseItems(showcase);
             renderManagerGrid();
         }
@@ -3751,16 +3975,27 @@
             document.getElementById('status-text').innerText = "生成中...";
 
             try {
-                const response = await fetch('http://localhost:3000/api/generate-midi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
+                const response = await fetch('api/generate-midi', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) });
                 const data = await response.json();
+                // ... 在 generateMidi 函式內的 if (data.success) 區塊中 ...
+
                 if (data.success) {
                     window.currentMidiFilename = data.filename;
                     saveCreationToHistory(data.filename, params);
                     renderHomeShowcase();
+
+                    // --- 成就判定開始 ---
                     unlockAchievement('first_melody');
                     if (getHistory().length >= 5) unlockAchievement('creator_novice');
 
+                    // 新增：判定音階與速度成就
+                    if (params.scale === 'Blues') unlockAchievement('blues_traveler');
+                    if (parseInt(params.tempo) >= 180) unlockAchievement('speed_demon');
+                    if (parseInt(params.tempo) <= 70) unlockAchievement('slow_jam');
+                    // --- 成就判定結束 ---
+
                     visualLoader.style.display = 'none';
+                    // ... (其餘代碼保持不變)
                     placeholder.style.display = 'block';
                     placeholder.innerHTML = `<h3 style="color:#28a745;"><i class="fas fa-check-circle"></i> 生成成功！</h3><p>準備進行視覺化。</p>`;
                     document.getElementById('status-text').innerText = "MIDI 已就緒";
@@ -3801,54 +4036,154 @@
             // 3. 給予使用者回饋
             showToast("參數已重置為預設值", "info");
 
-            // (選用) 如果您希望重置時有個小動畫強調一下，可以加上這行
-            // document.querySelector('.sidebar').classList.add('flash-effect');
+            // (選用) 如果您希望重置時有個小動畫強調一下，可以加上這行:
+            document.querySelector('.sidebar').classList.add('flash-effect');
         }
+
+        // --- 渲染與排隊邏輯 (Updated) ---
+        let pollInterval = null;
 
         async function startRenderProcess() {
             if (!window.currentMidiFilename) { showToast("找不到 MIDI 檔案！", "error"); return; }
+
             const renderBtn = document.getElementById('render-video-btn');
             const visualLoader = document.getElementById('visual-loader');
             const placeholder = document.getElementById('placeholder-text');
             const videoEl = document.getElementById('result-video');
             const statusDiv = document.getElementById('render-status');
+            const queueBox = document.getElementById('queue-status-container');
+            const loaderText = visualLoader.querySelector('p');
 
+            // 初始化 UI 狀態
             renderBtn.disabled = true;
-            renderBtn.innerText = "渲染中...";
+            renderBtn.innerText = "請求中...";
             statusDiv.style.display = 'block';
+            statusDiv.innerText = "加入佇列...";
             placeholder.style.display = 'none';
             videoEl.style.display = 'none';
             videoEl.pause();
+
             visualLoader.style.display = 'flex';
-            visualLoader.querySelector('p').innerText = "影片渲染中...";
+            queueBox.style.display = 'none'; // 初始隱藏，直到確認排隊
+            loaderText.innerText = "正在聯絡渲染引擎...";
 
             try {
-                const response = await fetch('http://localhost:3000/api/render-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ midiFilename: window.currentMidiFilename }) });
+                // 1. 發送渲染請求
+                const response = await fetch('api/render-video', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ midiFilename: window.currentMidiFilename })
+                });
+
+                // 2. 開始輪詢 (不管是否立刻回傳，都開始監聽狀態以防萬一)
+                startQueuePolling(window.currentMidiFilename);
+
+                // 3. 解析伺服器回應 (這可能會等待直到渲染完成，或是立刻回傳排隊狀態)
                 const data = await response.json();
+
+                // 4. 針對「立刻回傳排隊狀態」的處理 [關鍵修改]
+                if (data.status === 'queued') {
+                    // 如果伺服器立刻告訴我們在排隊，馬上更新 UI
+                    updateQueueUI(data.position, data.waitTime);
+                    statusDiv.innerText = "排隊中...";
+                    // 注意：這裡不 throw error，而是讓使用者留在這個狀態，等待輪詢或後續回應
+                }
+
+                // 5. 如果渲染成功 (可能是等待很久後回傳，或是立刻完成)
                 if (data.success) {
+                    stopQueuePolling(); // 停止輪詢
+
                     updateHistoryVideo(window.currentMidiFilename, data.videoUrl);
                     unlockAchievement('film_maker');
+
                     visualLoader.style.display = 'none';
                     statusDiv.style.display = 'none';
                     document.getElementById('visual-container').classList.add('has-result');
+
                     videoEl.src = data.videoUrl;
                     videoEl.style.display = 'block';
                     videoEl.load();
+
                     const videoLink = document.getElementById('video-download-link');
                     videoLink.href = data.videoUrl;
                     videoLink.download = data.filename;
                     videoLink.style.display = 'flex';
+
                     renderBtn.disabled = false;
                     renderBtn.innerText = "再次渲染";
                     showToast("渲染完成！", "success");
-                } else { throw new Error(data.error); }
+                } else if (data.status !== 'queued') {
+                    // 如果既不是 success 也不是 queued，那就是錯誤
+                    throw new Error(data.error || "Unknown Error");
+                }
+
             } catch (error) {
                 console.error(error);
-                showToast("渲染失敗", "error");
+                // 只有在真的出錯時才停止輪詢 (例如網路斷線)
+                stopQueuePolling();
+
+                showToast(error.message || "渲染請求失敗", "error", 5000);
                 visualLoader.style.display = 'none';
                 placeholder.style.display = 'block';
                 renderBtn.disabled = false;
                 renderBtn.innerText = "渲染影片";
+                statusDiv.style.display = 'none';
+            }
+        }
+
+        // 獨立出更新 UI 的函式，方便呼叫
+        function updateQueueUI(position, waitTime) {
+            const queueBox = document.getElementById('queue-status-container');
+            const posEl = document.getElementById('queue-pos');
+            const timeEl = document.getElementById('queue-time');
+            const loaderText = document.querySelector('#visual-loader p');
+
+            if (queueBox && posEl && timeEl) {
+                queueBox.style.display = 'block'; // 顯示排隊框
+                posEl.innerText = position !== undefined ? position : "--";
+                timeEl.innerText = waitTime !== undefined ? waitTime : "計算中...";
+                if (loaderText) {
+                    loaderText.innerText = "伺服器忙碌，排隊中...";
+                    loaderText.style.color = "#FF9800"; // 橘色文字
+                }
+            }
+        }
+
+        function startQueuePolling(filename) {
+            if (pollInterval) clearInterval(pollInterval);
+
+            // 每 2 秒詢問一次狀態
+            pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`api/queue-status?filename=${filename}`);
+                    if (!res.ok) return; // 忽略錯誤，繼續輪詢
+
+                    const statusData = await res.json();
+
+                    if (statusData.status === 'queued') {
+                        // [關鍵] 接收後端回傳的 position 與 waitTime 並更新
+                        updateQueueUI(statusData.position, statusData.waitTime);
+                    } else if (statusData.status === 'rendering') {
+                        // 進入渲染狀態，隱藏排隊框，改顯示渲染中文字
+                        const queueBox = document.getElementById('queue-status-container');
+                        const loaderText = document.querySelector('#visual-loader p');
+                        if (queueBox) queueBox.style.display = 'none';
+                        if (loaderText) {
+                            loaderText.innerText = "正在進行 4K 渲染 (Piano VFX)...";
+                            loaderText.style.color = "#E91E63"; // 粉紅色文字
+                        }
+                    }
+                    // completed 狀態通常由 startRenderProcess 的主 response 處理
+                } catch (e) {
+                    console.log("Polling logic error", e);
+                }
+            }, 2000);
+        }
+
+        function stopQueuePolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
             }
         }
 
@@ -3942,9 +4277,19 @@
         function showNextButton() { const btn = document.getElementById('next-q-btn'); if (currentQuestion < totalQuestions) { btn.innerText = "下一題"; btn.onclick = nextQuestion; } else { btn.innerText = "查看結果"; btn.onclick = showResults; } btn.style.display = 'block'; }
         function nextQuestion() { currentQuestion++; loadNewQuestion(); }
         function showResults() {
-            document.getElementById('result-score').innerText = `${score} / ${totalQuestions}`; document.getElementById('result-modal').style.display = 'flex';
+            document.getElementById('result-score').innerText = `${score} / ${totalQuestions}`;
+            document.getElementById('result-modal').style.display = 'flex';
             updateBestScore(score);
-            if (score === totalQuestions && totalQuestions > 0) { unlockAchievement('pitch_perfect'); }
+
+            // 修改：取得當前難度
+            const difficulty = document.getElementById('difficulty-select').value;
+
+            // 修改：只有在 Expert 難度且滿分時才解鎖
+            if (score === totalQuestions && totalQuestions > 0 && difficulty === 'Expert') {
+                unlockAchievement('pitch_perfect');
+                // 加個特效 Toast
+                showToast("太神了！傳說級成就「絕對音感」已解鎖！", "success", 6000);
+            }
         }
         function endTest() { document.getElementById('quit-modal').style.display = 'flex'; }
         function confirmQuit() { clearInterval(window.timerInterval); closeQuitModal(); goToScreen('start-screen'); }
@@ -3954,6 +4299,8 @@
         const canvasEl = document.getElementById('bg-canvas'); const ctxEl = canvasEl.getContext('2d');
         function resize() { canvasEl.width = window.innerWidth; canvasEl.height = window.innerHeight; }
         resize(); window.addEventListener('resize', resize);
+
+
         window.onload = function () {
             setupScrollReveal();
             document.getElementById('bars').addEventListener('change', validateInput);
@@ -3980,11 +4327,15 @@
     <script type="module">
         import { loadInstrument, loadAndPlayMIDI, play, pause, stop, seek, getCurrentTime, getDuration, listAvailableInstruments, INSTRUMENT_BASE_URLS, NOTE_MAP } from "./midiplayer.js";
 
-        // --- 全域變數設定 ---
+        // --- 1. 全局變數與設定 ---
         window.playerStop = stop;
         let isPlaying = false, isDragging = false, isLooping = false, isAutoPlay = true, updateInterval = null, isInstrumentLoaded = false;
+        let currentPlayerContext = 'history'; // 記錄當前播放情境
 
-        // --- 綁定 DOM 元素 ---
+        // 【新增】全域樂器切換鎖
+        let isSwitchingInstrument = false;
+
+        // 綁定 DOM 元素
         const selectEl = document.getElementById('instrument-select');
         const playBtn = document.getElementById('play-toggle-btn');
         const seekBar = document.getElementById('seek-bar');
@@ -4005,21 +4356,71 @@
         const fpLoopBtn = document.getElementById('fp-loop-btn');
         const fpAutoBtn = document.getElementById('fp-auto-btn');
 
-        // --- 初始化樂器列表 ---
-        const instruments = listAvailableInstruments();
-        const populateSelect = (el) => { if (!el) return; el.innerHTML = ""; instruments.forEach(inst => { const option = document.createElement('option'); option.value = inst; option.text = inst.replace(/_/g, ' ').toUpperCase(); if (inst === 'acoustic_grand_piano') option.selected = true; el.appendChild(option); }); };
-        populateSelect(selectEl);
-        populateSelect(bpInstrumentSelect);
-        populateSelect(document.getElementById('test-instrument-select'));
+        // --- 2. 初始化選單 (防呆機制：確保選單永遠有東西) ---
+        const fallbackInstruments = [
+            "acoustic_grand_piano", "violin", "cello", "flute", "clarinet",
+            "trumpet", "acoustic_guitar_nylon", "electric_guitar_clean"
+        ];
 
-        // 創作模式樂器選單
+        const populateSelect = (el) => {
+            if (!el) return;
+            el.innerHTML = "";
+            let list = [];
+            try {
+                if (typeof listAvailableInstruments === 'function') {
+                    list = listAvailableInstruments();
+                }
+            } catch (e) {
+                console.warn("MidiPlayer instruments not ready:", e);
+            }
+
+            // 如果抓不到資料，強制使用備用名單
+            if (!list || !Array.isArray(list) || list.length === 0) {
+                console.log("Using fallback instruments list.");
+                list = fallbackInstruments;
+            }
+
+            list.forEach(inst => {
+                const option = document.createElement('option');
+                option.value = inst;
+                option.text = (typeof inst === 'string') ? inst.replace(/_/g, ' ').toUpperCase() : inst;
+                if (inst === 'acoustic_grand_piano') option.selected = true;
+                el.appendChild(option);
+            });
+        };
+
+        function initDropdowns() {
+            const sel1 = document.getElementById('instrument-select');
+            const sel2 = document.getElementById('bp-instrument-select');
+            const sel3 = document.getElementById('test-instrument-select');
+            const sel4 = document.getElementById('creation-instrument-select');
+
+            populateSelect(sel1);
+            populateSelect(sel2);
+            populateSelect(sel3);
+            if (sel4) populateSelect(sel4);
+            console.log("Dropdowns initialized.");
+        }
+
+        // 確保 DOM 載入後執行初始化
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDropdowns);
+        } else {
+            initDropdowns();
+        }
+
+        // 創作模式樂器選單切換監聽
         const creationSelectEl = document.getElementById('creation-instrument-select');
         if (creationSelectEl) {
-            populateSelect(creationSelectEl);
             creationSelectEl.addEventListener('change', async (e) => {
+                if (isSwitchingInstrument) return; // 防止連點
+
                 const instName = e.target.value;
+
+                isSwitchingInstrument = true;
                 creationSelectEl.disabled = true;
                 const loadingToast = showToast("正在切換創作樂器...", "info", 0);
+
                 try {
                     await loadCreationInstrument(instName);
                     removeToast(loadingToast);
@@ -4028,21 +4429,35 @@
                     removeToast(loadingToast);
                     showToast("切換失敗", "error");
                     console.error(err);
+                } finally {
+                    isSwitchingInstrument = false;
+                    creationSelectEl.disabled = false;
                 }
-                creationSelectEl.disabled = false;
             });
         }
 
         // 預載鋼琴音色
         loadInstrument('acoustic_grand_piano').then(() => { isInstrumentLoaded = true; }).catch(e => console.error("Instrument load failed", e));
 
-        // --- 測試模式相關邏輯 (Test Instrument) ---
+        // --- 3. 測試模式邏輯 (Test Instrument) ---
         let testSampler = null;
+        // [修改 1] 建立一個專用的增益節點 (Volume)，提升 10 分貝，解決聲音太小的問題
+        const testVolume = new Tone.Volume(10);
         const reverb = new Tone.Reverb({ decay: 1.2, wet: 0.2 }).toDestination();
+
+        // 將 Volume 連接到 Reverb
+        testVolume.connect(reverb);
+
         async function loadTestInstrument(name) {
-            if (testSampler) { testSampler.disconnect(); testSampler.dispose(); } await Tone.start();
+            if (testSampler) { testSampler.disconnect(); testSampler.dispose(); }
+            await Tone.start();
             return new Promise((resolve) => {
-                testSampler = new Tone.Sampler({ urls: NOTE_MAP, baseUrl: INSTRUMENT_BASE_URLS[name], release: 1, onload: () => { console.log(`Test instrument ${name} loaded`); resolve(); } }).connect(reverb);
+                testSampler = new Tone.Sampler({
+                    urls: NOTE_MAP,
+                    baseUrl: INSTRUMENT_BASE_URLS[name],
+                    release: 1,
+                    onload: () => { console.log(`Test instrument ${name} loaded`); resolve(); }
+                }).connect(testVolume); // [修改 2] 連接到 testVolume 而不是直接連 reverb
             });
         }
         loadTestInstrument('acoustic_grand_piano');
@@ -4050,99 +4465,259 @@
         const testSelectEl = document.getElementById('test-instrument-select');
         if (testSelectEl) {
             testSelectEl.addEventListener('change', async (e) => {
-                const instName = e.target.value; testSelectEl.disabled = true; const loadingToast = showToast("正在切換樂器...", "info", 0);
-                try { await loadTestInstrument(instName); removeToast(loadingToast); showToast("樂器切換完成！", "success"); } catch (err) { removeToast(loadingToast); showToast("切換失敗", "error"); }
+                const instName = e.target.value;
+                testSelectEl.disabled = true;
+                const loadingToast = showToast("正在切換樂器...", "info", 0);
+                try { await loadTestInstrument(instName); removeToast(loadingToast); showToast("樂器切換完成！", "success"); }
+                catch (err) { removeToast(loadingToast); showToast("切換失敗", "error"); }
                 testSelectEl.disabled = false;
             });
         }
 
-        // 將 playTestNote 綁定到 window
-        window.playTestNote = function (note) { if (testSampler && testSampler.loaded) { testSampler.triggerAttackRelease(note, "8n"); } else { const synth = new Tone.Synth().toDestination(); synth.triggerAttackRelease(note, "8n"); } };
-        window.setGlobalVolume = function (val) { const volumeValue = parseInt(val); if (volumeValue === 0) { Tone.getDestination().volume.rampTo(-Infinity, 0.1); } else { const db = 20 * Math.log10(volumeValue / 100); Tone.getDestination().volume.rampTo(db, 0.1); } };
+        window.playTestNote = function (note) {
+            // [修改 3] 加入第三個參數 1，代表 Velocity (力度) 為最大，確保每個音都很清楚
+            if (testSampler && testSampler.loaded) { testSampler.triggerAttackRelease(note, "8n", undefined, 1); }
+            else { const synth = new Tone.Synth().toDestination(); synth.triggerAttackRelease(note, "8n", undefined, 1); }
+        };
+
+        window.setGlobalVolume = function (val) {
+            const volumeValue = parseInt(val);
+            if (volumeValue === 0) { Tone.getDestination().volume.rampTo(-Infinity, 0.1); }
+            else { const db = 20 * Math.log10(volumeValue / 100); Tone.getDestination().volume.rampTo(db, 0.1); }
+        };
         window.setGlobalVolume(80);
 
-        // --- User Guide Logic ---
+        // --- 4. User Guide ---
         window.openGuideModal = function () {
             const modal = document.getElementById('guide-modal');
             modal.style.display = 'flex';
-            // 延遲一點點加 active 讓 transition 生效
             setTimeout(() => modal.classList.add('active'), 10);
         }
-
         window.closeGuideModal = function () {
             const modal = document.getElementById('guide-modal');
             modal.classList.remove('active');
-            // 等動畫跑完再隱藏
             setTimeout(() => modal.style.display = 'none', 300);
         }
 
-        // --- 播放控制邏輯 ---
+        // --- 5. 播放邏輯 (修復版) ---
         window.playHistoryIndex = async function (index) {
-            // (這裡保持您原本的播放邏輯，略為縮短以節省空間)
-            const history = getHistory(); if (index < 0 || index >= history.length) return;
-            currentHistoryIndex = index; const item = history[index]; const titleText = `Creation #${item.id.toString().slice(-4)}`;
+            currentPlayerContext = 'history';
+            const history = getHistory();
+            if (index < 0 || index >= history.length) return;
+
+            currentHistoryIndex = index;
+            const item = history[index];
+            const titleText = `Creation #${item.id.toString().slice(-4)}`;
+
             if (bpTrackTitle) bpTrackTitle.innerText = titleText;
-            if (bpTrackSubtitle) { const keyName = document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key; bpTrackSubtitle.innerText = `${keyName} - ${item.params.scale}`; }
+            if (bpTrackSubtitle) {
+                const keyName = document.querySelector(`#key option[value="${item.params.key}"]`)?.innerText || item.params.key;
+                bpTrackSubtitle.innerText = `${keyName} - ${item.params.scale}`;
+            }
             if (fpTitle) fpTitle.innerText = titleText;
+
             stop(); isPlaying = false; updatePlayButtons(false);
+
             const isCreationsPage = document.getElementById('creations-screen').classList.contains('active');
             if (isCreationsPage) { showBottomPlayer(); } else { hideBottomPlayer(); showFloatingPlayer(); }
+
             const loadingToast = showToast(`正在載入 ${titleText}...`, "info", 0);
             try {
-                await Tone.start(); const instrumentName = document.getElementById('bp-instrument-select')?.value || 'acoustic_grand_piano'; await loadInstrument(instrumentName);
-                const response = await fetch(`midi/${item.midi}`); if (!response.ok) throw new Error("找不到檔案"); const arrayBuffer = await response.arrayBuffer();
-                await loadAndPlayMIDI(arrayBuffer); removeToast(loadingToast); showToast("載入完成，開始播放", "success");
+                await Tone.start();
+                const instrumentName = document.getElementById('bp-instrument-select')?.value || 'acoustic_grand_piano';
+                await loadInstrument(instrumentName);
+
+                const response = await fetch(`midi/${item.midi}`);
+                if (!response.ok) throw new Error("找不到檔案");
+                const arrayBuffer = await response.arrayBuffer();
+
+                await loadAndPlayMIDI(arrayBuffer);
+                removeToast(loadingToast);
+                showToast("載入完成，開始播放", "success");
+
                 isPlaying = true; updatePlayButtons(true); startUpdateLoop();
-            } catch (error) { removeToast(loadingToast); console.error(error); showToast("播放失敗: " + error.message, "error"); }
+            } catch (error) {
+                removeToast(loadingToast); console.error(error); showToast("播放失敗: " + error.message, "error");
+            }
         };
 
+        // 底部播放器樂器選單
         if (bpInstrumentSelect) {
             bpInstrumentSelect.addEventListener('change', async (e) => {
-                if (currentHistoryIndex !== -1 && isPlaying) {
-                    const loadingToast = showToast("正在切換樂器...", "info", 0); bpInstrumentSelect.disabled = true;
-                    try { const time = getCurrentTime(); await loadInstrument(e.target.value); removeToast(loadingToast); showToast("樂器切換完成", "success"); } catch (err) { removeToast(loadingToast); console.error(err); showToast("切換失敗", "error"); } finally { bpInstrumentSelect.disabled = false; }
+                // 1. 如果正在切換中，直接無視這次點擊 (防止連點)
+                if (isSwitchingInstrument) return;
+
+                const instName = e.target.value;
+                const wasPlaying = isPlaying; // 記住原本是否在播放
+
+                // 2. 鎖定狀態
+                isSwitchingInstrument = true;
+                bpInstrumentSelect.disabled = true;
+                const loadingToast = showToast("正在切換樂器...", "info", 0); // 0 代表不自動消失
+
+                try {
+                    // 3. 【關鍵】切換前強制停止播放，避免 Tone.Part 繼續觸發
+                    if (wasPlaying) {
+                        stop(); // 使用 stop() 比 pause() 更徹底
+                        isPlaying = false;
+                        updatePlayButtons(false);
+                    }
+
+                    // 4. 載入新樂器
+                    await loadInstrument(instName);
+
+                    removeToast(loadingToast);
+                    showToast("樂器切換完成", "success");
+
+                    // 5. 如果原本在播放，切換完後自動恢復播放 (可選)
+                    // 為了安全起見，這裡建議讓使用者自己按播放，或者延遲一點再播
+                    // if (wasPlaying && currentHistoryIndex !== -1) {
+                    //     // 重新觸發播放邏輯 (略)
+                    // }
+
+                } catch (err) {
+                    removeToast(loadingToast);
+                    console.error(err);
+                    showToast("切換失敗: " + err.message, "error");
+                } finally {
+                    // 6. 【關鍵】無論成功失敗，一定要解鎖 UI
+                    isSwitchingInstrument = false;
+                    bpInstrumentSelect.disabled = false;
                 }
             });
         }
 
-        // 將播放控制綁定到 window
-        window.toggleBottomPlay = function () { if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); } else { if (Tone.Transport.seconds > 0) { play(); isPlaying = true; updatePlayButtons(true); startUpdateLoop(); } else if (currentHistoryIndex !== -1) { window.playHistoryIndex(currentHistoryIndex); } } }
+        // 播放控制與 Toggle
+        window.toggleBottomPlay = function () {
+            if (currentPlayerContext === 'preview') {
+                // 預覽模式
+                if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); }
+                else { play(); isPlaying = true; updatePlayButtons(true); startUpdateLoop(); }
+                const fpPlayBtn = document.getElementById('fp-play-btn');
+                if (fpPlayBtn) fpPlayBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            } else {
+                // 歷史模式
+                if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); }
+                else {
+                    if (Tone.Transport.seconds > 0) { play(); isPlaying = true; updatePlayButtons(true); startUpdateLoop(); }
+                    else if (currentHistoryIndex !== -1) { window.playHistoryIndex(currentHistoryIndex); }
+                }
+            }
+        };
+
         window.prevTrack = function () { if (currentHistoryIndex < getHistory().length - 1) { window.playHistoryIndex(currentHistoryIndex + 1); } else { showToast("已經是最後一首了", "error"); } }
         window.nextTrack = function () { if (currentHistoryIndex > 0) { window.playHistoryIndex(currentHistoryIndex - 1); } else { showToast("已經是第一首了", "error"); } }
-        window.toggleLoop = function () { isLooping = !isLooping; const updateBtnState = (btn, active) => { if (!btn) return; if (active) btn.classList.add('active'); else btn.classList.remove('active'); }; updateBtnState(bpLoopBtn, isLooping); updateBtnState(fpLoopBtn, isLooping); showToast(isLooping ? "開啟循環播放" : "關閉循環播放", "success"); }
-        window.toggleAutoPlay = function () { isAutoPlay = !isAutoPlay; const updateBtnState = (btn, active) => { if (!btn) return; if (active) btn.classList.add('active'); else btn.classList.remove('active'); }; updateBtnState(bpAutoBtn, isAutoPlay); updateBtnState(fpAutoBtn, isAutoPlay); showToast(isAutoPlay ? "開啟自動播放" : "關閉自動播放", "success"); }
 
-        function updatePlayButtons(playing) { const icon = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; if (bpPlayBtn) bpPlayBtn.innerHTML = icon; if (playBtn) playBtn.innerText = playing ? "⏸" : "▶"; if (fpPlayBtn) fpPlayBtn.innerHTML = icon; if (statusEl) statusEl.innerText = playing ? "播放中 ♪" : "已暫停"; }
+        window.toggleLoop = function () {
+            isLooping = !isLooping;
+            const updateBtnState = (btn, active) => { if (!btn) return; if (active) btn.classList.add('active'); else btn.classList.remove('active'); };
+            updateBtnState(bpLoopBtn, isLooping); updateBtnState(fpLoopBtn, isLooping);
+            showToast(isLooping ? "開啟循環播放" : "關閉循環播放", "success");
+        }
 
-        // 主頁面播放按鈕監聽
+        window.toggleAutoPlay = function () {
+            isAutoPlay = !isAutoPlay;
+            const updateBtnState = (btn, active) => { if (!btn) return; if (active) btn.classList.add('active'); else btn.classList.remove('active'); };
+            updateBtnState(bpAutoBtn, isAutoPlay); updateBtnState(fpAutoBtn, isAutoPlay);
+            showToast(isAutoPlay ? "開啟自動播放" : "關閉自動播放", "success");
+        }
+
+        function updatePlayButtons(playing) {
+            const icon = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            if (bpPlayBtn) bpPlayBtn.innerHTML = icon;
+            if (playBtn) playBtn.innerText = playing ? "⏸" : "▶";
+            if (fpPlayBtn) fpPlayBtn.innerHTML = icon;
+            if (statusEl) statusEl.innerText = playing ? "播放中 ♪" : "已暫停";
+        }
+
+        // 主頁面播放按鈕監聽 (預覽功能修復)
         if (playBtn) {
             playBtn.addEventListener('click', async () => {
-                if (!window.currentMidiFilename) { alert("請先生成 MIDI 檔案！"); return; } await Tone.start();
+                if (!window.currentMidiFilename) { alert("請先生成 MIDI 檔案！"); return; }
+                await Tone.start();
                 if (!isPlaying) {
                     try {
+                        currentPlayerContext = 'preview';
                         playBtn.disabled = true;
                         if (Tone.Transport.seconds === 0 || !isInstrumentLoaded) {
-                            statusEl.innerText = "載入 MIDI..."; if (!isInstrumentLoaded) { await loadInstrument(selectEl.value); isInstrumentLoaded = true; }
-                            const midiUrl = `midi/${window.currentMidiFilename}`; const res = await fetch(midiUrl); if (!res.ok) throw new Error("找不到檔案"); const buf = await res.arrayBuffer(); await loadAndPlayMIDI(buf);
+                            statusEl.innerText = "載入 MIDI...";
+                            if (!isInstrumentLoaded) {
+                                const instName = selectEl.value || 'acoustic_grand_piano';
+                                await loadInstrument(instName);
+                                isInstrumentLoaded = true;
+                            }
+                            const midiUrl = `midi/${window.currentMidiFilename}`;
+                            const res = await fetch(midiUrl);
+                            if (!res.ok) throw new Error("找不到檔案");
+                            const buf = await res.arrayBuffer();
+                            await loadAndPlayMIDI(buf);
                         } else { play(); }
                         isPlaying = true; updatePlayButtons(true); seekBar.disabled = false; startUpdateLoop();
-                    } catch (e) { console.error(e); statusEl.innerText = "播放錯誤"; togglePlayState(true); } finally { playBtn.disabled = false; }
+                    } catch (e) {
+                        console.error(e); statusEl.innerText = "播放錯誤"; togglePlayState(true);
+                    } finally { playBtn.disabled = false; }
                 } else { togglePlayState(false); }
             });
         }
 
-        // 音色選單監聽
         if (selectEl) {
             selectEl.addEventListener('change', async (e) => {
-                statusEl.innerText = "載入音色中..."; selectEl.disabled = true;
-                try { if (isPlaying) { pause(); isPlaying = false; updatePlayButtons(false); } await loadInstrument(e.target.value); isInstrumentLoaded = true; statusEl.innerText = "音色已切換"; } catch (err) { console.error(err); statusEl.innerText = "音色載入失敗"; } finally { selectEl.disabled = false; }
+                if (isSwitchingInstrument) return; // 防止連點
+
+                const statusEl = document.getElementById('player-status');
+                const instName = e.target.value;
+                const wasPlaying = isPlaying;
+
+                isSwitchingInstrument = true;
+                selectEl.disabled = true;
+                statusEl.innerText = "載入音色中...";
+
+                // 顯示 Toast 讓使用者知道還在跑
+                const loadingToast = showToast("正在切換音色...", "info", 0);
+
+                try {
+                    if (wasPlaying) {
+                        stop(); // 強制停止
+                        isPlaying = false;
+                        updatePlayButtons(false);
+                    }
+
+                    await loadInstrument(instName);
+
+                    isInstrumentLoaded = true;
+                    statusEl.innerText = "音色已切換";
+                    removeToast(loadingToast);
+
+                } catch (err) {
+                    console.error(err);
+                    statusEl.innerText = "音色載入失敗";
+                    removeToast(loadingToast);
+                    showToast("切換失敗", "error");
+                } finally {
+                    isSwitchingInstrument = false;
+                    selectEl.disabled = false;
+                }
             });
         }
 
-        function togglePlayState(resetToStart = false) { if (resetToStart) { stop(); isPlaying = false; updatePlayButtons(false); if (seekBar) seekBar.value = 0; if (currentTimeEl) currentTimeEl.innerText = "0:00"; } else { pause(); isPlaying = false; updatePlayButtons(false); } stopUpdateLoop(); }
+        function togglePlayState(resetToStart = false) {
+            if (resetToStart) { stop(); isPlaying = false; updatePlayButtons(false); if (seekBar) seekBar.value = 0; if (currentTimeEl) currentTimeEl.innerText = "0:00"; }
+            else { pause(); isPlaying = false; updatePlayButtons(false); }
+            stopUpdateLoop();
+        }
 
-        if (seekBar) { seekBar.addEventListener('mousedown', () => { isDragging = true; }); seekBar.addEventListener('touchstart', () => { isDragging = true; }); seekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; }); seekBar.addEventListener('input', (e) => { const duration = getDuration(); if (duration > 0) currentTimeEl.innerText = formatTime(duration * (e.target.value / 100)); }); }
-        if (bpSeekBar) { bpSeekBar.addEventListener('mousedown', () => { isDragging = true; }); bpSeekBar.addEventListener('touchstart', () => { isDragging = true; }); bpSeekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; }); bpSeekBar.addEventListener('input', (e) => { const duration = getDuration(); if (duration > 0) bpCurrentTimeEl.innerText = formatTime(duration * (e.target.value / 100)); }); }
+        if (seekBar) {
+            seekBar.addEventListener('mousedown', () => { isDragging = true; });
+            seekBar.addEventListener('touchstart', () => { isDragging = true; });
+            seekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; });
+            seekBar.addEventListener('input', (e) => { const duration = getDuration(); if (duration > 0) currentTimeEl.innerText = formatTime(duration * (e.target.value / 100)); });
+        }
+        if (bpSeekBar) {
+            bpSeekBar.addEventListener('mousedown', () => { isDragging = true; });
+            bpSeekBar.addEventListener('touchstart', () => { isDragging = true; });
+            bpSeekBar.addEventListener('change', (e) => { seek(e.target.value / 100); isDragging = false; });
+            bpSeekBar.addEventListener('input', (e) => { const duration = getDuration(); if (duration > 0) bpCurrentTimeEl.innerText = formatTime(duration * (e.target.value / 100)); });
+        }
 
         function startUpdateLoop() {
             if (updateInterval) cancelAnimationFrame(updateInterval);
@@ -4162,8 +4737,7 @@
         function stopUpdateLoop() { if (updateInterval) cancelAnimationFrame(updateInterval); }
         function formatTime(seconds) { if (isNaN(seconds) || seconds < 0) return "0:00"; const m = Math.floor(seconds / 60); const s = Math.floor(seconds % 60); return `${m}:${s.toString().padStart(2, '0')}`; }
 
-        // --- 9. Virtual Piano Logic (創作鋼琴) ---
-        // [重要] 將這些邏輯從全域移入模組，並綁定到 window
+        // --- 6. Virtual Piano (創作鋼琴) ---
         let creationSampler = null;
         let isCreationPianoRendered = false;
 
@@ -4178,7 +4752,6 @@
             });
         }
 
-        // 綁定到 window 讓 HTML onclick 可以呼叫
         window.toggleCreationPiano = async function () {
             const win = document.getElementById('floating-piano-app'); if (!win) return;
             const isActive = win.classList.contains('active');
@@ -4186,9 +4759,6 @@
                 await Tone.start();
                 if (!creationSampler) { const loadingToast = showToast("正在初始化樂器...", "info", 0); await loadCreationInstrument('acoustic_grand_piano'); removeToast(loadingToast); }
                 if (!isCreationPianoRendered) { renderCreationPiano(); isCreationPianoRendered = true; }
-                win.style.top = "";
-                win.style.left = "";
-                win.style.transform = "";
                 win.classList.add('active');
             }
         }
@@ -4198,42 +4768,23 @@
             if (win) win.classList.remove('active');
         }
 
-        // [您的關鍵函式：渲染鋼琴]
         function renderCreationPiano() {
             const container = document.getElementById('creation-piano-keys');
             if (!container) return;
             container.innerHTML = '';
-
-            const startOctave = 2;
-            const endOctave = 6;
-            const scaleNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-
-            let whiteKeyIndex = 0;
-            const totalWhiteKeys = (endOctave - startOctave) * 7 + 1;
+            const startOctave = 2; const endOctave = 6; const scaleNotes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+            let whiteKeyIndex = 0; const totalWhiteKeys = (endOctave - startOctave) * 7 + 1;
 
             for (let oct = startOctave; oct <= endOctave; oct++) {
                 scaleNotes.forEach(note => {
-                    // 確保到 C6 結束，這會解決長度和 RWD 問題
                     if (oct === endOctave && note !== 'C') return;
-
-                    const fullNote = note + oct;
-                    const isBlack = note.includes('#');
-                    const key = document.createElement('div');
-                    key.dataset.note = fullNote;
-
+                    const fullNote = note + oct; const isBlack = note.includes('#'); const key = document.createElement('div'); key.dataset.note = fullNote;
                     if (!isBlack) {
-                        key.className = 'key white';
-                        if (note === 'C') key.innerText = fullNote;
-                        setupCreationKeyEvents(key, fullNote);
-                        container.appendChild(key);
-                        whiteKeyIndex++;
+                        key.className = 'key white'; if (note === 'C') key.innerText = fullNote;
+                        setupCreationKeyEvents(key, fullNote); container.appendChild(key); whiteKeyIndex++;
                     } else {
-                        key.className = 'key black';
-                        const blackKeyWidthPercent = 2;
-                        const leftPercent = (whiteKeyIndex / totalWhiteKeys * 100) - (blackKeyWidthPercent / 2);
-                        key.style.left = leftPercent + '%';
-                        setupCreationKeyEvents(key, fullNote);
-                        container.appendChild(key);
+                        key.className = 'key black'; const blackKeyWidthPercent = 2; const leftPercent = (whiteKeyIndex / totalWhiteKeys * 100) - (blackKeyWidthPercent / 2); key.style.left = leftPercent + '%';
+                        setupCreationKeyEvents(key, fullNote); container.appendChild(key);
                     }
                 });
             }
@@ -4280,7 +4831,7 @@
             }
         }
 
-        // --- 9. Tour Logic (聚光燈版) ---
+        // --- Interactive Tour Logic (聚光燈追蹤版) ---
 
         // 導覽步驟設定
         const tourSteps = [
@@ -4295,8 +4846,7 @@
                 elementId: 'gen-midi-btn',
                 title: '2. 生成 MIDI (Generate)',
                 text: '設定完成後，點擊這裡！AI 會立即為您生成一段獨一無二的旋律。',
-                // [修改] 設為 'right'，讓說明框顯示在側邊欄外面，避免擠壓
-                position: 'right',
+                position: 'right', // 顯示在右側，避免擋住按鈕
                 action: () => {
                     toggleSidebar(true);
                     // 捲動確保按鈕可見 (置中)
@@ -4337,7 +4887,7 @@
         let currentTourIndex = 0;
         let tourLoopId = null; // 動畫迴圈 ID
 
-        // [新增] 啟動追蹤迴圈：讓框框緊緊跟隨目標 (解決捲動錯位問題)
+        // [新增] 啟動追蹤迴圈：讓框框緊緊跟隨目標
         function startTourLoop() {
             if (tourLoopId) cancelAnimationFrame(tourLoopId);
 
@@ -4347,17 +4897,18 @@
                 const spotlight = document.getElementById('tour-spotlight');
                 const tooltip = document.getElementById('tour-tooltip');
 
+                // 只有當目標存在且聚光燈開啟時才運算
                 if (target && spotlight.classList.contains('active')) {
                     const rect = target.getBoundingClientRect();
 
-                    // 1. 設定聚光燈位置與大小 (稍微加一點 padding 讓框框不那麼貼)
+                    // 1. 設定聚光燈位置與大小 (加一點 padding 讓框框不那麼貼)
                     const padding = 2;
                     spotlight.style.width = (rect.width + padding * 2) + 'px';
                     spotlight.style.height = (rect.height + padding * 2) + 'px';
                     spotlight.style.top = (rect.top - padding) + 'px';
                     spotlight.style.left = (rect.left - padding) + 'px';
 
-                    // 2. 自動複製目標的圓角 (例如圓形按鈕)
+                    // 2. 自動複製目標的圓角
                     const style = window.getComputedStyle(target);
                     spotlight.style.borderRadius = style.borderRadius;
 
@@ -4371,21 +4922,23 @@
             update();
         }
 
-        // [修改] 開始導覽
+        // 開始導覽
         window.startTour = function () {
             if (!document.getElementById('main-screen').classList.contains('active')) {
                 goToScreen('main-screen');
             }
             currentTourIndex = 0;
 
-            // 隱藏舊遮罩，開啟新聚光燈
-            document.getElementById('tour-overlay').style.display = 'none';
-            document.getElementById('tour-spotlight').classList.add('active');
+            // [關鍵修正] 隱藏舊的 Overlay，改用新的 Spotlight
+            const overlay = document.getElementById('tour-overlay');
+            if (overlay) overlay.style.display = 'none'; // 確保舊遮罩隱藏
+
+            document.getElementById('tour-spotlight').classList.add('active'); // 開啟聚光燈
             document.getElementById('tour-tooltip').style.display = 'flex';
 
             showTourStep();
             startTourLoop(); // [關鍵] 啟動追蹤
-        };
+        }
 
         window.nextTourStep = function () {
             if (currentTourIndex < tourSteps.length - 1) {
@@ -4396,15 +4949,13 @@
             }
         }
 
-        // [修改] 結束導覽
         window.endTour = function () {
-            if (tourLoopId) cancelAnimationFrame(tourLoopId);
-            document.getElementById('tour-spotlight').classList.remove('active');
+            if (tourLoopId) cancelAnimationFrame(tourLoopId); // 停止追蹤
+            document.getElementById('tour-spotlight').classList.remove('active'); // 關閉聚光燈
             document.getElementById('tour-tooltip').style.display = 'none';
             simulateGeneratedState(false);
-        };
+        }
 
-        // [修改] 顯示步驟 (簡化版，移除舊的 class 操作)
         function showTourStep() {
             const step = tourSteps[currentTourIndex];
             if (step.action) step.action();
@@ -4412,50 +4963,47 @@
             setTimeout(() => {
                 const target = document.getElementById(step.elementId);
                 if (target) {
-                    // 設定 Tooltip 文字
                     document.getElementById('tour-title').innerText = step.title;
                     document.getElementById('tour-content').innerText = step.text;
                     document.getElementById('tour-counter').innerText = `${currentTourIndex + 1}/${tourSteps.length}`;
 
                     const nextBtn = document.getElementById('tour-next-btn');
-                    nextBtn.innerText = (currentTourIndex === tourSteps.length - 1) ? "Finish" : "Next";
-                    nextBtn.onclick = (currentTourIndex === tourSteps.length - 1) ? window.endTour : window.nextTourStep;
+                    if (currentTourIndex === tourSteps.length - 1) {
+                        nextBtn.innerText = "Finish";
+                        nextBtn.onclick = window.endTour;
+                    } else {
+                        nextBtn.innerText = "Next";
+                        nextBtn.onclick = window.nextTourStep;
+                    }
+                    // 位置會由 startTourLoop 自動更新，這裡只需要確保資料正確
                 }
             }, 300);
         }
-        function positionTooltip(target, tooltip, positionPref) {
-            tooltip.style.top = '0px';
-            tooltip.style.left = '0px';
 
+        function positionTooltip(target, tooltip, positionPref) {
+            // (這部分邏輯保持不變，直接沿用即可)
             const rect = target.getBoundingClientRect();
             const tooltipRect = tooltip.getBoundingClientRect();
-            const margin = 25;
+            const margin = 20;
             let top, left;
 
-            // 特殊處理：置中
             if (positionPref === 'center') {
                 top = (window.innerHeight / 2) - (tooltipRect.height / 2);
                 left = (window.innerWidth / 2) - (tooltipRect.width / 2);
             } else if (positionPref === 'right') {
-                // [邏輯確認] 計算目標右側 + 間距
                 top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
                 left = rect.right + margin;
             } else if (positionPref === 'left') {
                 top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
                 left = rect.left - tooltipRect.width - margin;
-            } else if (positionPref === 'bottom') {
-                top = rect.bottom + margin;
-                left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
             } else if (positionPref === 'top') {
-                // 顯示在上方
                 top = rect.top - tooltipRect.height - margin;
                 left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
             } else {
-                top = rect.top - tooltipRect.height - margin;
+                top = rect.bottom + margin;
                 left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
             }
 
-            // 邊界檢查 (防止切出螢幕)
             if (left < 10) left = 10;
             if (top < 10) top = 10;
             if (left + tooltipRect.width > window.innerWidth) left = window.innerWidth - tooltipRect.width - 10;
@@ -4464,7 +5012,6 @@
             tooltip.style.top = `${top}px`;
             tooltip.style.left = `${left}px`;
         }
-
         // --- 10. Draggable Window Logic (優化版：解決笨重感) ---
 
         function makeElementDraggable(element, handle) {
