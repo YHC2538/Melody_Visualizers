@@ -2199,73 +2199,49 @@
 
         /* --- Tour Highlight 修正 (最終版：解決陰影被切掉的問題) --- */
 
-        /* 1. 聚光燈樣式 */
-        .tour-highlight {
-            position: relative;
-            z-index: 9999 !important;
+        /* --- [修改] 聚光燈樣式 (取代舊的 highlight) --- */
+        #tour-spotlight {
+            position: fixed;
+            z-index: 10001;
+            /* 比側邊欄(1001)高，確保能蓋住白色背景 */
 
-            /* 巨大的陰影 (內圈亮，外圈黑) 用來遮住周圍 */
-            box-shadow: 0 0 0 4px var(--primary-color),
-                0 0 0 9999px rgba(0, 0, 0, 0.75);
+            /* 巨大的黑色陰影，用來當作全螢幕遮罩 */
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
 
-            background: white;
+            border-radius: 50px;
+            /* 預設圓角 */
             pointer-events: none;
+            /* 關鍵：讓滑鼠可以穿透它去捲動底下的側邊欄 */
+            display: none;
 
-            /* [關鍵] 允許陰影超出元素本身 */
-            overflow: visible !important;
-
-            transition: all 0.3s;
+            /* 粉紅色光暈邊框 */
+            border: 2px solid var(--primary-color);
+            transition: all 0.1s ease-out;
+            /* 平滑移動 */
         }
 
-        /* --- 修正 Step 2 奇怪陰影 --- */
-        /* 當按鈕變成導覽目標時，隱藏它的流光動畫偽元素 */
-        .tour-highlight::after {
-            display: none !important;
+        #tour-spotlight.active {
+            display: block;
         }
 
-        /* 2. [關鍵修正] 讓被提升的父容器「允許內容溢出」
-   這樣 Highlight 的黑色大陰影才能蓋住同層級的其他元素 (如參數框、渲染介面) */
+        /* 3. 導覽對話框 (Tooltip) */
+        .tour-tooltip {
+            position: fixed;
+            /* [修改] 這裡原本是 10000，必須改成比 spotlight (10001) 高 */
+            z-index: 10002 !important;
+
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            /* ... 其他樣式保持不變 ... */
+        }
+
+        /* [重置] 移除原本提升側邊欄層級的寫法，避免白色背景浮上來 */
         .sidebar.tour-active-parent,
-        .sidebar-scroll-content.tour-active-parent,
-        .app-container.tour-active-parent {
-            z-index: 10000 !important;
+        .app-container.tour-active-parent,
+        .sidebar-scroll-content.tour-active-parent {
+            z-index: auto !important;
             overflow: visible !important;
-            /* 解除切邊限制 */
-        }
-
-        /* 強制關閉動畫，避免干擾 */
-        .tour-no-animation {
-            animation: none !important;
-            transform: none !important;
-            opacity: 1 !important;
-            transition: none !important;
-        }
-
-        /* 讓父層級浮起來 (這是為了突破遮罩) */
-        .sidebar.tour-active-parent,
-        .app-container.tour-active-parent {
-            z-index: 10000 !important;
-        }
-
-        /* [修正 Step 2] 生成按鈕是膠囊狀，Highlight 也要是膠囊狀 */
-        .generate-btn.tour-highlight {
-            border-radius: 50px !important;
-        }
-
-        /* [修正 Step 4] 圓形按鈕形狀修正 */
-        #piano-trigger-btn.tour-highlight,
-        .player-circle-btn.tour-highlight {
-            border-radius: 50% !important;
-        }
-
-        /* 針對圓形按鈕的修正 */
-        button.tour-highlight {
-            border-radius: 50% !important;
-        }
-
-        .sidebar.tour-highlight {
-            border-radius: 0 !important;
-            /* 側邊欄不需要圓角 */
+            /* 保持預設 */
         }
 
         /* 3. 導覽對話框 (Tooltip) */
@@ -3146,7 +3122,8 @@
             </p>
         </div>
     </div>
-
+    </div>
+    <div id="tour-spotlight"></div>
     <div id="tour-tooltip" class="tour-tooltip">
         <div class="tour-header">
             <div class="tour-title" id="tour-title">Step Title</div>
@@ -4303,32 +4280,30 @@
             }
         }
 
+        // --- 9. Tour Logic (聚光燈版) ---
+
+        // 導覽步驟設定
         const tourSteps = [
             {
                 elementId: 'sidebar',
                 title: '1. 調整參數 (Parameters)',
                 text: '這裡是控制中心。設定音階、調性、BPM，調整完畢後請看下一步。',
                 position: 'right',
-                action: () => {
-                    toggleSidebar(true);
-                    simulateGeneratedState(false);
-                }
+                action: () => { toggleSidebar(true); simulateGeneratedState(false); }
             },
             {
                 elementId: 'gen-midi-btn',
                 title: '2. 生成 MIDI (Generate)',
                 text: '設定完成後，點擊這裡！AI 會立即為您生成一段獨一無二的旋律。',
-                // [修正] 改為 top，顯示在按鈕上方，就不會擋住按鈕了
-                position: 'top',
+                // [修改] 設為 'right'，讓說明框顯示在側邊欄外面，避免擠壓
+                position: 'right',
                 action: () => {
                     toggleSidebar(true);
-                    // 捲動到底部確保按鈕可見
+                    // 捲動確保按鈕可見 (置中)
                     setTimeout(() => {
-                        const scrollArea = document.querySelector('.sidebar-scroll-content');
-                        if (scrollArea) {
-                            scrollArea.scrollTo({ top: scrollArea.scrollHeight, behavior: 'smooth' });
-                        }
-                    }, 10);
+                        const targetBtn = document.getElementById('gen-midi-btn');
+                        if (targetBtn) targetBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
                 }
             },
             {
@@ -4336,11 +4311,7 @@
                 title: '3. 預覽與渲染 (Preview)',
                 text: '（模擬生成畫面）生成後側邊欄會收起。您可以在此試聽，滿意後點擊「渲染影片」。',
                 position: 'top',
-                action: () => {
-                    toggleSidebar(false);
-                    // 開啟模擬狀態
-                    simulateGeneratedState(true);
-                }
+                action: () => { toggleSidebar(false); simulateGeneratedState(true); }
             },
             {
                 elementId: 'piano-trigger-btn',
@@ -4350,7 +4321,6 @@
                 action: () => {
                     toggleSidebar(false);
                     simulateGeneratedState(true);
-                    // 強制顯示鋼琴按鈕
                     const btn = document.getElementById('piano-trigger-btn');
                     if (btn) btn.style.display = 'flex';
                 }
@@ -4360,29 +4330,62 @@
                 title: '5. 開始創作吧！',
                 text: '現在您已經熟悉流程了。按下結束，開始您的音樂視覺化之旅！',
                 position: 'center',
-                action: () => {
-                    toggleSidebar(false);
-                    simulateGeneratedState(true);
-                }
+                action: () => { toggleSidebar(false); simulateGeneratedState(true); }
             }
         ];
 
         let currentTourIndex = 0;
+        let tourLoopId = null; // 動畫迴圈 ID
 
+        // [新增] 啟動追蹤迴圈：讓框框緊緊跟隨目標 (解決捲動錯位問題)
+        function startTourLoop() {
+            if (tourLoopId) cancelAnimationFrame(tourLoopId);
+
+            function update() {
+                const step = tourSteps[currentTourIndex];
+                const target = document.getElementById(step.elementId);
+                const spotlight = document.getElementById('tour-spotlight');
+                const tooltip = document.getElementById('tour-tooltip');
+
+                if (target && spotlight.classList.contains('active')) {
+                    const rect = target.getBoundingClientRect();
+
+                    // 1. 設定聚光燈位置與大小 (稍微加一點 padding 讓框框不那麼貼)
+                    const padding = 2;
+                    spotlight.style.width = (rect.width + padding * 2) + 'px';
+                    spotlight.style.height = (rect.height + padding * 2) + 'px';
+                    spotlight.style.top = (rect.top - padding) + 'px';
+                    spotlight.style.left = (rect.left - padding) + 'px';
+
+                    // 2. 自動複製目標的圓角 (例如圓形按鈕)
+                    const style = window.getComputedStyle(target);
+                    spotlight.style.borderRadius = style.borderRadius;
+
+                    // 3. 讓 Tooltip 也跟著跑 (確保位置準確)
+                    if (tooltip.style.display !== 'none') {
+                        positionTooltip(target, tooltip, step.position);
+                    }
+                }
+                tourLoopId = requestAnimationFrame(update);
+            }
+            update();
+        }
+
+        // [修改] 開始導覽
         window.startTour = function () {
             if (!document.getElementById('main-screen').classList.contains('active')) {
                 goToScreen('main-screen');
             }
-
-            preTourState.hasMidi = !!window.currentMidiFilename;
-
             currentTourIndex = 0;
-            document.getElementById('tour-overlay').style.display = 'block';
-            setTimeout(() => document.getElementById('tour-overlay').classList.add('active'), 10);
+
+            // 隱藏舊遮罩，開啟新聚光燈
+            document.getElementById('tour-overlay').style.display = 'none';
+            document.getElementById('tour-spotlight').classList.add('active');
             document.getElementById('tour-tooltip').style.display = 'flex';
 
             showTourStep();
-        }
+            startTourLoop(); // [關鍵] 啟動追蹤
+        };
 
         window.nextTourStep = function () {
             if (currentTourIndex < tourSteps.length - 1) {
@@ -4393,76 +4396,32 @@
             }
         }
 
+        // [修改] 結束導覽
         window.endTour = function () {
-            document.getElementById('tour-overlay').classList.remove('active');
-            setTimeout(() => {
-                document.getElementById('tour-overlay').style.display = 'none';
-                document.getElementById('tour-tooltip').style.display = 'none';
+            if (tourLoopId) cancelAnimationFrame(tourLoopId);
+            document.getElementById('tour-spotlight').classList.remove('active');
+            document.getElementById('tour-tooltip').style.display = 'none';
+            simulateGeneratedState(false);
+        };
 
-                // 清除所有高亮與特殊 class
-                document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
-                document.querySelectorAll('.tour-active-parent').forEach(el => el.classList.remove('tour-active-parent'));
-                document.querySelectorAll('.tour-no-animation').forEach(el => el.classList.remove('tour-no-animation'));
-
-                // 還原介面 (Dashboard)
-                simulateGeneratedState(false);
-
-                // [修正] 刪除了原本在這裡「隱藏鋼琴按鈕」的程式碼
-                // 因為在創作模式 (Main Screen) 下，鋼琴按鈕應該要一直保持顯示才對
-
-            }, 300);
-        }
+        // [修改] 顯示步驟 (簡化版，移除舊的 class 操作)
         function showTourStep() {
             const step = tourSteps[currentTourIndex];
-
-            // 1. 清除舊狀態
-            document.querySelectorAll('.tour-highlight').forEach(el => el.classList.remove('tour-highlight'));
-            document.querySelectorAll('.tour-active-parent').forEach(el => el.classList.remove('tour-active-parent'));
-
-            // 2. 執行動作
             if (step.action) step.action();
 
-            // 3. 定位與高亮
             setTimeout(() => {
                 const target = document.getElementById(step.elementId);
-                const tooltip = document.getElementById('tour-tooltip');
-
                 if (target) {
-                    const rect = target.getBoundingClientRect();
-                    if (rect.width === 0 && rect.height === 0) {
-                        positionTooltip(target, tooltip, 'center');
-                        return;
-                    }
-
-                    target.classList.add('tour-highlight');
-
-                    // [關鍵修正] 判斷並提升父層級 (加入 sidebar-scroll-content)
-                    if (target.closest('.sidebar')) {
-                        // 提升側邊欄外框
-                        document.getElementById('sidebar').classList.add('tour-active-parent');
-                        // 提升側邊欄內部捲動區 (解決 Step 2 參數框也亮的問題)
-                        const scrollContent = document.querySelector('.sidebar-scroll-content');
-                        if (scrollContent) scrollContent.classList.add('tour-active-parent');
-                    } else if (target.closest('.app-container')) {
-                        // 提升主畫面容器 (解決 Step 4 渲染介面也亮的問題)
-                        document.querySelector('.app-container').classList.add('tour-active-parent');
-                    }
-
+                    // 設定 Tooltip 文字
                     document.getElementById('tour-title').innerText = step.title;
                     document.getElementById('tour-content').innerText = step.text;
                     document.getElementById('tour-counter').innerText = `${currentTourIndex + 1}/${tourSteps.length}`;
 
                     const nextBtn = document.getElementById('tour-next-btn');
-                    if (currentTourIndex === tourSteps.length - 1) {
-                        nextBtn.innerText = "Finish";
-                        nextBtn.onclick = window.endTour;
-                    } else {
-                        nextBtn.innerText = "Next";
-                        nextBtn.onclick = window.nextTourStep;
-                    }
-                    positionTooltip(target, tooltip, step.position);
+                    nextBtn.innerText = (currentTourIndex === tourSteps.length - 1) ? "Finish" : "Next";
+                    nextBtn.onclick = (currentTourIndex === tourSteps.length - 1) ? window.endTour : window.nextTourStep;
                 }
-            }, 350);
+            }, 300);
         }
         function positionTooltip(target, tooltip, positionPref) {
             tooltip.style.top = '0px';
@@ -4470,7 +4429,7 @@
 
             const rect = target.getBoundingClientRect();
             const tooltipRect = tooltip.getBoundingClientRect();
-            const margin = 20;
+            const margin = 25;
             let top, left;
 
             // 特殊處理：置中
@@ -4478,6 +4437,7 @@
                 top = (window.innerHeight / 2) - (tooltipRect.height / 2);
                 left = (window.innerWidth / 2) - (tooltipRect.width / 2);
             } else if (positionPref === 'right') {
+                // [邏輯確認] 計算目標右側 + 間距
                 top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
                 left = rect.right + margin;
             } else if (positionPref === 'left') {
