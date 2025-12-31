@@ -451,35 +451,90 @@ function setupScrollReveal() {
 }
 
 /* showcase 邏輯 */
+let currentSpotlightIndex = 0;
+
+window.nextSpotlight = function () {
+    const history = getHistory();
+    const favorites = history.filter(item => item.isFavorite);
+    if (favorites.length <= 1) return;
+
+    currentSpotlightIndex++;
+    if (currentSpotlightIndex >= favorites.length) {
+        currentSpotlightIndex = 0;
+    }
+    renderHomeShowcase();
+}
+
+window.prevSpotlight = function () {
+    const history = getHistory();
+    const favorites = history.filter(item => item.isFavorite);
+    if (favorites.length <= 1) return;
+
+    currentSpotlightIndex--;
+    if (currentSpotlightIndex < 0) {
+        currentSpotlightIndex = favorites.length - 1;
+    }
+    renderHomeShowcase();
+}
 function renderHomeShowcase() {
     const container = document.getElementById('home-showcase-container');
     const history = getHistory();
+
     if (history.length === 0) {
         container.innerHTML = `<div class="glass-btn-style" style="padding: 40px; border-radius: 20px; color: #888; max-width:600px; margin:0 auto;"><i class="fas fa-music" style="font-size: 40px; margin-bottom: 15px; opacity:0.3;"></i><p>您的創作旅程即將開始...</p><button onclick="goToScreen('main-screen')" class="action-btn" style="margin-top:15px; border-radius:30px;"><i class="fas fa-plus"></i> Create Now</button></div>`;
         return;
     }
+
     const favorites = history.filter(item => item.isFavorite);
-    const spotlightItem = favorites.length > 0 ? favorites[0] : history[0];
-    const isFeatured = favorites.length > 0;
+    const hasFavorites = favorites.length > 0;
+    let spotlightItem;
+
+    if (hasFavorites) {
+        if (currentSpotlightIndex >= favorites.length) currentSpotlightIndex = 0;
+        spotlightItem = favorites[currentSpotlightIndex];
+    } else {
+        spotlightItem = history[0];
+    }
+
+    const isFeatured = hasFavorites;
     const recents = history.filter(item => item.id !== spotlightItem.id).slice(0, 3);
     const getParamText = (item) => `Key: ${item.params.key} | ${item.params.scale} | ${item.params.tempo} BPM`;
-
     let html = `<div class="creation-showcase-wrapper">`;
-    html += `<div class="glass-btn-style spotlight-card" style="cursor: default;">
+    html += `<div class="glass-btn-style spotlight-card" style="cursor: default;">`;
+
+    if (hasFavorites && favorites.length > 1) {
+        html += `
+            <button class="spotlight-nav-btn spotlight-prev" onclick="prevSpotlight()"><i class="fas fa-chevron-left"></i></button>
+            <button class="spotlight-nav-btn spotlight-next" onclick="nextSpotlight()"><i class="fas fa-chevron-right"></i></button>
+            <div class="spotlight-counter">${currentSpotlightIndex + 1} / ${favorites.length}</div>
+        `;
+    }
+
+    html += `
             <i class="fas fa-music spotlight-bg-icon"></i>
             <div style="width:100%;">
-                <div class="spotlight-tag">${isFeatured ? '<i class="fas fa-heart"></i> FAVORITE PICK' : '<i class="fas fa-star"></i> LATEST DROP'}</div>
+                <div class="spotlight-tag">
+                    ${isFeatured ? '<i class="fas fa-heart"></i> FAVORITE COLLECTION' : '<i class="fas fa-star"></i> LATEST DROP'}
+                </div>
                 <h3 style="font-size: 28px; margin: 10px 0; color: #333;">Creation #${spotlightItem.id.toString().slice(-4)}</h3>
                 <div style="font-size: 14px; color: #666; margin-bottom: 15px;"><i class="far fa-clock"></i> ${spotlightItem.date.split(' ')[0]}</div>
             </div>
+            
             <div style="width:100%; flex:1; display:flex; flex-direction:column; justify-content:flex-end;">
                 ${spotlightItem.video ?
             `<div class="spotlight-video-container"><video src="${spotlightItem.video}" controls controlsList="nodownload"></video></div>` :
-            `<div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 15px; margin-bottom: 20px;"><div style="font-size: 13px; color: #555; font-weight:600;">Audio Parameters</div><div style="font-size: 12px; color: #777; margin-top:5px;">${getParamText(spotlightItem)}</div></div>
-                         <div onclick="playHistoryIndex(${history.indexOf(spotlightItem)}); goToScreen('creations-screen');" style="display:flex; align-items:center; gap:10px; color: var(--primary-color); font-weight:bold; font-size:14px; cursor:pointer; width:fit-content;"><div style="width:40px; height:40px; border-radius:50%; background:var(--primary-color); color:white; display:flex; align-items:center; justify-content:center;"><i class="fas fa-play"></i></div>Listen Audio</div>`}
+            `<div style="background: rgba(0,0,0,0.05); padding: 15px; border-radius: 15px; margin-bottom: 20px;">
+                <div style="font-size: 13px; color: #555; font-weight:600;">Audio Parameters</div>
+                <div style="font-size: 12px; color: #777; margin-top:5px;">${getParamText(spotlightItem)}</div>
+             </div>
+             <div onclick="playHistoryIndex(${history.indexOf(spotlightItem)}); goToScreen('creations-screen');" style="display:flex; align-items:center; gap:10px; color: var(--primary-color); font-weight:bold; font-size:14px; cursor:pointer; width:fit-content; padding: 5px 10px; border-radius: 20px; transition: 0.2s; background: rgba(216, 27, 96, 0.1);">
+                <div style="width:30px; height:30px; border-radius:50%; background:var(--primary-color); color:white; display:flex; align-items:center; justify-content:center; font-size:12px;">
+                    <i class="fas fa-play"></i>
+                </div>
+                Listen Audio
+             </div>`}
             </div>
         </div>`;
-
     if (recents.length > 0) {
         html += `<div class="recent-list">`;
         recents.forEach((item) => {
@@ -498,6 +553,7 @@ function renderHomeShowcase() {
     } else {
         html += `<div class="recent-list" style="justify-content:center;"><div class="glass-btn-style recent-item" onclick="goToScreen('main-screen')" style="height:100%; flex-direction:column; justify-content:center; text-align:center; gap:10px;"><div class="creation-icon-box" style="background:linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);"><i class="fas fa-plus"></i></div><div style="color:#555; font-weight:bold;">Create More</div><div style="font-size:12px; color:#888;">累積更多創作來填滿這個列表！</div></div></div>`;
     }
+
     html += `</div>`;
     container.innerHTML = html;
 }

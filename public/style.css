@@ -656,9 +656,11 @@ label {
 }
 
 .spotlight-card {
+    position: relative;
     height: 100%;
     min-height: 250px;
     padding: 30px !important;
+    transition: 0.3s ease;
     display: flex !important;
     flex-direction: column;
     justify-content: space-between;
@@ -675,6 +677,56 @@ label {
     opacity: 0.05;
     transform: rotate(-15deg);
     pointer-events: none;
+}
+
+.spotlight-nav-btn{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+    z-index: 5;
+    outline: none;
+}
+
+.spotlight-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.spotlight-prev{
+    left: 0;
+    border-radius: 0 50% 50% 0;
+    padding-left: 5px;
+}
+
+.spotlight-next{
+    right: 0;
+    border-radius: 50% 0 0 50%;
+    padding-right: 5px;
+}
+
+.spotlight-counter{
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: #666;
+    font-weight: 600;
 }
 
 .spotlight-tag {
