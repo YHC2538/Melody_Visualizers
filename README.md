@@ -287,7 +287,7 @@ node server.js
 
 - 影片渲染會啟動 AutoHotkey 去操作 Piano VFX 視窗：渲染期間可能無法正常使用同一台電腦（滑鼠/視窗會被自動化流程佔用）。
 - `public/midiplayer.js` 的 SoundFont 音檔來源為外部 URL：離線環境可能無法試聽。
-- 本專案的 [主連結](https://webdev_final.rlong.me/) 有專案的完整功能，然而可能會因為伺服器關機而無法連上
+- 本專案的 [主連結](https://webdev_final.rlong.me/) 有專案的完整功能
 - 本專案設有 [備用連結](https://webdev-final.rlong.me/)，此服務可以 24/7 服務請求，然而其缺少影片渲染功能
 
 
