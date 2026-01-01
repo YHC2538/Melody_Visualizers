@@ -1,12 +1,17 @@
 # Melody Visualizers（webdev_final）
 
-本專案是一個以「**MIDI 旋律生成 → 站內試聽 → 4K 視覺化渲染 → 聽力訓練**」為核心的 Web 應用。
+本專案是一個以「**MIDI 旋律生成 → 站內試聽 → 4K 視覺化渲染 → 聽力訓練**」為核心的 Web 平台。
 
-- 最終版前端入口：`public/index.html`（由 Node/Express 提供靜態服務）
+專案的所有資源: https://github.com/YHC2538/webdev_final/tree/UIFix
+
+- 前端入口：`public/index.html`（由 Node/Express 提供靜態服務）
 - 後端伺服器：`server.js`（API：生成 MIDI、渲染影片、查詢排隊）
 - MIDI 生成 CLI：`scripts/midigenapp_cli.py`（Node 透過 `python ...` 呼叫）
-
-> 備註：根目錄的 `index.html` 與 `public/old_index.html` 為原型/舊版參考；「最後版本」以 `public/index.html` 的多 screen UI 為準。
+---
+:::info
+- 本專案的 [主連結](https://webdev_final.rlong.me/) 有專案的完整功能，然而可能會因為伺服器關機而無法連上
+- 本專案設有 [備用連結](https://webdev-final.rlong.me/)，此服務可以 24/7 服務請求，然而其缺少影片渲染功能
+:::
 
 ---
 
@@ -16,6 +21,8 @@
 - Free Creation：自訂音階/調性/BPM/小節等參數生成 MIDI
 - Visualize：把 MIDI 轉成 WAV，再用 Piano VFX 產出 MP4（提供站內播放與下載）
 - Pitch Challenge：互動式絕對音感測驗（多難度、計時、成績與成就）
+- 創作儲存功能: 後端儲存所有創作, 使用者最多可以存 10 份 MIDI 創作與 mp4
+
 
 2) **不依賴前端框架的完整互動式 UI**
 - 單頁多 screen 切換（Home / Main / Test / Creations）
@@ -23,6 +30,7 @@
 
 3) **工程化的渲染佇列（避免 UI 自動化衝突）**
 - 影片渲染會「搶佔滑鼠/視窗」（AutoHotkey + Piano VFX），因此後端使用 Queue + Polling 呈現排隊狀態與等待時間。
+- Queue 優化: 針對多人同時請求或惡意請求有保護機制。
 
 ---
 
@@ -64,7 +72,7 @@
 ### 3.1 MIDI 生成流程
 
 1. 使用者在 `#main-screen` 設定參數，點擊「生成 MIDI」
-2. 前端 `fetch` 呼叫：`POST http://localhost:3000/api/generate-midi`
+2. 前端 `fetch` 呼叫：`POST /api/generate-midi`
 3. 後端 `server.js` 透過 `child_process.spawn('python', ...)` 執行 `scripts/midigenapp_cli.py`
 4. Python 端以 HTTP 方式呼叫 `https://midigen.app/generate`（外部服務），取得 MIDI bytes
 5. 後端回傳 `midiUrl`（例如 `/midi/melody_<timestamp>.mid`），前端更新播放器/歷史紀錄/成就
@@ -72,7 +80,7 @@
 ### 3.2 影片渲染流程（Queue）
 
 1. 使用者點擊「渲染影片」
-2. 前端呼叫：`POST http://localhost:3000/api/render-video`（body: `{ midiFilename }`）
+2. 前端呼叫：`POST /api/render-video`（body: `{ midiFilename }`）
 3. 後端加入 Render Queue（避免同時渲染造成 AHK/視窗衝突），並以 IP 做：
 	 - 同時只允許一個工作（activeIPs）
 	 - 完成後冷卻 60 秒（userCooldowns）
@@ -105,17 +113,17 @@
 
 ### 4.3 Python（MIDI 生成 CLI）
 
-- `requests`：向 `https://midigen.app/generate` 發送表單請求並取得 MIDI bytes
+- `requests`：向外部 API 的 AI 模型發送表單請求並取得 MIDI bytes
 - CLI 參數：`--params`（JSON 字串）、`--output`（輸出路徑）
 
-### 4.4 外部工具鏈（視覺化與音訊轉換）
+### 4.4 工具鏈（視覺化與音訊轉換）
 
 - TiMidity++（MIDI → WAV）：位於 `tools/TiMidity++-2.15.0/`
 - SoundFont（GM 音色）：`tools/FluidR3_GM.sf2`
-- AutoHotkey（UI 自動化）：`scripts/render_video.ahk` + `scripts/AutoHotkeyU64.exe`（若缺請自行補齊）
+- AutoHotkey（UI 自動化）：`scripts/render_video.ahk` + `scripts/AutoHotkeyU64.exe`（這程式不好寫）
 - Piano VFX（視覺化引擎）：位於 `scripts/piano_vfx/piano_vfx/`
 
-### 4.5 開源/外部引用清單（需說明）
+### 4.5 開源/外部引用清單
 
 本專案前端/後端/工具鏈有使用或依賴以下開源或外部資源：
 
@@ -136,6 +144,7 @@
 
 1) **跨語言、跨工具鏈整合**
 - 前端（Web）→ 後端（Node）→ Python（HTTP 取 MIDI）→ 外部可執行檔（TiMidity++ / AHK / Piano VFX）
+- Piano VFX 無 API & CLI 且需要顯示卡渲染影片，如何整合工具鍊是我們專案的一大挑戰
 
 2) **非同步任務管理 + 佇列化設計**
 - 渲染任務需序列化（避免 AHK/視窗競態），並提供排隊狀態給前端 UX
@@ -168,7 +177,7 @@ tools/                # TiMidity++、SoundFont 等
 
 - Node.js（建議 LTS）
 - Python 3.10+
-- 網路連線（`scripts/midigenapp_cli.py` 需要呼叫 `https://midigen.app`）
+- 網路連線
 
 ### 7.2 安裝（一次性）
 
@@ -178,7 +187,7 @@ tools/                # TiMidity++、SoundFont 等
 npm install
 ```
 
-2) 建議建立 Python 虛擬環境並安裝依賴（至少需要 requests）：
+2) 建議建立 Python 虛擬環境並安裝 dependencies（至少需要 requests）：
 
 ```bash
 python -m venv .venv
@@ -277,11 +286,10 @@ node server.js
 ## 9. 注意事項與限制
 
 - 影片渲染會啟動 AutoHotkey 去操作 Piano VFX 視窗：渲染期間可能無法正常使用同一台電腦（滑鼠/視窗會被自動化流程佔用）。
-- `midigen.app` 為外部服務：若服務不可用或網路不穩，MIDI 生成會失敗。
 - `public/midiplayer.js` 的 SoundFont 音檔來源為外部 URL：離線環境可能無法試聽。
+- 本專案的 [主連結](https://webdev_final.rlong.me/) 有專案的完整功能，然而可能會因為伺服器關機而無法連上
+- 本專案設有 [備用連結](https://webdev-final.rlong.me/)，此服務可以 24/7 服務請求，然而其缺少影片渲染功能
 
----
 
-## 10. 文件
 
-- `usermanual.md`：MidiGen 音樂生成概念與 API 說明（本專案以 CLI 方式整合）
+
