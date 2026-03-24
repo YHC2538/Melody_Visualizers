@@ -4,14 +4,16 @@
 
 專案的所有資源: https://github.com/YHC2538/webdev_final/tree/UIFix
 
+![demo](./img_main.png)
+
 - 前端入口：`public/index.html`（由 Node/Express 提供靜態服務）
 - 後端伺服器：`server.js`（API：生成 MIDI、渲染影片、查詢排隊）
 - MIDI 生成 CLI：`scripts/midigenapp_cli.py`（Node 透過 `python ...` 呼叫）
 ---
-:::info
+
 - 本專案的 [主連結](https://webdev_final.rlong.me/) 有專案的完整功能，然而可能會因為伺服器關機而無法連上
 - 本專案設有 [備用連結](https://webdev-final.rlong.me/)，此服務可以 24/7 服務請求，然而其缺少影片渲染功能
-:::
+
 
 ---
 
