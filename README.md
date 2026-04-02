@@ -17,7 +17,7 @@
 專案的所有資源: https://github.com/YHC2538/Melody_Visualizers
 
 
-![demo](./img_main.png)
+![demo](./images/img_main.png)
 
 - 前端入口：`public/index.html`（由 Node/Express 提供靜態服務）
 - 後端伺服器：`server.js`（API：生成 MIDI、渲染影片、查詢排隊）
@@ -42,6 +42,11 @@
 3) **工程化的渲染佇列（避免 UI 自動化衝突）**
 - 影片渲染會「搶佔滑鼠/視窗」（AutoHotkey + Piano VFX），因此後端使用 Queue + Polling 呈現排隊狀態與等待時間。
 - Queue 優化: 針對多人同時請求或惡意請求有保護機制。
+
+### 渲染 Demo:
+<div align="center">
+	<img src="./images/demo_vid.gif" width="400" height="225">
+</div>
 
 ---
 
