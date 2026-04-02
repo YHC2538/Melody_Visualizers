@@ -1,23 +1,32 @@
-# Melody Visualizers（webdev_final）
+<div align="center">
+	<h1>Melody Visualizers</h1>
+	<!--ADD SHIELD.IO Icons here-->
+	<p>
+		<a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-18%2B-339933?logo=nodedotjs&logoColor=white" alt="Node.js"></a>
+		<a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-5.x-000000?logo=express&logoColor=white" alt="Express"></a>
+		<a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python"></a>
+		<a href="https://tonejs.github.io/"><img src="https://img.shields.io/badge/Tone.js-Web%20Audio-111111" alt="Tone.js"></a>
+		<a href="https://www.autohotkey.com/"><img src="https://img.shields.io/badge/AutoHotkey-Render%20Automation-334455" alt="AutoHotkey"></a>
+		<a href="https://github.com/YHC2538/Melody_Visualizers"><img src="https://img.shields.io/badge/Platform-Web%20%7C%20Windows-1E88E5" alt="Platform"></a>
+		<a href="https://github.com/YHC2538/Melody_Visualizers"><img src="https://img.shields.io/badge/GitHub-YHC2538%2FMelody__Visualizers-181717?logo=github&logoColor=white" alt="Repository"></a>
+	</p>
+</div>
 
 本專案是一個以「**MIDI 旋律生成 → 站內試聽 → 4K 視覺化渲染 → 聽力訓練**」為核心的 Web 平台。
 
-專案的所有資源: https://github.com/YHC2538/webdev_final/tree/UIFix
+專案的所有資源: https://github.com/YHC2538/Melody_Visualizers
+
 
 ![demo](./img_main.png)
 
 - 前端入口：`public/index.html`（由 Node/Express 提供靜態服務）
 - 後端伺服器：`server.js`（API：生成 MIDI、渲染影片、查詢排隊）
 - MIDI 生成 CLI：`scripts/midigenapp_cli.py`（Node 透過 `python ...` 呼叫）
----
-
-- 本專案的 [主連結](https://webdev_final.rlong.me/) 有專案的完整功能，然而可能會因為伺服器關機而無法連上
-- 本專案設有 [備用連結](https://webdev-final.rlong.me/)，此服務可以 24/7 服務請求，然而其缺少影片渲染功能
 
 
----
+<hr>
 
-## 1. 作品特色（創意與優點）
+## 1. 特色
 
 1) **創作＋視覺化＋訓練三合一**
 - Free Creation：自訂音階/調性/BPM/小節等參數生成 MIDI
@@ -38,38 +47,42 @@
 
 ## 2. 網站最後版本的頁面架構（頁面/畫面結構）
 
-本專案採用「單一 HTML + 多 screen」架構，主要畫面都在 `public/index.html`：
 
 ### 2.1 Screen（主要頁面）
 
 - `#start-screen`（Home）
+![](./img_main.png)
 	- Free Creation：進入 `#main-screen`
 	- Pitch Challenge：難度下拉 + 開始測驗（進入 `#test-screen`）
 	- Home Sections（同頁捲動）：Features / Studio Spotlight / Achievements Showcase
 
 - `#main-screen`（創作/生成/視覺化工作區）
+![](./main_screen.png)
 	- 參數側欄（Sidebar）：Scale/Key/Bars/BPM/Duration/Octave、Arpeggios/Rests/Chords
 	- Preview（試聽）：Tone.js + @tonejs/midi + SoundFont Sampler
 	- Visualize（渲染影片）：顯示佇列狀態、完成後提供 MP4 播放/下載
 
 - `#test-screen`（Pitch Challenge 測驗）
+![](./test_screen.png)
 	- 倒數計時、分數、可用嘗試次數
 	- 鋼琴鍵盤 UI：點擊作答、可切換測驗樂器
 
 - `#creations-screen`（My Creations History）
+![](./creations_screen.png)
 	- 最近 10 筆創作紀錄（localStorage）
 	- 播放、下載 MIDI、播放影片（若已渲染）、收藏/取消收藏、刪除、清除全部
 	- 底部播放器（loop / autoplay / seek / 換樂器 / 音量）
 
 ### 2.2 共用 UI
 
+![](./achievements.png)
 - Navbar（Home/Features/Creations/Achievements）
 - Toast 通知
 - 多種 Modal：測驗結果、結束確認、清除歷史、刪除單筆、影片播放、成就管理、Help/Guide/Tour
 
 ---
 
-## 3. 系統架構與資料流（從參數到輸出）
+## 3. 系統架構與資料流
 
 ### 3.1 MIDI 生成流程
 
@@ -95,7 +108,7 @@
 
 ---
 
-## 4. 實際使用之 Web 技術（含開源/外部資源與實作方式）
+## 4. Web 技術（含開源/外部資源與實作方式）
 
 ### 4.1 前端（Vanilla + Web Audio）
 
@@ -142,24 +155,8 @@
 
 ---
 
-## 5. 技術難度說明（本專案難點）
 
-1) **跨語言、跨工具鏈整合**
-- 前端（Web）→ 後端（Node）→ Python（HTTP 取 MIDI）→ 外部可執行檔（TiMidity++ / AHK / Piano VFX）
-- Piano VFX 無 API & CLI 且需要顯示卡渲染影片，如何整合工具鍊是我們專案的一大挑戰
-
-2) **非同步任務管理 + 佇列化設計**
-- 渲染任務需序列化（避免 AHK/視窗競態），並提供排隊狀態給前端 UX
-
-3) **不使用框架仍維持複雜 UI 狀態**
-- 多 screen、多 modal、播放器狀態、歷史/收藏/成就/導覽流程皆由原生 JS 管理
-
-4) **音訊互動與測驗遊戲化設計**
-- Pitch Challenge 包含計時、限次、隨機出題、即時回饋與最佳成績紀錄
-
----
-
-## 6. 專案結構（資料夾用途）
+## 5. 專案結構（資料夾用途）
 
 ```
 public/               # 最終版前端（index.html + MIDI 播放模組）
@@ -173,15 +170,15 @@ tools/                # TiMidity++、SoundFont 等
 
 ---
 
-## 7. 安裝與執行（Windows）
+## 6. 安裝與執行（Windows）
 
-### 7.1 必要條件
+### 6.1 必要條件
 
 - Node.js（建議 LTS）
 - Python 3.10+
 - 網路連線
 
-### 7.2 安裝（一次性）
+### 6.2 安裝（一次性）
 
 1) 安裝 Node 依賴：
 
@@ -207,7 +204,7 @@ pip install requests
 > 注意：後端會用 `spawn('python', ...)` 執行 Python。
 > 因此請在「已啟用虛擬環境」的終端機中啟動 Node 伺服器，才能確保 `python` 指到正確的環境。
 
-### 7.3 啟動
+### 6.3 啟動
 
 ```bash
 node server.js
@@ -219,9 +216,9 @@ node server.js
 
 ---
 
-## 8. API 文件（後端實際提供）
+## 7. API 文件（後端實際提供）
 
-### 8.1 產生 MIDI
+### 7.1 產生 MIDI
 
 - `POST /api/generate-midi`
 - Body（JSON）：
@@ -252,7 +249,7 @@ node server.js
 }
 ```
 
-### 8.2 渲染影片（加入 Queue）
+### 7.2 渲染影片（加入 Queue）
 
 - `POST /api/render-video`
 - Body：
@@ -275,7 +272,7 @@ node server.js
 - 常見錯誤：
 	- `429`：同一 IP 已有任務排隊/渲染中，或冷卻時間未到
 
-### 8.3 查詢排隊狀態（前端 Polling）
+### 7.3 查詢排隊狀態（前端 Polling）
 
 - `GET /api/queue-status?filename=melody_<timestamp>.mid`
 - Response 範例：
@@ -285,12 +282,11 @@ node server.js
 
 ---
 
-## 9. 注意事項與限制
+## 8. 注意事項與限制
 
 - 影片渲染會啟動 AutoHotkey 去操作 Piano VFX 視窗：渲染期間可能無法正常使用同一台電腦（滑鼠/視窗會被自動化流程佔用）。
 - `public/midiplayer.js` 的 SoundFont 音檔來源為外部 URL：離線環境可能無法試聽。
-- 本專案的 [主連結](https://webdev_final.rlong.me/) 有專案的完整功能
-- 本專案設有 [備用連結](https://webdev-final.rlong.me/)，此服務可以 24/7 服務請求，然而其缺少影片渲染功能
+- 影片渲染功能 unstable.
 
 
 
